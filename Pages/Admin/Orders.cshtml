@@ -1,0 +1,574 @@
+@page
+@model ComputerStore.Pages.Admin.OrdersModel
+@{
+    ViewData["Title"] = "Gestión de Pedidos";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-shopping-cart me-2"></i>
+        Gestión de Pedidos
+    </h1>
+    <div>
+        <div class="dropdown d-inline-block me-2">
+            <button class="btn btn-success btn-sm shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel me-2"></i>Exportar Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="exportarPedidosFiltrados()">
+                    <i class="fas fa-list me-2"></i>Lista de Pedidos
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportarAnalisisPedidos()">
+                    <i class="fas fa-chart-pie me-2"></i>Análisis y Estadísticas
+                </a></li>
+            </ul>
+        </div>
+        <a href="/Admin/Dashboard" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Mostrar mensajes -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Estadísticas de Pedidos -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pedidos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalPedidos</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Ventas Totales</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalVentas.ToString("C0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pendientes</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PedidosPendientes</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Aprobados</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PedidosAprobados</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros Mejorados -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-filter me-2"></i>Filtros y Búsqueda
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3" id="filtrosForm">
+            <div class="col-md-4">
+                <label for="search" class="form-label">?? Buscar pedido</label>
+                <input type="text" class="form-control" name="search" id="search" value="@Model.SearchTerm" 
+                       placeholder="ID transacción, ID pedido, usuario, email...">
+            </div>
+            <div class="col-md-2">
+                <label for="status" class="form-label">?? Estado</label>
+                <select class="form-select" name="status" id="status">
+                    <option value="">Todos los estados</option>
+                    <option value="PENDING" selected="@(Model.FilterStatus == "PENDING")">? Pendiente</option>
+                    <option value="APPROVED" selected="@(Model.FilterStatus == "APPROVED")">? Aprobado</option>
+                    <option value="REJECTED" selected="@(Model.FilterStatus == "REJECTED")">? Rechazado</option>
+                    <option value="DECLINED" selected="@(Model.FilterStatus == "DECLINED")">?? Declinado</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="dateFrom" class="form-label">?? Fecha Desde</label>
+                <input type="date" class="form-control" name="dateFrom" id="dateFrom" 
+                       value="@Model.FilterDateFrom?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-3">
+                <label for="dateTo" class="form-label">?? Fecha Hasta</label>
+                <input type="date" class="form-control" name="dateTo" id="dateTo" 
+                       value="@Model.FilterDateTo?.ToString("yyyy-MM-dd")">
+            </div>
+        </form>
+        <div class="mt-3">
+            <button type="button" class="btn btn-primary me-2" onclick="document.getElementById('filtrosForm').submit();">
+                <i class="fas fa-search me-1"></i>Buscar
+            </button>
+            <a href="/Admin/Orders" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-times me-1"></i>Limpiar
+            </a>
+            <button type="button" class="btn btn-outline-success" onclick="exportarPedidosFiltrados()">
+                <i class="fas fa-file-excel me-1"></i>Exportar Vista Actual
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Pedidos -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-table me-2"></i>Lista de Pedidos (@Model.TotalPedidos pedidos)
+        </h6>
+    </div>
+    <div class="card-body">
+        @if (Model.Pedidos.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered admin-table" id="pedidosTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID Transacción</th>
+                            <th>ID Pedido</th>
+                            <th>Fecha</th>
+                            <th>Método Pago</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Cliente</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pedido in Model.Pedidos)
+                        {
+                            <tr>
+                                <td>
+                                    <code class="text-primary">@pedido.TransactionId</code>
+                                    @if (!string.IsNullOrEmpty(pedido.ReferenceCode))
+                                    {
+                                        <br><small class="text-muted">Ref: @pedido.ReferenceCode</small>
+                                    }
+                                </td>
+                                <td><strong class="text-info">@pedido.OrderId</strong></td>
+                                <td>
+                                    <div>
+                                        <strong>@pedido.FechaTransaccion.ToString("dd/MM/yyyy")</strong>
+                                        <br><small class="text-muted">@pedido.FechaTransaccion.ToString("HH:mm:ss")</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        string badgeClass, icon;
+                                        (badgeClass, icon) = pedido.MetodoPago switch
+                                        {
+                                            string s when s.Contains("PSE") => ("bg-success", "fas fa-university"),
+                                            string s when s.Contains("CREDIT_CARD") => ("bg-primary", "fas fa-credit-card"),
+                                            string s when s.Contains("DEBIT_CARD") => ("bg-info", "far fa-credit-card"),
+                                            string s when s.Contains("NEQUI") => ("bg-warning text-dark", "fas fa-mobile-alt"),
+                                            string s when s.Contains("EFECTY") => ("bg-secondary", "fas fa-store"),
+                                            _ => ("bg-dark", "fas fa-money-bill")
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">
+                                        <i class="@icon me-1"></i>
+                                        @pedido.MetodoPago
+                                    </span>
+                                </td>
+                                <td><strong class="text-success">@pedido.Monto.ToString("C0")</strong></td>
+                                <td>
+                                    @{
+                                        string estadoBadgeClass, estadoTexto, estadoIcon;
+                                        (estadoBadgeClass, estadoTexto, estadoIcon) = pedido.Estado switch
+                                        {
+                                            "APPROVED" => ("bg-success", "Aprobado", "fas fa-check-circle"),
+                                            "PENDING" => ("bg-warning text-dark", "Pendiente", "fas fa-clock"),
+                                            "DECLINED" => ("bg-danger", "Declinado", "fas fa-times-circle"),
+                                            "REJECTED" => ("bg-danger", "Rechazado", "fas fa-ban"),
+                                            "ERROR" => ("bg-secondary", "Error", "fas fa-exclamation-triangle"),
+                                            _ => ("bg-dark", pedido.Estado, "fas fa-question")
+                                        };
+                                    }
+                                    <span class="badge @estadoBadgeClass">
+                                        <i class="@estadoIcon me-1"></i>
+                                        @estadoTexto
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(pedido.UserName) || !string.IsNullOrEmpty(pedido.UserEmail))
+                                    {
+                                        <div>
+                                            <strong>@pedido.UserName</strong>
+                                            <br><small class="text-muted">@pedido.UserEmail</small>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">
+                                            <i class="fas fa-user-times me-1"></i>
+                                            Información no disponible
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group-vertical" role="group">
+                                        <div class="btn-group mb-1" role="group">
+                                            <a href="/Admin/Shipping?search=@pedido.TransactionId" 
+                                               class="btn btn-sm btn-outline-info" title="Ver envío">
+                                                <i class="fas fa-truck"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    onclick="verDetallesTransaccion('@pedido.TransactionId')" 
+                                                    title="Ver detalles completos">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        @if (pedido.Estado == "PENDING")
+                                        {
+                                            <div class="btn-group mb-1" role="group">
+                                                <button type="button" class="btn btn-sm btn-success" 
+                                                        onclick="cambiarEstado('@pedido.OrderId', 'Pagado')" 
+                                                        title="Aprobar pedido">
+                                                    <i class="fas fa-check"></i> Aprobar
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger" 
+                                                        onclick="cambiarEstado('@pedido.OrderId', 'Cancelado')" 
+                                                        title="Cancelar pedido">
+                                                    <i class="fas fa-times"></i> Cancelar
+                                                </button>
+                                            </div>
+                                        }
+                                        @if (pedido.Estado == "APPROVED")
+                                        {
+                                            <div class="btn-group mb-1" role="group">
+                                                <button type="button" class="btn btn-sm btn-warning" 
+                                                        onclick="cambiarEstado('@pedido.OrderId', 'En Preparaci?n')" 
+                                                        title="Marcar como en preparaci?n">
+                                                    <i class="fas fa-box"></i> Preparando
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-info" 
+                                                        onclick="cambiarEstado('@pedido.OrderId', 'Enviado')" 
+                                                        title="Marcar como enviado">
+                                                    <i class="fas fa-shipping-fast"></i> Enviado
+                                                </button>
+                                            </div>
+                                        }
+                                        @if (pedido.Estado == "APPROVED" || pedido.Estado == "PENDING")
+                                        {
+                                            <button type="button" class="btn btn-sm btn-success w-100" 
+                                                    onclick="marcarComoEntregado('@pedido.OrderId')" 
+                                                    title="Marcar como entregado">
+                                                <i class="fas fa-check-circle"></i> Entregado
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-4x text-gray-400 mb-3"></i>
+                <h5 class="text-muted">No se encontraron pedidos</h5>
+                <p class="text-muted">No hay pedidos que coincidan con los filtros aplicados.</p>
+                <a href="/Admin/Orders" class="btn btn-outline-primary">
+                    <i class="fas fa-refresh me-2"></i>Ver todos los pedidos
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal para detalles de transacción -->
+<div class="modal fade" id="detalleTransaccionModal" tabindex="-1" aria-labelledby="detalleTransaccionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="detalleTransaccionModalLabel">
+                    <i class="fas fa-receipt me-2"></i>Detalles de la Transacción
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            </div>
+            <div class="modal-body" id="detalleTransaccionContent">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirDetalle()">
+                    <i class="fas fa-print me-2"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ?? EXPORTAR PEDIDOS FILTRADOS
+        function exportarPedidosFiltrados() {
+            // Obtener los valores actuales de los filtros
+            const search = document.getElementById('search').value;
+            const status = document.getElementById('status').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            
+            // Construir la URL con los filtros
+            let url = '/Admin/Orders?handler=ExportExcel';
+            const params = new URLSearchParams();
+            
+            if (search) params.append('search', search);
+            if (status) params.append('status', status);
+            if (dateFrom) params.append('dateFrom', dateFrom);
+            if (dateTo) params.append('dateTo', dateTo);
+            
+            if (params.toString()) {
+                url += '&' + params.toString();
+            }
+            
+            // Mostrar indicador de carga
+            const originalText = event.target.innerHTML;
+            event.target.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Exportando...';
+            event.target.disabled = true;
+            
+            // Crear enlace temporal para descarga
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Restaurar botón después de un momento
+            setTimeout(() => {
+                event.target.innerHTML = originalText;
+                event.target.disabled = false;
+            }, 2000);
+        }
+        
+        // ?? EXPORTAR ANÁLISIS DE PEDIDOS
+        function exportarAnalisisPedidos() {
+            const originalText = event.target.innerHTML;
+            event.target.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generando análisis...';
+            event.target.disabled = true;
+            
+            const link = document.createElement('a');
+            link.href = '/Admin/Orders?handler=ExportAnalysis';
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            setTimeout(() => {
+                event.target.innerHTML = originalText;
+                event.target.disabled = false;
+            }, 3000);
+        }
+
+        // Ver detalles de transacción
+        function verDetallesTransaccion(transactionId) {
+            const modal = new bootstrap.Modal(document.getElementById('detalleTransaccionModal'));
+            modal.show();
+            
+            document.getElementById('detalleTransaccionModalLabel').innerHTML = 
+                `<i class="fas fa-receipt me-2"></i>Transacción: ${transactionId}`;
+            
+            // Buscar los detalles en la tabla actual
+            const pedido = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Pedidos));
+            const transaccion = pedido.find(p => p.transactionId === transactionId);
+            
+            if (transaccion) {
+                const content = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Información de la Transacción</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Transaction ID:</strong></td><td><code>${transaccion.transactionId}</code></td></tr>
+                                <tr><td><strong>Order ID:</strong></td><td><strong>${transaccion.orderId}</strong></td></tr>
+                                <tr><td><strong>Reference Code:</strong></td><td><code>${transaccion.referenceCode || 'N/A'}</code></td></tr>
+                                <tr><td><strong>Estado:</strong></td><td><span class="badge bg-primary">${transaccion.estado}</span></td></tr>
+                                <tr><td><strong>Método de Pago:</strong></td><td>${transaccion.metodoPago}</td></tr>
+                                <tr><td><strong>Monto:</strong></td><td><strong class="text-success">${transaccion.monto.toLocaleString('es-CO', {style: 'currency', currency: 'COP'})}</strong></td></tr>
+                                <tr><td><strong>Moneda:</strong></td><td>${transaccion.moneda}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Información del Cliente</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Usuario:</strong></td><td>${transaccion.userName || 'N/A'}</td></tr>
+                                <tr><td><strong>Email:</strong></td><td>${transaccion.userEmail || 'N/A'}</td></tr>
+                                <tr><td><strong>Fecha:</strong></td><td>${new Date(transaccion.fechaTransaccion).toLocaleString('es-CO')}</td></tr>
+                            </table>
+                            
+                            <h6 class="text-primary mb-3 mt-4">Información Técnica</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Trazability Code:</strong></td><td><code>${transaccion.trazabilityCode || 'N/A'}</code></td></tr>
+                                <tr><td><strong>Authorization Code:</strong></td><td><code>${transaccion.authorizationCode || 'N/A'}</code></td></tr>
+                                <tr><td><strong>Response Message:</strong></td><td>${transaccion.responseMessage || 'N/A'}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('detalleTransaccionContent').innerHTML = content;
+            } else {
+                document.getElementById('detalleTransaccionContent').innerHTML = 
+                    '<div class="alert alert-warning">No se encontraron detalles para esta transacción.</div>';
+            }
+        }
+
+        // Cambiar estado de pedido
+        function cambiarEstado(orderId, newStatus) {
+            const mensajes = {
+     'Pagado': '?Est?s seguro de aprobar este pedido?',
+       'Cancelado': '?Est?s seguro de cancelar este pedido? (Se devolver? el stock)',
+'En Preparaci?n': '?Marcar pedido como en preparaci?n?',
+                'Enviado': '?Marcar pedido como enviado?',
+                'Entregado': '?Marcar pedido como entregado?'
+       };
+  
+          if (confirm(mensajes[newStatus] || '?Est?s seguro de cambiar el estado?')) {
+ const form = document.createElement('form');
+       form.method = 'POST';
+form.action = '/Admin/Orders?handler=UpdateStatus';
+        
+      // Agregar token antiforgery
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+      const tokenInput = document.createElement('input');
+       tokenInput.type = 'hidden';
+       tokenInput.name = '__RequestVerificationToken';
+          tokenInput.value = token;
+         form.appendChild(tokenInput);
+       
+    // Agregar SelectedOrderId
+    const orderInput = document.createElement('input');
+orderInput.type = 'hidden';
+                orderInput.name = 'SelectedOrderId';
+                orderInput.value = orderId;
+         form.appendChild(orderInput);
+    
+    // Agregar NewStatus
+ const statusInput = document.createElement('input');
+     statusInput.type = 'hidden';
+            statusInput.name = 'NewStatus';
+      statusInput.value = newStatus;
+   form.appendChild(statusInput);
+           
+      document.body.appendChild(form);
+           form.submit();
+   }
+    }
+
+        // Marcar como entregado
+      function marcarComoEntregado(orderId) {
+            if (confirm('?Est?s seguro de marcar este pedido como entregado?')) {
+         const form = document.createElement('form');
+     form.method = 'POST';
+        form.action = '/Admin/Orders?handler=MarkAsDelivered';
+    
+         // Token antiforgery
+     const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+   const tokenInput = document.createElement('input');
+          tokenInput.type = 'hidden';
+   tokenInput.name = '__RequestVerificationToken';
+    tokenInput.value = token;
+          form.appendChild(tokenInput);
+              
+    // OrderId
+        const orderInput = document.createElement('input');
+       orderInput.type = 'hidden';
+    orderInput.name = 'orderId';
+     orderInput.value = orderId;
+       form.appendChild(orderInput);
+       
+      document.body.appendChild(form);
+     form.submit();
+  }
+        }
+
+        // Imprimir detalle
+        function imprimirDetalle() {
+ window.print();
+    }
+
+      // Inicializar DataTable si está disponible
+        document.addEventListener('DOMContentLoaded', function() {
+   try {
+     if (document.getElementById('pedidosTable')) {
+     $('#pedidosTable').DataTable({
+            responsive: true,
+        pageLength: 25,
+  order: [[2, 'desc']], // Ordenar por fecha
+              language: {
+        "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+         },
+ columnDefs: [
+     { orderable: false, targets: [7] } // Acciones no ordenables
+             ]
+       });
+         }
+            } catch (e) {
+              console.log('DataTables no disponible');
+            }
+        });
+    </script>
+}
+
+@Html.AntiForgeryToken()

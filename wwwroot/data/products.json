@@ -1,0 +1,372 @@
+[
+  {
+    "Id": 3,
+    "Name": "Monitor Samsung 43 Pulgadas Smart M7 M70f (black) 4k Samsung",
+    "Price": 2000000.00,
+    "Category": "Monitores",
+    "Brand": "Samsung",
+    "Description": "Monitor 4K de 27 pulgadas",
+    "Stock": 18,
+    "ImageUrl": "/uploads/products/3/80dee9db-261a-4517-b44b-c8028c4a80a4.webp"
+  },
+  {
+    "Id": 6,
+    "Name": "AMD Ryzen 9 7900X",
+    "Price": 1800000.00,
+    "Category": "Componentes",
+    "Brand": "AMD",
+    "Description": "El mejor procesador del mercado",
+    "Stock": 18,
+    "ImageUrl": "/uploads/products/6/379485e0-8829-42a0-89c2-90bb83cb3295.webp"
+  },
+  {
+    "Id": 7,
+    "Name": "Computador Port\u00E1til Gamer ASUS TUF",
+    "Price": 3499030.00,
+    "Category": "Laptops",
+    "Brand": "ASUS",
+    "Description": "El ASUS FX607VJ-RL165W es pura energ\u00EDa contenida en una carcasa imponente. Pensado para los gamers que buscan m\u00E1s que velocidad: buscan inmersi\u00F3n total. Su potencia gr\u00E1fica no solo impresiona, sino que envuelve, haciendo que cada partida se sienta real, vibrante y desafiante. Con un dise\u00F1o robusto y agresivo, este equipo no es solo una herramienta de juego: es una declaraci\u00F3n de poder, una extensi\u00F3n de tu instinto competitivo y tu pasi\u00F3n por dominar cada escenario.",
+    "Stock": 34,
+    "ImageUrl": "/uploads/products/7/1218a6ab-21a2-4f82-bf19-96758c5d4daa.webp"
+  },
+  {
+    "Id": 8,
+    "Name": "DDR4 8GB 3200MHZ HP V2 UDIMM CL16 (PC/SFF)",
+    "Price": 122000.00,
+    "Category": "Componentes",
+    "Brand": "HP",
+    "Description": "ddr4 ram 8gb",
+    "Stock": 8,
+    "ImageUrl": "/uploads/products/8/b722ea93-4e97-48c5-b271-93ad4a3c9dcc.png"
+  },
+  {
+    "Id": 1,
+    "Name": "Laptop Gaming MSI",
+    "Price": 3500000.00,
+    "Category": "Laptops",
+    "Brand": "MSI",
+    "Description": "Laptop gaming de alto rendimiento",
+    "Stock": 19,
+    "ImageUrl": "/uploads/products/1/b72d6980-c398-4d68-a29a-8a0a37e1d9e4.webp"
+  },
+  {
+    "Id": 2,
+    "Name": "PC Oficina Dell OptiPlex  7020 SFF CORE I5 14500T ",
+    "Price": 3700000.00,
+    "Category": "Computadores",
+    "Brand": "Dell",
+    "Description": "PC para oficina y tareas cotidianas",
+    "Stock": 17,
+    "ImageUrl": "/uploads/products/2/e5c41d4c-f182-4908-adfc-c2f01a51377c.webp"
+  },
+  {
+    "Id": 4,
+    "Name": "PC Gaming ASUS ROG Strix Scar 18\u0022 G835LX",
+    "Price": 25000000.00,
+    "Category": "Laptops",
+    "Brand": "ASUS",
+    "Description": "\u200BEl ASUS ROG Strix SCAR 18 G835LX-SA137W es una obra maestra dise\u00F1ada para los verdaderos entusiastas del gaming. Su dise\u00F1o audaz y futurista refleja la pasi\u00F3n y el compromiso de quienes buscan la excelencia en cada partida. Cada detalle ha sido meticulosamente pensado para ofrecer una experiencia inmersiva sin precedentes, donde la acci\u00F3n cobra vida con una fluidez y realismo asombrosos. Este port\u00E1til no es solo una herramienta, sino una extensi\u00F3n del esp\u00EDritu competitivo, impuls\u00E1ndote a superar l\u00EDmites y alcanzar nuevas cimas en el universo del gaming ",
+    "Stock": 8,
+    "ImageUrl": "/uploads/products/4/724f232a-c547-4cea-9e3d-fcc5f8c20012.webp"
+  },
+  {
+    "Id": 9,
+    "Name": "Port\u00E1til HP 15.6\u0022 t\u00E1ctil ",
+    "Price": 3149000.00,
+    "Category": "Laptops",
+    "Brand": "HP",
+    "Description": "Portatil HP 15 de nueva generacion con procesador potenciado para IA",
+    "Stock": 30,
+    "ImageUrl": "/uploads/products/9/68ffec59-18bb-45f0-be30-90a4d9e1b0d9.webp"
+  },
+  {
+    "Id": 10,
+    "Name": "Port\u00E1til ASUS Vivobook 15 ",
+    "Price": 2250000.00,
+    "Category": "Laptops",
+    "Brand": "ASUS",
+    "Description": "Port\u00E1til ASUS Vivobook 15 | Intel Core 5 | 16 GB de RAM | 1TB SSD de almacenamiento | Windows 11 |15.6 Pulgadas | X1504VA-NJ3119W | Computador port\u00E1til | Incluye maleta y mouse",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/10/cb995443-c7aa-4dfc-a7c0-263d947b2f4e.webp"
+  },
+  {
+    "Id": 13,
+    "Name": "Asus TUF Gaming TUF GAMING A620M-PLUS WIFI",
+    "Price": 700000.00,
+    "Category": "Componentes",
+    "Brand": "ASUS",
+    "Description": "Board Gaming de Asus",
+    "Stock": 30,
+    "ImageUrl": "/uploads/products/13/41bc6656-74ab-4c85-86e6-c772bf592be6.webp"
+  },
+  {
+    "Id": 16,
+    "Name": "NVIDIA\u00AE GeForce RTX\u2122 5090 MSI Gaming Trio",
+    "Price": 15800000.00,
+    "Category": "Componentes",
+    "Brand": "NVIDIA",
+    "Description": "RTX 5090 GAMING TRIO OC 32GBS - MSI\r\nLa MSI GeForce RTX 5090 GAMING TRIO OC de 32GB es una tarjeta gr\u00E1fica de ultra alto rendimiento, dise\u00F1ada para los entusiastas m\u00E1s exigentes y creadores profesionales que buscan lo \u00FAltimo en potencia gr\u00E1fica. Equipada con la arquitectura NVIDIA Ada Lovelace de \u00FAltima generaci\u00F3n, esta GPU lleva el rendimiento en juegos, edici\u00F3n, renderizado y aplicaciones AI a niveles extremos.\r\n\r\nCon 32GB de memoria GDDR7 ultrarr\u00E1pida, la RTX 5090 garantiza un ancho de banda superior, ideal para juegos en 4K, 8K, simulaciones complejas y cargas de trabajo profesionales. Su dise\u00F1o GAMING TRIO OC incluye overclock de f\u00E1brica, triple ventilador TORX FAN 5.0 y una c\u00E1mara de vapor avanzada que mantiene las temperaturas bajo control, incluso bajo m\u00E1xima carga.",
+    "Stock": 39,
+    "ImageUrl": "/uploads/products/16/91f92275-9c87-42fe-b9e6-e56493717e4e.webp"
+  },
+  {
+    "Id": 17,
+    "Name": "Asrock Z890 PRO-A",
+    "Price": 900000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "Soporta Socket AMD AM4 Ryzen\u2122 2000, 3000, 4000 G-Series, 5000 y 5000 G-Series Desktop Processors Soporta memoria DDR4 3200\u002B (OC) 1 PCIe 3.0 x16, 1 PCIe 2.0 x16, 1 PCIe 2.0 x1 AMD Quad CrossFireX\u2122 Opciones de salida gr\u00E1ficos: HDMI, DVI-D, D-Sub Audio 7.1 canales HD (C\u00F3dec de audio Realtek ALC892), Capacitadores de audio ELNA 4 SATA3, 1 Ultra M.2 (PCIe Gen3x4), 1 M.2 (SATA3) 2 USB 3.1 Gen2 (Trasero Tipo A\u002BC) 6 USB 3.1 Gen1 (2 Frontales, 4 Traseros) Realtek Gigabit LAN",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/17/64daccc9-e903-4058-af1e-82e349718a94.png"
+  },
+  {
+    "Id": 24,
+    "Name": "Asus TUF GAMING B850M-PLUS WIFI",
+    "Price": 980000.00,
+    "Category": "Componentes",
+    "Brand": "ASUS",
+    "Description": "Listo para PC AI avanzada: dise\u00F1ado para el futuro de la inform\u00E1tica de IA, con la potencia y la conectividad necesarias para aplicaciones de IA exigentes",
+    "Stock": 30,
+    "ImageUrl": "/uploads/products/24/23b84f7b-0127-4b80-8b51-80f6d6501a87.webp"
+  },
+  {
+    "Id": 29,
+    "Name": "MAG X870E TOMAHAWK WIFI ",
+    "Price": 1410000.00,
+    "Category": "Componentes",
+    "Brand": "MSI",
+    "Description": "La MAG X870E TOMAHAWK WIFI est\u00E1 dise\u00F1ada para jugadores que buscan una base estable, duradera y f\u00E1cil de usar para la construcci\u00F3n de su PC. Con una soluci\u00F3n Wi-Fi 7 real, LAN 5G, USB 40 Gbps, soluciones PCIe 5.0, alimentaci\u00F3n PCIe suplementaria y funciones exclusivas EZ DIY, est\u00E1 preparada para el campo de batalla de los procesadores AMD Ryzen\u2122 serie 9000.",
+    "Stock": 30,
+    "ImageUrl": "/uploads/products/29/f7f8cb2a-5f28-4aea-93a7-d29d7036b3e8.png"
+  },
+  {
+    "Id": 30,
+    "Name": "Asus ROG STRIX X870E-E GAMING WIFI",
+    "Price": 2290000.00,
+    "Category": "Componentes",
+    "Brand": "ASUS",
+    "Description": "Preparada para Advanced AI PC: Dise\u00F1ada para el futuro de la computaci\u00F3n con IA, con la potencia y la conectividad necesarias para aplicaciones de IA exigentes.",
+    "Stock": 30,
+    "ImageUrl": "/uploads/products/30/07da3db5-6667-423c-883d-6041d59ec13f.webp"
+  },
+  {
+    "Id": 15,
+    "Name": "Asrock H610M-ITX AC",
+    "Price": 470000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "Board Asrock Gaming",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/15/73fc80bc-6105-4d1c-a47e-7b8bc456f59b.webp"
+  },
+  {
+    "Id": 11,
+    "Name": "Port\u00E1til Dell Inspiron 3530 ",
+    "Price": 2000000.00,
+    "Category": "Laptops",
+    "Brand": "Dell",
+    "Description": "Port\u00E1til Dell Inspiron 3530 / Intel Core i5 1334U / 40GB RAM / 1TB SSD / 15.6\u201D FHD",
+    "Stock": 15,
+    "ImageUrl": "/uploads/products/11/d8ca97b4-f1c1-4052-bafd-c9b4b07396fb.webp"
+  },
+  {
+    "Id": 12,
+    "Name": "Asrock B850M",
+    "Price": 680000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "Board para PC de escritorio gaming",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/12/6c341f7a-41e6-4a0c-88cf-d5a3a835247d.webp"
+  },
+  {
+    "Id": 14,
+    "Name": "Board Msi B760m Gaming Plus Wifi ",
+    "Price": 690000.00,
+    "Category": "Componentes",
+    "Brand": "MSI",
+    "Description": "Board MSI Gaming ",
+    "Stock": 35,
+    "ImageUrl": "/uploads/products/14/22093ac1-7e0d-4e8b-b4c4-952520d1babc.webp"
+  },
+  {
+    "Id": 18,
+    "Name": "Corsair Vengeance Rgb 64GB (2x32GB) DDR5 6000MHz CL28 XMP/EXPO",
+    "Price": 1450000.00,
+    "Category": "Componentes",
+    "Brand": "Corsair",
+    "Description": "En la era multin\u00FAcleo, la velocidad sin precedentes de la DRAM DDR5 garantiza que su CPU de alta gama pueda recibir datos r\u00E1pidamente  y con facilidad. Ya sea para jugar, para crear contenidos, para abrir 100 pesta\u00F1as a la vez o para trabajar en modo multitarea, su PC para juegos podr\u00E1 sobreponerse a las tareas complejas m\u00E1s r\u00E1pidoque nunca antes.",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/18/fc1cd7bd-0c02-4579-bcf5-e4b0d6cb0162.webp"
+  },
+  {
+    "Id": 37,
+    "Name": "Port\u00E1til Gaming HP VICTUS",
+    "Price": 3150000.00,
+    "Category": "Laptops",
+    "Brand": "HP",
+    "Description": "\u00A1Prep\u00E1rate para ganar con la Victus 15! Dise\u00F1ada para gamers que quieren entrar al mundo de las PCs de alto rendimiento, esta laptop es exactamente la que necesitas: el poder del procesador Intel\u00AE Core\u2122, gr\u00E1ficos de \u00FAltima generaci\u00F3n y las herramientas de personalizaci\u00F3n de OMEN Gaming Hub para optimizar cada partida. Todo esto en un dise\u00F1o compacto y elegante de 15\u0022, con colores \u00E9picos para que elijas el que mejor encaje con tu estilo",
+    "Stock": 50,
+    "ImageUrl": "/uploads/products/37/821fada1-ceff-47c4-9923-0d7a9777f83e.webp"
+  },
+  {
+    "Id": 19,
+    "Name": "Asrock Z890 STEEL LEGEND WIFI",
+    "Price": 1150000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "La familia Steel Legend representa la filosof\u00EDa de una s\u00F3lida durabilidad combinada con una est\u00E9tica cuidada e irresistible. Forjada teniendo en cuenta las caracter\u00EDsticas y especificaciones m\u00E1s exigentes, la serie Steel Legend pretende llegar desde los usuarios m\u00E1s conformistas a los m\u00E1s entusiastas que siguen las \u00FAltimas novedades. Combina una amplia gama de materiales y componentes de alta resistencia y durabilidad para garantizar un rendimiento estable y fiable.",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/19/8b14df7c-422b-4430-8221-d61a19e9d69e.png"
+  },
+  {
+    "Id": 20,
+    "Name": "Asrock Z890 RIPTIDE wifi",
+    "Price": 1520000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "Riptide lleva el nombre de un tipo espec\u00EDfico de corriente de agua con fuertes olas que se produce en el oc\u00E9ano, lo que representa la filosof\u00EDa de la fuerza ilimitada, tranquila y de doble cara del mar. Construido alrededor de potentes funciones relacionadas con los juegos, Riptide ha dado un gran golpe y ha sumergido a los usuarios en la sensaci\u00F3n de estabilidad.",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/20/5e760bae-0f69-46f2-9d88-78d36e9aecd1.jpg"
+  },
+  {
+    "Id": 21,
+    "Name": "Asrock B850 PHANTOM GAMING 4 AC",
+    "Price": 390000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "\u00A1La l\u00EDnea Phantom Gaming est\u00E1 dise\u00F1ada por y para jugadores! Bajo su implacable apariencia subyace una amplia gama de caracter\u00EDsticas y posibilidades orientadas a jugadores y a sus exigentes necesidades. \u00A1Toda una nueva experiencia de juego para los jugadores!",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/21/df189e58-5d6e-4e52-8c03-38d3b8dc55f5.png"
+  },
+  {
+    "Id": 22,
+    "Name": "Asrock B850M PRO A Wifi",
+    "Price": 530000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "Board ultraveloz",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/22/88e9ef7f-108c-48a4-a866-9b18ecf0bab1.png"
+  },
+  {
+    "Id": 23,
+    "Name": "Asrock B850M PRO RS",
+    "Price": 710000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "Adem\u00E1s de la iluminaci\u00F3n RGB incorporada, tambi\u00E9n cuenta con encabezados RGB integrados y un encabezado RGB direccionable que permite que la placa base se conecte a dispositivos LED compatibles, como tiras, ventiladores de CPU, enfriadores, chasis, etc. Los usuarios tambi\u00E9n pueden sincronizar dispositivos LED RGB a trav\u00E9s de los accesorios certificados Polychrome RGB Sync para crear efectos de iluminaci\u00F3n \u00FAnicos.",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/23/a40d4a94-7e10-4722-90da-595ee0d064e9.webp"
+  },
+  {
+    "Id": 25,
+    "Name": "ASUS ROG STRIX B850-F GAMING WIFI",
+    "Price": 1360000.00,
+    "Category": "Componentes",
+    "Brand": "ASUS",
+    "Description": "Preparada para el futuro con tecnolog\u00EDa Advanced AI PC",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/25/fa47da15-e86e-4c81-b3fa-09a5472909e1.webp"
+  },
+  {
+    "Id": 26,
+    "Name": "MSI X870 GAMING PLUS WIFI",
+    "Price": 1370000.00,
+    "Category": "Componentes",
+    "Brand": "MSI",
+    "Description": "Rendimiento ultra: Sistema de alimentaci\u00F3n Duet Rail 14\u002B2\u002B1, conectores de alimentaci\u00F3n dual de 8 pines para CPU, Core Boost, Memory Boost, PCB de 8 capas fabricado con cobre reforzado de 2oz y materiales de grado servidor\r\nFrozr Guard: Disipador de calor extendido, almohadillas t\u00E9rmicas MOSFET con clasificaci\u00F3n de 7W/mK, almohadillas t\u00E9rmicas adicionales para inductores y EZ M.2 Shield Frozr II, dise\u00F1ados para sistemas de alto rendimiento y experiencia ininterrumpida\r\nEZ DIY: EZ M.2 Shield Frozr II, EZ M.2 Clip II, EZ PCIe Clip II y EZ Antenna\r\nExperiencia de juego ultra r\u00E1pida: Ranura PCIe 5.0, Lightning Gen 5 x4 M.2",
+    "Stock": 40,
+    "ImageUrl": "/uploads/products/26/239ef4c7-0d5c-427d-a808-fa7afdcc27fc.webp"
+  },
+  {
+    "Id": 27,
+    "Name": "Asrock X870 Steel Legend WiFi",
+    "Price": 1290000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock",
+    "Description": "La familia Steel Legend representa la filosof\u00EDa de una s\u00F3lida durabilidad combinada con una est\u00E9tica cuidada e irresistible. Forjada teniendo en cuenta las caracter\u00EDsticas y especificaciones m\u00E1s exigentes, la serie Steel Legend pretende llegar desde los usuarios m\u00E1s conformistas a los m\u00E1s entusiastas que siguen las \u00FAltimas novedades. Combina una amplia gama de materiales y componentes de alta resistencia y durabilidad para garantizar un rendimiento estable y fiable.",
+    "Stock": 25,
+    "ImageUrl": "/uploads/products/27/f1b5b44b-5c3e-4d38-adef-43fbebd21785.jpg"
+  },
+  {
+    "Id": 28,
+    "Name": "ASUS ROG STRIX X870-A Gaming Wifi White",
+    "Price": 1350000.00,
+    "Category": "Componentes",
+    "Brand": "ASUS",
+    "Description": "Lista para Advanced AI PC: Dise\u00F1ada para el futuro de la computaci\u00F3n con IA, con la potencia y la conectividad necesarias para aplicaciones de IA exigente",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/28/3884ac6d-7e0f-47af-8ca1-5eec25ad9525.webp"
+  },
+  {
+    "Id": 31,
+    "Name": "Asus Rog CROSSHAIR X870E HERO",
+    "Price": 3020000.00,
+    "Category": "Componentes",
+    "Brand": "ASUS",
+    "Description": "Zocalo  \u2013 AM5\r\nAdminte \u2013 AMD Ryzen serie 9000, 8000 y 7000*\r\nConjunto de Chips \u2013 AMD X870E\r\nMemoria \u2013 4 ranuras DIMM, m\u00E1x. 192 GB, DDR5\r\nAdmite velocidades hasta \u2013 8000 MT/s o superior",
+    "Stock": 25,
+    "ImageUrl": "/uploads/products/31/89ba12cc-c874-4a8d-919e-f287d28a8446.webp"
+  },
+  {
+    "Id": 32,
+    "Name": "Mini Pc ASRock X300 Amd",
+    "Price": 2300000.00,
+    "Category": "Computadores",
+    "Brand": "Asrock",
+    "Description": "PC de entrada con gr\u00E1ficos integrados ideal para flujos de trabajo livianos y Gaming moderado. (Incluye Monitor, Teclado y Mouse)",
+    "Stock": 20,
+    "ImageUrl": "/uploads/products/32/168cc5d6-63f8-4b15-ac97-25738bd65696.webp"
+  },
+  {
+    "Id": 33,
+    "Name": "Tarjeta de Video MSI NVIDIA GFORCE GT 710 2G D3 LP",
+    "Price": 240000.00,
+    "Category": "Componentes",
+    "Brand": "MSI/NVIDIA",
+    "Description": "Tarjeta Grafica sencilla para videojuegos\r\n\r\nChipset: NVIDIA GeForce GT 710; pantallas m\u00E1ximas: 2\r\nMemoria de v\u00EDdeo: DDR3 de 2 GB. Reloj de memoria: 1600 MHz. Interfaz de memoria: 64 bits",
+    "Stock": 40,
+    "ImageUrl": "/uploads/products/33/c9ab7f22-560a-4c96-b552-15d7b7f543d9.webp"
+  },
+  {
+    "Id": 34,
+    "Name": "Tarjeta de Video ASUS Dual Nvidia GeForce RTX 3050 6GB GDDR6",
+    "Price": 850000.00,
+    "Category": "Componentes",
+    "Brand": "ASUS/NVIDIA",
+    "Description": "Multiprocesadores NVIDIA Ampere Streaming: el nuevo Ampere SM ofrece el doble de rendimiento FP32 y una eficiencia energ\u00E9tica mejorada.\r\nN\u00FAcleos RT de 2\u00AA generaci\u00F3n: Experimente el doble de rendimiento de los n\u00FAcleos RT de 1\u00AA generaci\u00F3n, adem\u00E1s de RT y sombreado concurrentes para un nivel completamente nuevo de rendimiento de trazado de rayos.\r\nN\u00FAcleos tensores de tercera generaci\u00F3n: obtenga hasta el doble de rendimiento con escasez estructural y algoritmos de IA avanzados como DLSS. Estos n\u00FAcleos ofrecen un impulso masivo en el rendimiento del juego y capacidades de IA completamente nuevas.\r\nEl dise\u00F1o del ventilador de tecnolog\u00EDa axial cuenta con un cubo de ventilador m\u00E1s peque\u00F1o que facilita aspas m\u00E1s largas y un anillo de barrera que aumenta la presi\u00F3n del aire hacia abajo.",
+    "Stock": 50,
+    "ImageUrl": "/uploads/products/34/22694923-f010-4f80-a63e-e3a2fdee9f08.webp"
+  },
+  {
+    "Id": 35,
+    "Name": "Tarjeta AsRock AMD Radeon RX 9060 XT Challenger 8GB OC",
+    "Price": 1580000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock/AMD",
+    "Description": "Dise\u00F1o de doble ventilador\r\nEficiencia de enfriamiento optimizada.\r\nProporciona no solo la perspectiva elegante, sino tambi\u00E9n la eficiencia de enfriamiento optimizada para el mejor equilibrio entre rendimiento y silencio.",
+    "Stock": 40,
+    "ImageUrl": "/uploads/products/35/10153b47-dd80-4fce-9b58-2fc7612aef8a.webp"
+  },
+  {
+    "Id": 36,
+    "Name": "Tarjeta ASRock AMD Radeon RX 9060 XT Steel Legend 8GB OC",
+    "Price": 1650000.00,
+    "Category": "Componentes",
+    "Brand": "Asrock/AMD",
+    "Description": "Impresionante reloj de impulso de 3320 MHz: domina los juegos con un rendimiento overclockeado de f\u00E1brica, impulsado por la arquitectura RDNA 4 de AMD (32 CU) con trazado de rayos de 3\u00AA generaci\u00F3n y aceleraci\u00F3n de IA de 2\u00AA generaci\u00F3n.\r\nVentilador triple de refrigeraci\u00F3n silenciosa de 0 dB: ventiladores de anillo a rayas, tubos de calor ultra ajustados y aletas de desviaci\u00F3n de aire ofrecen el m\u00E1ximo flujo de aire. Los ventiladores se detienen completamente bajo cargas bajas para un silencio absoluto.\r\nGDDR6 de 8 GB y E/S preparadas para el futuro: memoria r\u00E1pida de 20 Gbps en un bus de 128 bits.\r\n\r\nDurabilidad de grado militar: la placa trasera de metal reforzado evita la flexi\u00F3n, mientras que los componentes de s\u00FAper aleaci\u00F3n premium garantizan un mayor rendimiento t\u00E9rmico y fiabilidad a largo plazo.\r\nSYNC RGB policromado y dise\u00F1o elegante: sincroniza la iluminaci\u00F3n RGB vibrante con las placas base ASRock Cuenta con una elegante est\u00E9tica blanca perfecta para construcciones tem\u00E1ticas.",
+    "Stock": 50,
+    "ImageUrl": "/uploads/products/36/4531ff87-a02a-4f06-baf8-97ca742fb5f8.webp"
+  },
+  {
+    "Id": 38,
+    "Name": "Tarjeta de Video MSI Nvidia GeForce RTX 5060 8G CYCLONE OC",
+    "Price": 1650000.00,
+    "Category": "Componentes",
+    "Brand": "MSI/NVIDIA",
+    "Description": "Impulsada por la arquitectura NVIDIA Blackwell y DLSS 4\r\nFrecuencias de n\u00FAcleo:\r\nRendimiento Extremo: 2535 MHz (MSI Center)\r\nBoost: 2527 MHz\r\nDise\u00F1o Avanzado de Refrigeraci\u00F3n CYCLONE: El dise\u00F1o t\u00E9rmico circular avanzado disipa eficazmente el calor de la GPU y sus componentes.\r\nVentilador Personalizado: Dise\u00F1o de ventilador optimizado con aspas que generan mayor flujo de aire y presi\u00F3n.\r\nPlaca Posterior S\u00F3lida: Aumenta la resistencia de la tarjeta para evitar la flexi\u00F3n y complementa su dise\u00F1o.",
+    "Stock": 15,
+    "ImageUrl": "/uploads/products/38/5877a66f-c9e3-496b-a736-b0c323b41745.webp"
+  }
+]

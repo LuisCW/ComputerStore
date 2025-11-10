@@ -1,0 +1,585 @@
+@page
+@model ComputerStore.Pages.Account.OrdersModel
+@{
+    ViewData["Title"] = "Mis Pedidos";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos y Compras
+                    </h3>
+                    <small class="text-light">Historial completo de tus compras y transacciones</small>
+                </div>
+                <div class="card-body">
+                    <!-- Estadísticas rápidas -->
+                    @if (Model.Pedidos.Any() || Model.Transacciones.Any() || Model.Envios.Any())
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shopping-bag fa-2x mb-2"></i>
+                                        <h4>@Model.Pedidos.Count</h4>
+                                        <small>Pedidos Totales</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-credit-card fa-2x mb-2"></i>
+                                        <h4>@Model.Transacciones.Count</h4>
+                                        <small>Transacciones</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-truck fa-2x mb-2"></i>
+                                        <h4>@Model.Envios.Count</h4>
+                                        <small>Envíos</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                                        <h4>@Model.Pedidos.Where(p => p.Estado == "Pagado" || p.Estado == "Completado").Sum(p => p.Total).ToString("C0")</h4>
+                                        <small>Total Comprado</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Tabs para organizar información -->
+                    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pedidos-tab" data-bs-toggle="tab" data-bs-target="#pedidos" type="button" role="tab">
+                                <i class="fas fa-shopping-bag me-2"></i>Pedidos (@Model.Pedidos.Count)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="transacciones-tab" data-bs-toggle="tab" data-bs-target="#transacciones" type="button" role="tab">
+                                <i class="fas fa-credit-card me-2"></i>Transacciones (@Model.Transacciones.Count)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="envios-tab" data-bs-toggle="tab" data-bs-target="#envios" type="button" role="tab">
+                                <i class="fas fa-truck me-2"></i>Envíos (@Model.Envios.Count)
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="orderTabsContent">
+                        <!-- Tab de Pedidos -->
+                        <div class="tab-pane fade show active" id="pedidos" role="tabpanel">
+                            <div class="mt-3">
+                                @if (!Model.Pedidos.Any())
+                                {
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+                                        <h4 class="text-muted">No tienes pedidos registrados</h4>
+                                        <p class="text-muted">Los pedidos aparecerán aquí una vez que realices compras exitosas.</p>
+                                        <a href="/Products" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-shopping-cart me-2"></i>Ver Productos
+                                        </a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Referencia</th>
+                                                    <th>Fecha</th>
+                                                    <th>Estado</th>
+                                                    <th>Método Pago</th>
+                                                    <th>Total</th>
+                                                    <th>Envío</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var pedido in Model.Pedidos)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <strong>@pedido.ReferenceCode</strong>
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                @pedido.Detalles.Count producto(s)
+                                                            </small>
+                                                            @if (!string.IsNullOrEmpty(pedido.TransactionId))
+                                                            {
+                                                                <br><small class="text-info">TX: @pedido.TransactionId</small>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @pedido.FechaCreacion.ToString("dd/MM/yyyy")
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                @pedido.FechaCreacion.ToString("HH:mm")
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge @Model.GetEstadoBadgeClass(pedido.Estado)">
+                                                                @pedido.Estado.ToUpper()
+                                                            </span>
+                                                            @if (pedido.FechaPago.HasValue)
+                                                            {
+                                                                <br>
+                                                                <small class="text-success">
+                                                                    <i class="fas fa-check me-1"></i>
+                                                                    Pagado: @pedido.FechaPago.Value.ToString("dd/MM/yyyy")
+                                                                </small>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <i class="@Model.GetMetodoPagoIcon(pedido.MetodoPago) me-2"></i>
+                                                            @pedido.MetodoPago
+                                                        </td>
+                                                        <td>
+                                                            <strong class="text-success">
+                                                                $@pedido.Total.ToString("N0")
+                                                            </strong>
+                                                        </td>
+                                                        <td>
+                                                            @if (pedido.Envio != null)
+                                                            {
+                                                                <span class="@Model.GetEstadoEnvioColor(pedido.Envio.Estado)">
+                                                                    <i class="fas fa-truck me-1"></i>
+                                                                    @pedido.Envio.Estado
+                                                                </span>
+                                                                @if (!string.IsNullOrEmpty(pedido.Envio.NumeroGuia))
+                                                                {
+                                                                    <br>
+                                                                    <small class="text-muted">
+                                                                        Guía: @pedido.Envio.NumeroGuia
+                                                                    </small>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">
+                                                                    <i class="fas fa-clock me-1"></i>
+                                                                    Preparando
+                                                                </span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <div class="btn-group" role="group">
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-outline-primary" 
+                                                                        data-bs-toggle="modal" 
+                                                                        data-bs-target="#detalleModal@(pedido.Id)"
+                                                                        title="Ver detalles">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                                @if (pedido.Envio != null && !string.IsNullOrEmpty(pedido.Envio.NumeroGuia))
+                                                                {
+                                                                    <a href="/Envios?guia=@pedido.Envio.NumeroGuia" 
+                                                                       class="btn btn-sm btn-outline-info"
+                                                                       title="Rastrear envío">
+                                                                        <i class="fas fa-truck"></i>
+                                                                    </a>
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Tab de Transacciones -->
+                        <div class="tab-pane fade" id="transacciones" role="tabpanel">
+                            <div class="mt-3">
+                                @if (!Model.Transacciones.Any())
+                                {
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-credit-card fa-4x text-muted mb-3"></i>
+                                        <h4 class="text-muted">No tienes transacciones registradas</h4>
+                                        <p class="text-muted">Las transacciones de PayU aparecerán aquí.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="row">
+                                        @foreach (var transaccion in Model.Transacciones)
+                                        {
+                                            <div class="col-md-6 col-lg-4 mb-3">
+                                                <div class="card h-100 @(transaccion.Estado == "APPROVED" ? "border-success" : transaccion.Estado == "PENDING" ? "border-warning" : "border-danger")">
+                                                    <div class="card-header @(transaccion.Estado == "APPROVED" ? "bg-success" : transaccion.Estado == "PENDING" ? "bg-warning" : "bg-danger") text-white">
+                                                        <h6 class="mb-0">
+                                                            <i class="@Model.GetMetodoPagoIcon(transaccion.MetodoPago) me-2"></i>
+                                                            @transaccion.MetodoPago
+                                                        </h6>
+                                                        <small>@transaccion.FechaTransaccion.ToString("dd/MM/yyyy HH:mm")</small>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="card-text">
+                                                            <strong>Estado:</strong>
+                                                            <span class="badge @(transaccion.Estado == "APPROVED" ? "bg-success" : transaccion.Estado == "PENDING" ? "bg-warning" : "bg-danger")">
+                                                                @transaccion.Estado
+                                                            </span>
+                                                        </p>
+                                                        <p class="card-text">
+                                                            <strong>Monto:</strong> 
+                                                            <span class="text-success fs-5">@transaccion.Monto.ToString("C0")</span>
+                                                        </p>
+                                                        <p class="card-text">
+                                                            <strong>Referencia:</strong><br>
+                                                            <code class="small">@transaccion.ReferenceCode</code>
+                                                        </p>
+                                                        <p class="card-text">
+                                                            <strong>Transaction ID:</strong><br>
+                                                            <code class="small">@transaccion.TransactionId</code>
+                                                        </p>
+                                                        @if (!string.IsNullOrEmpty(transaccion.ResponseMessage))
+                                                        {
+                                                            <p class="card-text">
+                                                                <strong>Mensaje:</strong><br>
+                                                                <small class="text-muted">@transaccion.ResponseMessage</small>
+                                                            </p>
+                                                        }
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        @{
+                                                            var envioRelacionado = Model.GetEnvioPorTransaccion(transaccion.TransactionId);
+                                                        }
+                                                        @if (envioRelacionado != null)
+                                                        {
+                                                            <small class="text-success">
+                                                                <i class="fas fa-check me-1"></i>
+                                                                Envío creado: @envioRelacionado.NumeroGuia
+                                                            </small>
+                                                        }
+                                                        else if (transaccion.Estado == "APPROVED")
+                                                        {
+                                                            <small class="text-warning">
+                                                                <i class="fas fa-clock me-1"></i>
+                                                                Preparando envío...
+                                                            </small>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Tab de Envíos -->
+                        <div class="tab-pane fade" id="envios" role="tabpanel">
+                            <div class="mt-3">
+                                @if (!Model.Envios.Any())
+                                {
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-truck fa-4x text-muted mb-3"></i>
+                                        <h4 class="text-muted">No tienes envíos registrados</h4>
+                                        <p class="text-muted">Los envíos aparecerán aquí cuando realices compras exitosas.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="row">
+                                        @foreach (var envio in Model.Envios)
+                                        {
+                                            <div class="col-md-6 col-lg-4 mb-3">
+                                                <div class="card h-100">
+                                                    <div class="card-header bg-info text-white">
+                                                        <h6 class="mb-0">
+                                                            <i class="fas fa-truck me-2"></i>
+                                                            Guía: @envio.NumeroGuia
+                                                        </h6>
+                                                        <small>@envio.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</small>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="card-text">
+                                                            <strong>Estado:</strong>
+                                                            <span class="badge @(envio.Estado == "ENTREGADO" ? "bg-success" : envio.Estado == "EN_TRANSITO" ? "bg-primary" : "bg-warning")">
+                                                                @envio.Estado
+                                                            </span>
+                                                        </p>
+                                                        <p class="card-text">
+                                                            <strong>Producto:</strong><br>
+                                                            @envio.NombreProducto
+                                                        </p>
+                                                        @if (envio.PrecioTotal > 0)
+                                                        {
+                                                            <p class="card-text">
+                                                                <strong>Valor:</strong> 
+                                                                <span class="text-success">@envio.PrecioTotal.ToString("C0")</span>
+                                                            </p>
+                                                        }
+                                                        <p class="card-text">
+                                                            <strong>Dirección:</strong><br>
+                                                            <small class="text-muted">@envio.DireccionEnvio</small>
+                                                        </p>
+                                                        @if (!string.IsNullOrEmpty(envio.TransactionId))
+                                                        {
+                                                            <p class="card-text">
+                                                                <strong>Transaction ID:</strong><br>
+                                                                <code class="small">@envio.TransactionId</code>
+                                                            </p>
+                                                        }
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <a href="/Envios?guia=@envio.NumeroGuia" class="btn btn-outline-primary btn-sm w-100">
+                                                            <i class="fas fa-eye me-2"></i>Ver Seguimiento Completo
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modales de detalle de pedidos -->
+                    @if (Model.Pedidos.Any())
+                    {
+                        @foreach (var pedido in Model.Pedidos)
+                        {
+                            <div class="modal fade" id="detalleModal@(pedido.Id)" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-receipt me-2"></i>
+                                                Detalle del Pedido @pedido.ReferenceCode
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <!-- Información del pedido -->
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <h6 class="text-primary">?? Información del Pedido</h6>
+                                                    <ul class="list-unstyled">
+                                                        <li><strong>Referencia:</strong> @pedido.ReferenceCode</li>
+                                                        <li><strong>Fecha:</strong> @pedido.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</li>
+                                                        <li><strong>Estado:</strong> 
+                                                            <span class="badge @Model.GetEstadoBadgeClass(pedido.Estado)">
+                                                                @pedido.Estado.ToUpper()
+                                                            </span>
+                                                        </li>
+                                                        <li><strong>Método de Pago:</strong> 
+                                                            <i class="@Model.GetMetodoPagoIcon(pedido.MetodoPago) me-1"></i>
+                                                            @pedido.MetodoPago
+                                                        </li>
+                                                        @if (!string.IsNullOrEmpty(pedido.TransactionId))
+                                                        {
+                                                            <li><strong>Transaction ID:</strong> <code>@pedido.TransactionId</code></li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6 class="text-primary">?? Dirección de Envío</h6>
+                                                    <address class="small">
+                                                        @pedido.DireccionEnvio<br>
+                                                        @pedido.CiudadEnvio, @pedido.DepartamentoEnvio<br>
+                                                        CP: @pedido.CodigoPostalEnvio<br>
+                                                        @if (!string.IsNullOrEmpty(pedido.TelefonoContacto))
+                                                        {
+                                                            <span>?? Tel: @pedido.TelefonoContacto</span>
+                                                        }
+                                                    </address>
+                                                </div>
+                                            </div>
+
+                                            <!-- Productos -->
+                                            <h6 class="text-primary">??? Productos</h6>
+                                            @if (pedido.Detalles.Any())
+                                            {
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Producto</th>
+                                                                <th>Cantidad</th>
+                                                                <th>Precio Unit.</th>
+                                                                <th>Subtotal</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var detalle in pedido.Detalles)
+                                                            {
+                                                                <tr>
+                                                                    <td>
+                                                                        <strong>@(detalle.Producto?.Name ?? "Producto no disponible")</strong>
+                                                                        @if (!string.IsNullOrEmpty(detalle.Producto?.Brand))
+                                                                        {
+                                                                            <br><small class="text-muted">@detalle.Producto.Brand</small>
+                                                                        }
+                                                                    </td>
+                                                                    <td>@detalle.Cantidad</td>
+                                                                    <td>
+                                                                        @if (detalle.Producto != null && detalle.Producto.OriginalPrice.HasValue && detalle.Producto.OriginalPrice.Value > detalle.PrecioUnitario)
+                                                                        {
+                                                                            <span class="text-muted text-decoration-line-through me-1">$@detalle.Producto.OriginalPrice.Value.ToString("N0")</span>
+                                                                            <strong>$@detalle.PrecioUnitario.ToString("N0")</strong>
+                                                                            <br>
+                                                                            <small class="text-success"><i class="fas fa-bullhorn me-1"></i>Descuento por campaña de marketing</small>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <strong>$@detalle.PrecioUnitario.ToString("N0")</strong>
+                                                                        }
+                                                                    </td>
+                                                                    <td><strong>$@detalle.Subtotal.ToString("N0")</strong></td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                        <tfoot class="table-light">
+                                                            <tr>
+                                                                <th colspan="3">?? Total</th>
+                                                                <th class="text-success">$@pedido.Total.ToString("N0")</th>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    Los detalles del producto están siendo procesados.
+                                                </div>
+                                            }
+
+                                            <!-- Información de envío -->
+                                            @if (pedido.Envio != null)
+                                            {
+                                                <h6 class="text-primary mt-3">?? Información de Envío</h6>
+                                                <ul class="list-unstyled">
+                                                    <li><strong>Estado:</strong> 
+                                                        <span class="@Model.GetEstadoEnvioColor(pedido.Envio.Estado)">
+                                                            @pedido.Envio.Estado
+                                                        </span>
+                                                    </li>
+                                                    @if (!string.IsNullOrEmpty(pedido.Envio.NumeroGuia))
+                                                    {
+                                                        <li><strong>Número de Guía:</strong> <code>@pedido.Envio.NumeroGuia</code></li>
+                                                    }
+                                                    @if (pedido.Envio.FechaCreacion != default)
+                                                    {
+                                                        <li><strong>Fecha de Creación:</strong> @pedido.Envio.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</li>
+                                                    }
+                                                    @if (pedido.Envio.CostoEnvio.HasValue && pedido.Envio.CostoEnvio > 0)
+                                                    {
+                                                        <li><strong>Costo de Envío:</strong> @pedido.Envio.CostoEnvio.Value.ToString("C0")</li>
+                                                    }
+                                                    else
+                                                    {
+                                                        <li><strong>Costo de Envío:</strong> <span class="text-success">GRATIS</span></li>
+                                                    }
+                                                </ul>
+                                            }
+
+                                            @if (!string.IsNullOrEmpty(pedido.Observaciones))
+                                            {
+                                                <h6 class="text-primary mt-3">?? Observaciones</h6>
+                                                <p class="text-muted">@pedido.Observaciones</p>
+                                            }
+                                        </div>
+                                        <div class="modal-footer">
+                                            @if (pedido.Envio != null && !string.IsNullOrEmpty(pedido.Envio.NumeroGuia))
+                                            {
+                                                <a href="/Envios?guia=@pedido.Envio.NumeroGuia" class="btn btn-info">
+                                                    <i class="fas fa-truck me-2"></i>Rastrear Envío
+                                                </a>
+                                            }
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Cerrar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <!-- Botones de acción -->
+                    <div class="text-center mt-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <a href="/Products" class="btn btn-success w-100">
+                                    <i class="fas fa-shopping-cart me-2"></i>Seguir Comprando
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/Envios" class="btn btn-info w-100">
+                                    <i class="fas fa-truck me-2"></i>Rastrear Envíos
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/Account/Profile" class="btn btn-primary w-100">
+                                    <i class="fas fa-user me-2"></i>Ver mi Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de sincronización -->
+                    @if (!Model.Pedidos.Any() && (Model.Transacciones.Any() || Model.Envios.Any()))
+                    {
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-sync me-2"></i>
+                            <strong>Información:</strong> Tienes transacciones o envíos que están siendo sincronizados con el sistema. 
+                            Los pedidos aparecerán automáticamente cuando se complete la sincronización.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Activar tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Auto-refrescar página cada 5 minutos para sincronizar datos
+            setTimeout(function() {
+                if (confirm('¿Deseas actualizar la página para sincronizar nuevos datos?')) {
+                    location.reload();
+                }
+            }, 300000); // 5 minutos
+
+            // Filtros de búsqueda rápida en las tabs
+            const searchInputs = document.querySelectorAll('.search-input');
+            searchInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const filter = this.value.toLowerCase();
+                    const targetTable = this.getAttribute('data-target');
+                    const rows = document.querySelectorAll(`${targetTable} tbody tr`);
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(filter) ? '' : 'none';
+                    });
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,706 @@
+@page
+@model ComputerStore.Pages.Admin.ShippingModel
+@{
+    ViewData["Title"] = "Gestión de Envíos";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-shipping-fast me-2"></i>
+        Gestión de Envíos
+    </h1>
+    <div>
+        <div class="dropdown d-inline-block me-2">
+            <button class="btn btn-success btn-sm shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel me-2"></i>Exportar Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="exportarEnviosFiltrados()">
+                    <i class="fas fa-list me-2"></i>Lista de Envíos
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportarAnalisisEnvios()">
+                    <i class="fas fa-chart-bar me-2"></i>Análisis y Estadísticas
+                </a></li>
+            </ul>
+        </div>
+        <a href="/Admin/Dashboard" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Mostrar mensajes -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Estadísticas Mejoradas -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Envíos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalEnvios</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-box fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">En Preparación</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.EnviosEnPreparacion</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">En Tránsito</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.EnviosEnTransito</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-truck fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Entregados</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.EnviosEntregados</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros Mejorados -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3" id="filtrosForm">
+            <div class="col-md-3">
+                <label for="filtroBusqueda" class="form-label">?? Buscar</label>
+                <input type="text" class="form-control" name="filtroBusqueda" id="filtroBusqueda" 
+                       value="@Model.FiltroBusqueda" placeholder="Guía, TransactionID, producto...">
+            </div>
+            <div class="col-md-3">
+                <label for="filtroUsuario" class="form-label">?? Usuario</label>
+                <select name="filtroUsuario" id="filtroUsuario" class="form-select">
+                    <option value="">Todos los usuarios</option>
+                    @foreach (var usuario in Model.Usuarios)
+                    {
+                        <option value="@usuario.Id" selected="@(Model.FiltroUsuario == usuario.Id)">
+                            @usuario.UserName (@usuario.Email?.Substring(0, Math.Min(usuario.Email.Length, 15))...)
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filtroEstado" class="form-label">?? Estado</label>
+                <select name="filtroEstado" id="filtroEstado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="PREPARANDO" selected="@(Model.FiltroEstado == "PREPARANDO")">? Preparando</option>
+                    <option value="RECOLECTADO" selected="@(Model.FiltroEstado == "RECOLECTADO")">?? Recolectado</option>
+                    <option value="EN_CENTRO_DISTRIBUCION" selected="@(Model.FiltroEstado == "EN_CENTRO_DISTRIBUCION")">?? En Centro</option>
+                    <option value="EN_TRANSITO" selected="@(Model.FiltroEstado == "EN_TRANSITO")">?? En Tránsito</option>
+                    <option value="EN_RUTA_ENTREGA" selected="@(Model.FiltroEstado == "EN_RUTA_ENTREGA")">??? En Ruta</option>
+                    <option value="ENTREGADO" selected="@(Model.FiltroEstado == "ENTREGADO")">? Entregado</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2 w-100">
+                    <i class="fas fa-search me-1"></i>Filtrar
+                </button>
+            </div>
+            <div class="col-md-6">
+                <label for="fechaInicio" class="form-label">?? Fecha Inicio</label>
+                <input type="date" class="form-control" name="fechaInicio" id="fechaInicio" value="@Model.FiltroFechaInicio?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-6">
+                <label for="fechaFin" class="form-label">?? Fecha Fin</label>
+                <input type="date" class="form-control" name="fechaFin" id="fechaFin" value="@Model.FiltroFechaFin?.ToString("yyyy-MM-dd")">
+            </div>
+        </form>
+        <div class="mt-3">
+            <a href="/Admin/Shipping" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-times me-1"></i>Limpiar filtros
+            </a>
+            <button type="button" class="btn btn-outline-success btn-sm ms-2" onclick="exportarEnviosFiltrados()">
+                <i class="fas fa-file-excel me-1"></i>Exportar Vista Actual
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Envíos Mejorada -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-list me-2"></i>Lista de Envíos (@Model.Envios.Count envíos)
+        </h6>
+        <div>
+            <button class="btn btn-sm btn-outline-success" onclick="actualizarTodosLosEnvios()">
+                <i class="fas fa-sync-alt me-1"></i>Actualizar Todos
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (Model.Envios.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered admin-table" id="enviosTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Guía</th>
+                            <th>Usuario</th>
+                            <th>Producto</th>
+                            <th>Valor</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Destino</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var envio in Model.Envios)
+                        {
+                            var usuario = Model.Usuarios.FirstOrDefault(u => u.Id == envio.UserId);
+                            <tr data-envio-id="@envio.NumeroGuia">
+                                <td>
+                                    <strong class="text-primary">@envio.NumeroGuia</strong>
+                                    @if (!string.IsNullOrEmpty(envio.TransactionId))
+                                    {
+                                        <br><small class="text-muted">TX: @envio.TransactionId</small>
+                                    }
+                                    @if (envio.OrderId > 0)
+                                    {
+                                        <br><small class="text-info">Order: @envio.OrderId</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (usuario != null)
+                                    {
+                                        <div>
+                                            <strong>@usuario.UserName</strong>
+                                            <br><small class="text-muted">@usuario.Email</small>
+                                            @if (!string.IsNullOrEmpty(usuario.PhoneNumber))
+                                            {
+                                                <br><small class="text-info">?? @usuario.PhoneNumber</small>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            <i class="fas fa-user-times me-1"></i>
+                                            Usuario no encontrado
+                                        </span>
+                                        @if (!string.IsNullOrEmpty(envio.UserId))
+                                        {
+                                            <br><small class="text-muted">ID: @envio.UserId</small>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@envio.NombreProducto</strong>
+                                        @if (envio.Productos != null && envio.Productos.Any())
+                                        {
+                                            <br><small class="text-info">@envio.Productos.Count producto(s)</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (envio.PrecioTotal > 0)
+                                    {
+                                        <strong class="text-success">@envio.PrecioTotal.ToString("C0")</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin precio</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{ 
+                                        var (badgeClass, icon) = envio.Estado switch
+                                        {
+                                            "PREPARANDO" => ("bg-warning text-dark", "fas fa-clock"),
+                                            "RECOLECTADO" => ("bg-info", "fas fa-truck-pickup"),
+                                            "EN_CENTRO_DISTRIBUCION" => ("bg-secondary", "fas fa-warehouse"),
+                                            "EN_TRANSITO_A_DESTINO" => ("bg-primary", "fas fa-shipping-fast"),
+                                            "EN_RUTA_ENTREGA" => ("bg-warning text-dark", "fas fa-route"),
+                                            "ENTREGADO" => ("bg-success", "fas fa-check-circle"),
+                                            _ => ("bg-dark", "fas fa-question")
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">
+                                        <i class="@icon me-1"></i>
+                                        @envio.Estado.Replace("_", " ")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@envio.FechaCreacion.ToString("dd/MM/yyyy")</strong>
+                                        <br><small class="text-muted">@envio.FechaCreacion.ToString("HH:mm")</small>
+                                    </div>
+                                    @if (envio.FechaEstimadaEntrega != default)
+                                    {
+                                        <br><small class="text-success">
+                                            <i class="fas fa-calendar-check me-1"></i>
+                                            Est: @envio.FechaEstimadaEntrega.ToString("dd/MM")
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    <div>
+                                        @if (envio.DireccionDestino != null)
+                                        {
+                                            <strong>@envio.DireccionDestino.Ciudad</strong>
+                                            <br><small class="text-muted">@envio.DireccionDestino.Departamento</small>
+                                        }
+                                        else if (!string.IsNullOrEmpty(envio.DireccionEnvio))
+                                        {
+                                            <small class="text-muted">@(envio.DireccionEnvio.Length > 30 ? envio.DireccionEnvio.Substring(0, 30) + "..." : envio.DireccionEnvio)</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No especificado</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group-vertical" role="group">
+                                        <!-- Primera fila -->
+                                        <div class="btn-group mb-1" role="group">
+                                            @if (envio.Estado != "ENTREGADO")
+                                            {
+                                                <form method="post" asp-page-handler="ActualizarEstado" class="d-inline">
+                                                    <input type="hidden" name="numeroGuia" value="@envio.NumeroGuia" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="Actualizar al siguiente estado">
+                                                        <i class="fas fa-step-forward"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                                    onclick="verDetalleCompleto('@envio.NumeroGuia')" 
+                                                    title="Ver detalles completos como usuario">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <!-- Segunda fila -->
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-success" 
+                                                    onclick="marcarComoEntregado('@envio.NumeroGuia')" 
+                                                    title="Marcar como entregado"
+                                                    @(envio.Estado == "ENTREGADO" ? "disabled" : "")>
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <form method="post" asp-page-handler="EliminarEnvio" class="d-inline" 
+                                                  onsubmit="return confirmarEliminacion('@envio.NumeroGuia')">
+                                                <input type="hidden" name="numeroGuia" value="@envio.NumeroGuia" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar envío">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-4x text-gray-400 mb-3"></i>
+                <h5 class="text-muted">No se encontraron envíos</h5>
+                <p class="text-muted">No hay envíos que coincidan con los filtros aplicados.</p>
+                <a href="/Admin/Shipping" class="btn btn-outline-primary">
+                    <i class="fas fa-refresh me-2"></i>Ver todos los envíos
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal para ver detalles completos del envío -->
+<div class="modal fade" id="detalleEnvioModal" tabindex="-1" aria-labelledby="detalleEnvioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="detalleEnvioModalLabel">
+                    <i class="fas fa-truck me-2"></i>Detalles Completos del Envío
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalleEnvioContent">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirDetalle()">
+                    <i class="fas fa-print me-2"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ?? EXPORTAR ENVÍOS FILTRADOS
+        function exportarEnviosFiltrados() {
+            // Obtener los valores actuales de los filtros
+            const filtroUsuario = document.getElementById('filtroUsuario').value;
+            const filtroEstado = document.getElementById('filtroEstado').value;
+            const filtroBusqueda = document.getElementById('filtroBusqueda').value;
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            const fechaFin = document.getElementById('fechaFin').value;
+            
+            // Construir la URL con los filtros
+            let url = '/Admin/Shipping?handler=ExportExcel';
+            const params = new URLSearchParams();
+            
+            if (filtroUsuario) params.append('filtroUsuario', filtroUsuario);
+            if (filtroEstado) params.append('filtroEstado', filtroEstado);
+            if (filtroBusqueda) params.append('filtroBusqueda', filtroBusqueda);
+            if (fechaInicio) params.append('fechaInicio', fechaInicio);
+            if (fechaFin) params.append('fechaFin', fechaFin);
+            
+            if (params.toString()) {
+                url += '&' + params.toString();
+            }
+            
+            // Mostrar indicador de carga
+            const originalText = event.target.innerHTML;
+            event.target.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Exportando...';
+            event.target.disabled = true;
+            
+            // Crear enlace temporal para descarga
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Restaurar botón después de un momento
+            setTimeout(() => {
+                event.target.innerHTML = originalText;
+                event.target.disabled = false;
+            }, 2000);
+        }
+        
+        // ?? EXPORTAR ANÁLISIS DE ENVÍOS
+        function exportarAnalisisEnvios() {
+            const originalText = event.target.innerHTML;
+            event.target.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generando análisis...';
+            event.target.disabled = true;
+            
+            const link = document.createElement('a');
+            link.href = '/Admin/Shipping?handler=ExportAnalysis';
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            setTimeout(() => {
+                event.target.innerHTML = originalText;
+                event.target.disabled = false;
+            }, 3000);
+        }
+        
+        // Ver detalle completo del envío (como lo ve el usuario)
+        async function verDetalleCompleto(numeroGuia) {
+            try {
+                const modal = new bootstrap.Modal(document.getElementById('detalleEnvioModal'));
+                modal.show();
+                
+                // Actualizar título del modal
+                document.getElementById('detalleEnvioModalLabel').innerHTML = 
+                    `<i class="fas fa-truck me-2"></i>Detalles del Envío: ${numeroGuia}`;
+                
+                // Mostrar loading
+                document.getElementById('detalleEnvioContent').innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Cargando detalles...</span>
+                        </div>
+                        <p class="mt-2">Obteniendo información del envío...</p>
+                    </div>
+                `;
+                
+                // Hacer petición para obtener detalles
+                const response = await fetch(`/Admin/Shipping?handler=DetalleEnvio&numeroGuia=${numeroGuia}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarDetalleCompleto(data.envio);
+                } else {
+                    document.getElementById('detalleEnvioContent').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Error: ${data.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al obtener detalles:', error);
+                document.getElementById('detalleEnvioContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Error al cargar los detalles del envío
+                    </div>
+                `;
+            }
+        }
+        
+        // Mostrar detalles completos en el modal
+        function mostrarDetalleCompleto(envio) {
+            const content = `
+                <div class="row">
+                    <!-- Información General -->
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Información General</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Número de Guía:</strong></td><td><code>${envio.numeroGuia}</code></td></tr>
+                            <tr><td><strong>Transaction ID:</strong></td><td><code>${envio.transactionId || 'N/A'}</code></td></tr>
+                            <tr><td><strong>Order ID:</strong></td><td><code>${envio.orderId || 'N/A'}</code></td></tr>
+                            <tr><td><strong>Estado:</strong></td><td><span class="badge bg-info">${envio.estado}</span></td></tr>
+                            <tr><td><strong>Fecha Creación:</strong></td><td>${envio.fechaCreacion}</td></tr>
+                            <tr><td><strong>Fecha Est. Entrega:</strong></td><td>${envio.fechaEstimadaEntrega}</td></tr>
+                            <tr><td><strong>Transportadora:</strong></td><td>${envio.transportadora || 'CompuHiperMegaRed'}</td></tr>
+                            <tr><td><strong>Peso:</strong></td><td>${envio.pesoKg || 'N/A'} kg</td></tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Información del Usuario -->
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3"><i class="fas fa-user me-2"></i>Información del Cliente</h6>
+                        ${envio.usuario ? `
+                            <table class="table table-sm">
+                                <tr><td><strong>Usuario:</strong></td><td>${envio.usuario.userName}</td></tr>
+                                <tr><td><strong>Email:</strong></td><td>${envio.usuario.email}</td></tr>
+                                <tr><td><strong>Teléfono:</strong></td><td>${envio.usuario.telefono || 'No registrado'}</td></tr>
+                                <tr><td><strong>Dirección:</strong></td><td>${envio.usuario.direccion || 'No registrada'}</td></tr>
+                                <tr><td><strong>Ciudad:</strong></td><td>${envio.usuario.ciudad || 'No registrada'}</td></tr>
+                                <tr><td><strong>Departamento:</strong></td><td>${envio.usuario.departamento || 'No registrado'}</td></tr>
+                            </table>
+                        ` : `
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Información del usuario no disponible
+                            </div>
+                        `}
+                    </div>
+                </div>
+                
+                <!-- Productos -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6 class="text-primary mb-3"><i class="fas fa-box me-2"></i>Productos</h6>
+                        ${envio.productos && envio.productos.length > 0 ? `
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio Unit.</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${envio.productos.map(p => `
+                                            <tr>
+                                                <td>${p.nombre}</td>
+                                                <td>${p.cantidad}</td>
+                                                <td>${p.precioFormateado || '$' + p.precio.toLocaleString()}</td>
+                                                <td><strong>${p.subTotalFormateado || '$' + (p.precio * p.cantidad).toLocaleString()}</strong></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th colspan="3">Total</th>
+                                            <th class="text-success">$${envio.precioTotal.toLocaleString()}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        ` : `
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Producto:</strong> ${envio.nombreProducto}<br>
+                                <strong>Valor:</strong> $${envio.precioTotal.toLocaleString()}
+                            </div>
+                        `}
+                    </div>
+                </div>
+                
+                <!-- Timeline del Envío -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6 class="text-primary mb-3"><i class="fas fa-route me-2"></i>Seguimiento del Envío</h6>
+                        <div class="timeline">
+                            ${envio.timeline.map((step, index) => `
+                                <div class="timeline-item ${step.esCompletado ? 'completed' : step.esActual ? 'current' : 'pending'}">
+                                    <div class="timeline-marker">
+                                        <i class="${step.icono}"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">${step.nombre}</h6>
+                                        <p class="mb-1 text-muted">${step.descripcion}</p>
+                                        <small class="text-info">
+                                            <i class="fas fa-clock me-1"></i>${step.fecha}
+                                        </small>
+                                        ${step.ubicacion ? `
+                                            <br><small class="text-muted">
+                                                <i class="fas fa-map-marker-alt me-1"></i>${step.ubicacion}
+                                            </small>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                ${envio.observaciones ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="fas fa-sticky-note me-2"></i>Observaciones</h6>
+                            <div class="alert alert-info">
+                                ${envio.observaciones}
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('detalleEnvioContent').innerHTML = content;
+        }
+        
+        // Confirmar eliminación
+        function confirmarEliminacion(numeroGuia) {
+            return confirm(`¿Estás seguro de que deseas eliminar el envío ${numeroGuia}?\n\nEsta acción no se puede deshacer.`);
+        }
+        
+        // Marcar como entregado
+        async function marcarComoEntregado(numeroGuia) {
+            if (!confirm(`¿Confirmar que el envío ${numeroGuia} ha sido entregado?`)) return;
+            try {
+                const resp = await fetch(`/Admin/Shipping?handler=ActualizarEstado&numeroGuia=${encodeURIComponent(numeroGuia)}`, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value }
+                });
+                if (resp.ok) {
+                    // El handler ActualizarEstado hace avanzar1 estado; repetir hasta ENTREGADO
+                    // Pedimos al servidor que guarde y recargamos la vista
+                    setTimeout(() => location.reload(),300);
+                } else {
+                    alert('Error marcando como entregado');
+                }
+            } catch (e) {
+                alert('Error de red al marcar como entregado');
+            }
+        }
+        
+        // Actualizar todos los envíos
+        function actualizarTodosLosEnvios() {
+            if (confirm('¿Deseas actualizar el estado de todos los envíos pendientes?')) {
+                // Mostrar loading
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Actualizando...';
+                btn.disabled = true;
+                
+                // Simular actualización
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        }
+        
+        // Imprimir detalle
+        function imprimirDetalle() {
+            window.print();
+        }
+        
+        // Inicializar DataTable
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (document.getElementById('enviosTable')) {
+                    $('#enviosTable').DataTable({
+                        responsive: true,
+                        pageLength: 25,
+                        order: [[5, 'desc']], // Ordenar por fecha
+                        language: {
+                            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                        },
+                        columnDefs: [
+                            { orderable: false, targets: [7] } // Acciones no ordenables
+                        ]
+                    });
+                }
+            } catch (e) {
+                console.log('DataTables no disponible');
+            }
+        });
+    </script>
+}
+
+@Html.AntiForgeryToken()

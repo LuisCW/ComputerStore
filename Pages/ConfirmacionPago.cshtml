@@ -1,0 +1,130 @@
+﻿@page
+@model ComputerStore.Pages.ConfirmacionPagoModel
+@{
+    ViewData["Title"] = "Confirmación de Pago";
+}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title text-center mb-4">Confirmación de Pago</h1>
+
+            @if (Model.IsPaymentApproved)
+            {
+                <div class="text-center">
+                    <div class="text-success mb-4">
+                        <i class="bi bi-check-circle-fill" style="font-size: 3rem;"></i>
+                        <h2 class="mt-2">Pago Exitoso</h2>
+                    </div>
+                    <div class="mb-4">
+                        <p class="mb-2">Número de Orden: @Model.OrderId</p>
+                        <p class="mb-2">ID de Transacción: @Model.TransactionId</p>
+                        <p class="mb-2">Código de Referencia: @Model.ReferenceCode</p>
+                        <p class="mb-2">Estado: Aprobado</p>
+                        <p class="mb-2">Mensaje: @Model.ResponseMessage</p>
+                    </div>
+                    <p class="mb-4">Su pago ha sido aprobado exitosamente. Gracias por su compra.</p>
+                    
+                    <!-- Botón de descarga del recibo -->
+                    <div class="mb-4">
+                        <a class="btn btn-info" href="@Url.Page("/ConfirmacionPago", "DownloadReceipt", new {
+    transactionState = Model.TransactionState,
+    referenceCode = Model.ReferenceCode,
+    orderId = Model.OrderId,
+    transactionId = Model.TransactionId,
+    paymentMethod = Model.PaymentMethod // Asegúrate de incluir el método de pago
+})"><i class="bi bi-download me-2"></i>Descargar Recibo</a>
+                        
+                    </div>
+                </div>
+            }
+            else if (Model.IsPaymentDeclined)
+            {
+                <div class="text-center">
+                    <div class="text-danger mb-4">
+                        <i class="bi bi-x-circle-fill" style="font-size: 3rem;"></i>
+                        <h2 class="mt-2">Pago Rechazado</h2>
+                    </div>
+                    <div class="mb-4">
+                        <p class="mb-2">Número de Orden: @(Model.OrderId ?? "N/A")</p>
+                        <p class="mb-2">ID de Transacción: @(Model.TransactionId ?? "N/A")</p>
+                        <p class="mb-2">Código de Referencia: @(Model.ReferenceCode ?? "N/A")</p>
+                        <p class="mb-2">Estado: Rechazado</p>
+                        <p class="mb-2">Mensaje: @Model.ResponseMessage</p>
+                    </div>
+                    
+                    @if (Model.ResponseMessage?.Contains("Tarjeta_rechazada") == true)
+                    {
+                        <div class="alert alert-info">
+                            <h5><i class="bi bi-credit-card me-2"></i>Tarjeta Rechazada</h5>
+                            <p>Su tarjeta fue rechazada por la entidad financiera.</p>
+                            <p><strong>Posibles causas:</strong></p>
+                            <ul>
+                                <li>Fondos insuficientes</li>
+                                <li>Tarjeta bloqueada o vencida</li>
+                                <li>Datos incorrectos</li>
+                                <li>Límite de compras excedido</li>
+                            </ul>
+                            <p>Intente con otra tarjeta o contacte a su banco.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="mb-4">Lo sentimos, su pago fue rechazado. Por favor intente nuevamente o contacte a soporte.</p>
+                    }
+                </div>
+            }
+            else if (Model.IsPaymentPending)
+            {
+                <div class="text-center">
+                    <div class="text-warning mb-4">
+                        <i class="bi bi-clock-fill" style="font-size: 3rem;"></i>
+                        <h2 class="mt-2">Pago Pendiente</h2>
+                    </div>
+                    <div class="mb-4">
+                        <p class="mb-2">Número de Orden: @Model.OrderId</p>
+                        <p class="mb-2">ID de Transacción: @Model.TransactionId</p>
+                        <p class="mb-2">Código de Referencia: @Model.ReferenceCode</p>
+                        <p class="mb-2">Estado: Pendiente</p>
+                        <p class="mb-2">Mensaje: @Model.ResponseMessage</p>
+                    </div>
+                    <p class="mb-4">Su pago está en proceso de verificación. Le notificaremos cuando se complete.</p>
+                </div>
+            }
+            else
+            {
+                <div class="text-center">
+                    <div class="text-secondary mb-4">
+                        <i class="bi bi-question-circle-fill" style="font-size: 3rem;"></i>
+                        <h2 class="mt-2">Estado Desconocido</h2>
+                    </div>
+                    <div class="mb-4">
+                        <p class="mb-2">Número de Orden: @Model.OrderId</p>
+                        <p class="mb-2">ID de Transacción: @Model.TransactionId</p>
+                        <p class="mb-2">Código de Referencia: @Model.ReferenceCode</p>
+                        <p class="mb-2">Mensaje: @Model.ResponseMessage</p>
+                    </div>
+                    <p class="mb-4">Estado de transacción desconocido. Por favor contacte a soporte.</p>
+                </div>
+            }
+
+            <div class="text-center mt-4">
+                <a href="/Products" class="btn btn-primary me-2">Seguir Comprando</a>
+                <a href="/Orders" class="btn btn-outline-secondary">Ver Mis Pedidos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Si hay algún mensaje de éxito en TempData, mostrarlo y luego eliminarlo
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            $(document).ready(function() {
+                showToast('@TempData["SuccessMessage"]', 'success');
+            });
+            </text>
+        }
+    </script>
+}

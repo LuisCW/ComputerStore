@@ -1,0 +1,395 @@
+@page
+@model ComputerStore.Pages.LittleCarModel
+@inject ComputerStore.Services.LittleCarService CarritoService
+
+<div class="container mt-4">
+    @if (!User?.Identity?.IsAuthenticated ?? false)
+    {
+        <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            <div>
+                Para finalizar la compra necesitas iniciar sesión.
+                <a class="btn btn-sm btn-primary ms-2" href="/Account/Login?returnUrl=%2FLittleCar">
+                    <i class="fas fa-sign-in-alt me-1"></i> Iniciar sesión
+                </a>
+                <a class="btn btn-sm btn-outline-secondary ms-2" href="/Account/Register?returnUrl=%2FLittleCar">
+                    <i class="fas fa-user-plus me-1"></i> Registrarse
+                </a>
+            </div>
+        </div>
+    }
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-shopping-cart me-2"></i>Tu Carrito de Compras</h2>
+                <div class="d-flex gap-2">
+                    <a href="/Products" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+                    </a>
+                    @if (Model.ProductosCarrito.Any())
+                    {
+                        <button onclick="mostrarModalVaciarCarrito()" class="btn btn-outline-warning">
+                            <i class="fas fa-trash me-2"></i>Vaciar Carrito
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.ProductosCarrito.Any())
+    {
+        <div class="row">
+            <!-- Lista de productos -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Productos en tu carrito (@Model.ProductosCarrito.Count @(Model.ProductosCarrito.Count == 1 ? "artículo" : "artículos"))
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="60%">Producto</th>
+                                        <th width="20%" class="text-center">Precio</th>
+                                        <th width="20%" class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productosCarrito">
+                                    @foreach (var producto in Model.ProductosCarrito)
+                                    {
+                                        <tr id="producto-@producto.Id" class="product-row">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@producto.ImageUrl" alt="@producto.Name" 
+                                                         class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-bold">@producto.Name</h6>
+                                                        <p class="mb-1 text-muted small">@producto.Brand</p>
+                                                        <p class="mb-0 text-muted small">@producto.Category</p>
+                                                        @if (!string.IsNullOrEmpty(producto.Description))
+                                                        {
+                                                            <p class="mb-0 text-muted small">@producto.Description</p>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <span class="fw-bold text-primary fs-5">@producto.Price.ToString("C0")</span>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <button onclick="eliminarProducto(@producto.Id)" 
+                                                        class="btn btn-outline-danger btn-sm" 
+                                                        title="Eliminar producto">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen del pedido -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Resumen del Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Subtotal (@Model.ProductosCarrito.Count productos):</span>
+                            <span id="subtotal">@Model.Total.ToString("C0")</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Envío:</span>
+                            <span class="text-success fw-bold">GRATIS</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="fw-bold fs-5">Total:</span>
+                            <span class="fw-bold fs-4 text-primary" id="total">@Model.Total.ToString("C0")</span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            @if (User?.Identity?.IsAuthenticated ?? false)
+                            {
+                                <a href="/Checkout" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-credit-card me-2"></i>Proceder al Pago
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="/Account/Login?returnUrl=%2FLittleCar" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Inicia sesión para pagar
+                                </a>
+                                <a href="/Account/Register?returnUrl=%2FLittleCar" class="btn btn-outline-secondary">
+                                    <i class="fas fa-user-plus me-2"></i>Crear cuenta
+                                </a>
+                            }
+                            <small class="text-muted text-center mt-2">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Compra 100% segura
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Información adicional -->
+                    <div class="card-footer bg-light">
+                        <small class="text-muted">
+                            <div class="mb-2">
+                                <i class="fas fa-truck me-2"></i>
+                                Envío gratis en compras superiores a $50.000
+                            </div>
+                            <div class="mb-2">
+                                <i class="fas fa-undo me-2"></i>
+                                30 días para devoluciones
+                            </div>
+                            <div>
+                                <i class="fas fa-headset me-2"></i>
+                                Soporte técnico incluido
+                            </div>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm text-center">
+                    <div class="card-body py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-shopping-cart fa-4x text-muted"></i>
+                        </div>
+                        <h4 class="mb-3">Tu carrito está vacío</h4>
+                        <p class="text-muted mb-4">
+                            ¡Descubre nuestros increíbles productos y encuentra exactamente lo que necesitas!
+                        </p>
+                        <a href="/Products" class="btn btn-primary btn-lg">
+                            <i class="fas fa-shopping-bag me-2"></i>
+                            Explorar Productos
+                        </a>
+                        @if (!(User?.Identity?.IsAuthenticated ?? false))
+                        {
+                            <div class="mt-3">
+                                <a class="btn btn-outline-secondary me-2" href="/Account/Login?returnUrl=%2FLittleCar">
+                                    <i class="fas fa-sign-in-alt me-1"></i> Iniciar sesión
+                                </a>
+                                <a class="btn btn-outline-success" href="/Account/Register?returnUrl=%2FLittleCar">
+                                    <i class="fas fa-user-plus me-1"></i> Registrarse
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal de confirmación para vaciar carrito -->
+<div class="modal fade" id="modalVaciarCarrito" tabindex="-1" aria-labelledby="modalVaciarCarritoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalVaciarCarritoLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirmar acción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas vaciar completamente tu carrito de compras?</p>
+                <p class="text-muted small">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="vaciarCarrito()">
+                    <i class="fas fa-trash me-2"></i>Sí, vaciar carrito
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast de notificaciones -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toastNotification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-shopping-cart me-2 text-primary"></i>
+            <strong class="me-auto">Carrito</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            <!-- Mensaje dinámico -->
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<style>
+    .product-row { transition: all 0.3s ease; }
+    .product-row:hover { background-color: #f8f9fa; }
+    .card { transition: box-shadow 0.3s ease; }
+    .card:hover { box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; }
+    .sticky-top { transition: all 0.3s ease; }
+    .toast-container { z-index: 1060; }
+</style>
+
+@if (Model.ProductosCarrito.Any())
+{
+    @section Scripts {
+    <script>
+        // Función para mostrar notificaciones toast
+        function mostrarToast(mensaje, tipo = 'success') {
+            const toast = document.getElementById('toastNotification');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastHeader = toast.querySelector('.toast-header');
+            toastMessage.textContent = mensaje;
+            // Cambiar color según el tipo
+            toastHeader.className = `toast-header ${tipo === 'error' ? 'bg-danger text-white' : 'bg-success text-white'}`;
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+
+        // Función para mostrar modal de confirmación
+        function mostrarModalVaciarCarrito() {
+            const modal = new bootstrap.Modal(document.getElementById('modalVaciarCarrito'));
+            modal.show();
+        }
+
+        // Función para eliminar producto
+        async function eliminarProducto(id) {
+            let boton;
+            let iconoOriginal;
+            try {
+                // Mostrar indicador de carga
+                boton = document.querySelector(`#producto-${id} button`);
+                iconoOriginal = boton?.innerHTML;
+                if (boton) { boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; boton.disabled = true; }
+
+                const response = await fetch(`?handler=EliminarProducto&id=${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (!response.ok) { throw new Error('Error en la respuesta del servidor'); }
+                const result = await response.json();
+                if (result.success) {
+                    const fila = document.getElementById(`producto-${id}`);
+                    fila.style.transition = 'all 0.3s ease';
+                    fila.style.opacity = '0';
+                    fila.style.transform = 'translateX(-100%)';
+                    setTimeout(() => {
+                        fila.remove();
+                        actualizarContadores(result.cartCount);
+                        actualizarTotales();
+                        mostrarToast('Producto eliminado del carrito');
+                        if (result.cartCount === 0) { setTimeout(() => { location.reload(); }, 1000); }
+                    }, 300);
+                } else {
+                    throw new Error('Error al eliminar el producto');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarToast('Error al eliminar el producto', 'error');
+                if (boton) { boton.innerHTML = iconoOriginal || '<i class="fas fa-times"></i>'; boton.disabled = false; }
+            }
+        }
+
+        // Función para vaciar carrito
+        async function vaciarCarrito() {
+            try {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalVaciarCarrito'));
+                modal?.hide();
+                const response = await fetch('?handler=VaciarCarrito', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (!response.ok) { throw new Error('Error en la respuesta del servidor'); }
+                const result = await response.json();
+                if (result.success) {
+                    mostrarToast('Carrito vaciado exitosamente');
+                    const filas = document.querySelectorAll('.product-row');
+                    filas.forEach((fila, index) => {
+                        setTimeout(() => {
+                            fila.style.transition = 'all 0.3s ease';
+                            fila.style.opacity = '0';
+                            fila.style.transform = 'translateX(-100%)';
+                        }, index * 100);
+                    });
+                    setTimeout(() => { location.reload(); }, filas.length * 100 + 500);
+                } else {
+                    throw new Error('Error al vaciar el carrito');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarToast('Error al vaciar el carrito', 'error');
+            }
+        }
+
+        // Función para actualizar contadores
+        function actualizarContadores(nuevoConteo) {
+            const cartBadge = document.querySelector('.cart-count');
+            if (nuevoConteo > 0) {
+                if (!cartBadge) {
+                    const cartLink = document.querySelector('.cart-badge');
+                    const newBadge = document.createElement('span');
+                    newBadge.className = 'cart-count';
+                    newBadge.textContent = nuevoConteo;
+                    cartLink?.appendChild(newBadge);
+                } else {
+                    cartBadge.textContent = nuevoConteo;
+                }
+            } else if (cartBadge) {
+                cartBadge.remove();
+            }
+            const titulo = document.querySelector('.card-header h5');
+            if (titulo) {
+                titulo.innerHTML = `<i class="fas fa-list me-2"></i>Productos en tu carrito (${nuevoConteo} ${nuevoConteo === 1 ? 'artículo' : 'artículos'})`;
+            }
+        }
+
+        // Función para actualizar totales
+        function actualizarTotales() {
+            const filasVisibles = document.querySelectorAll('.product-row');
+            let total = 0;
+            filasVisibles.forEach(fila => {
+                const precioText = fila.querySelector('td:nth-child(2) span')?.textContent || '';
+                const precio = parseFloat(precioText.replace(/[^0-9.-]+/g, ""));
+                if (!isNaN(precio)) { total += precio; }
+            });
+            const totalFormateado = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(total);
+            const subtotalElement = document.getElementById('subtotal');
+            const totalElement = document.getElementById('total');
+            if (subtotalElement) subtotalElement.textContent = totalFormateado;
+            if (totalElement) totalElement.textContent = totalFormateado;
+        }
+
+        // Inicializar tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) { return new bootstrap.Tooltip(tooltipTriggerEl); });
+        });
+    </script>
+    }
+}

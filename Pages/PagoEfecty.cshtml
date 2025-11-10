@@ -1,0 +1,20 @@
+﻿@page
+@model ComputerStore.Pages.PagoEfectyModel
+@{
+    ViewData["Title"] = "Instrucciones de Pago";
+    var referencia = TempData["ReferenciaPago"]?.ToString();
+    var monto = TempData["MontoPago"]?.ToString();
+    var instrucciones = TempData["InstruccionesPago"]?.ToString();
+}
+
+<h2>Instrucciones para realizar tu pago</h2>
+
+<p>Por favor, dirígete a cualquier punto Efecty y proporciona los siguientes datos:</p>
+
+<ul>
+    <li><strong>Referencia de pago:</strong> @referencia</li>
+    <li><strong>Monto a pagar:</strong> $@monto COP</li>
+</ul>
+
+<p>@instrucciones</p>
+<p>Recuerda que debes realizar el pago antes de la fecha límite indicada en tu recibo.</p>

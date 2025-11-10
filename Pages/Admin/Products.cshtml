@@ -1,0 +1,473 @@
+@page
+@model ComputerStore.Pages.Admin.ProductsModel
+@{
+    ViewData["Title"] = "Gestión de Productos";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-boxes me-2"></i>
+        @if (Model.ShowInactiveOnly)
+        {
+            <span class="text-warning">Gestión de Productos Ocultos</span>
+        }
+        else
+        {
+            <span>Gestión de Productos</span>
+        }
+    </h1>
+    <div>
+        <a href="/Admin/CreateProduct" class="btn btn-primary btn-sm shadow-sm me-2">
+            <i class="fas fa-plus me-2"></i>Nuevo Producto
+        </a>
+        
+        <!-- Botones de exportación -->
+        <div class="btn-group me-2" role="group">
+            <button type="button" class="btn btn-success btn-sm dropdown-toggle shadow-sm" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel me-2"></i>Exportar Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item" href="?handler=ExportExcel">
+                        <i class="fas fa-table me-2"></i>Lista de Productos
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="?handler=ExportPivot">
+                        <i class="fas fa-chart-bar me-2"></i>Tabla Dinámica
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="#" onclick="exportFiltered()">
+                        <i class="fas fa-filter me-2"></i>Exportar Filtros Actuales
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        @if (Model.ShowInactiveOnly)
+        {
+            <a href="/Admin/Products" class="btn btn-success btn-sm shadow-sm me-2">
+                <i class="fas fa-eye me-2"></i>Ver Activos
+            </a>
+        }
+        else
+        {
+            <a href="/Admin/Products?inactiveOnly=true" class="btn btn-warning btn-sm shadow-sm me-2">
+                <i class="fas fa-eye-slash me-2"></i>Ver Ocultos
+            </a>
+        }
+        
+        <a href="/Admin/Dashboard" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Mensajes -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <!-- Total Productos -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Productos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalProducts</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bajo Stock -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Bajo Stock
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.LowStockProducts</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agotados -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Agotados
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.OutOfStockProducts</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productos Ocultos / Categorías -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            @if (Model.ShowInactiveOnly)
+                            {
+                                <span>Productos Ocultos</span>
+                            }
+                            else
+                            {
+                                <span>Categorías</span>
+                            }
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @if (Model.ShowInactiveOnly)
+                            {
+                                @Model.Products.Count
+                            }
+                            else
+                            {
+                                @Model.Categories.Count
+                            }
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        @if (Model.ShowInactiveOnly)
+                        {
+                            <i class="fas fa-eye-slash fa-2x text-gray-300"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-tags fa-2x text-gray-300"></i>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Productos -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-list me-2"></i>
+            @if (Model.ShowInactiveOnly)
+            {
+                <span>?? Lista de Productos Ocultos (@Model.Products.Count productos)</span>
+            }
+            else
+            {
+                <span>?? Lista de Productos (@Model.Products.Count productos)</span>
+            }
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>IMAGEN</th>
+                        <th>PRODUCTO</th>
+                        <th>SKU</th>
+                        <th>CATEGORÍA</th>
+                        <th>PRECIO</th>
+                        <th>STOCK</th>
+                        <th>ESTADO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model.Products)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" alt="@product.Name" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                }
+                                else
+                                {
+                                    <div class="bg-light d-flex align-items-center justify-content-center rounded" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <div class="fw-bold">@product.Name</div>
+                                <small class="text-muted">@product.Brand</small>
+                            </td>
+                            <td class="text-center">
+                                <code>@product.SKU</code>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info">@product.Category</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="fw-bold text-success">@string.Format("{0:C}", product.Price)</div>
+                                @if (product.PrecioCompra.HasValue && product.PrecioCompra > 0)
+                                {
+                                    <small class="text-muted">Costo: @string.Format("{0:C}", product.PrecioCompra)</small>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (product.Stock == 0)
+                                {
+                                    <span class="badge bg-danger">0</span>
+                                }
+                                else if (product.Stock <= product.StockMinimo)
+                                {
+                                    <span class="badge bg-warning">@product.Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">@product.Stock</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (product.IsActive)
+                                {
+                                    <span class="badge bg-success">ACTIVO</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">OCULTO</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <!-- Editar producto -->
+                                <a href="/Admin/EditProduct?id=@product.Id" 
+                                   class="btn btn-outline-primary btn-sm me-1" 
+                                   title="Editar producto">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+
+                                <!-- Actualizar stock (solo si está activo) -->
+                                @if (product.IsActive)
+                                {
+                                    <button onclick="updateStock(@product.Id, @product.Stock)" 
+                                            class="btn btn-outline-info btn-sm me-1" 
+                                            title="Actualizar stock">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                }
+
+                                <!-- Toggle visibilidad -->
+                                @if (product.IsActive)
+                                {
+                                    <form method="post" asp-page-handler="ToggleStatus" class="d-inline">
+                                        <input type="hidden" name="id" value="@product.Id" />
+                                        <button type="submit" 
+                                                class="btn btn-outline-warning btn-sm me-1" 
+                                                title="Ocultar producto"
+                                                onclick="return confirm('¿Ocultar este producto?')">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post" asp-page-handler="ToggleStatus" class="d-inline">
+                                        <input type="hidden" name="id" value="@product.Id" />
+                                        <button type="submit" 
+                                                class="btn btn-outline-success btn-sm me-1" 
+                                                title="Hacer visible el producto"
+                                                onclick="return confirm('¿Hacer visible este producto?')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </form>
+                                }
+
+                                <!-- Eliminar permanente (solo si está oculto) -->
+                                @if (!product.IsActive)
+                                {
+                                    <form method="post" asp-page-handler="Delete" class="d-inline">
+                                        <input type="hidden" name="id" value="@product.Id" />
+                                        <button type="submit" 
+                                                class="btn btn-outline-danger btn-sm" 
+                                                title="Eliminar permanentemente"
+                                                onclick="return confirmDelete('@product.Name')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Products.Any())
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">
+                    @if (Model.ShowInactiveOnly)
+                    {
+                        <span>No hay productos ocultos</span>
+                    }
+                    else
+                    {
+                        <span>No hay productos disponibles</span>
+                    }
+                </h5>
+                @if (!Model.ShowInactiveOnly)
+                {
+                    <a href="/Admin/CreateProduct" class="btn btn-primary mt-2">
+                        <i class="fas fa-plus me-2"></i>Crear Primer Producto
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Actualizar Stock SIN BACKDROP -->
+<div class="modal" id="updateStockModal" tabindex="-1" style="display: none; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-boxes me-2"></i>Actualizar Stock
+                </h5>
+                <button type="button" class="btn-close" onclick="closeStockModal()"></button>
+            </div>
+            <form method="post" asp-page-handler="UpdateStock" id="stockForm">
+                <div class="modal-body">
+                    <input type="hidden" id="stockProductId" name="id" />
+                    <div class="form-group mb-3">
+                        <label for="newStock" class="form-label">Nuevo stock:</label>
+                        <input type="number" id="newStock" name="newStock" class="form-control" min="0" required />
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Stock actual: <span id="currentStock"></span> unidades
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeStockModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Actualizar Stock
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(productName) {
+            return confirm(`¿Estás seguro de que deseas eliminar el producto "${productName}"?`);
+        }
+
+        function updateStock(productId, currentStock) {
+            // Configurar datos del modal
+            document.getElementById('stockProductId').value = productId;
+            document.getElementById('newStock').value = currentStock;
+            document.getElementById('currentStock').textContent = currentStock;
+            
+            // Mostrar modal simple
+            const modal = document.getElementById('updateStockModal');
+            modal.style.display = 'block';
+            
+            // Enfocar el input
+            document.getElementById('newStock').focus();
+        }
+
+        function closeStockModal() {
+            const modal = document.getElementById('updateStockModal');
+            modal.style.display = 'none';
+        }
+
+        // ?? EXPORTAR CON FILTROS ACTUALES
+        function exportFiltered() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const exportParams = new URLSearchParams();
+            
+            // Capturar parámetros actuales
+            if (urlParams.get('category')) exportParams.set('category', urlParams.get('category'));
+            if (urlParams.get('brand')) exportParams.set('brand', urlParams.get('brand'));
+            if (urlParams.get('search')) exportParams.set('search', urlParams.get('search'));
+            if (urlParams.get('inactiveOnly')) exportParams.set('inactiveOnly', urlParams.get('inactiveOnly'));
+            if (urlParams.get('lowStockOnly')) exportParams.set('lowStockOnly', urlParams.get('lowStockOnly'));
+            
+            exportParams.set('handler', 'ExportFiltered');
+            
+            // Crear URL de exportación
+            const exportUrl = `${window.location.pathname}?${exportParams.toString()}`;
+            
+            // Abrir en nueva ventana para descarga
+            window.open(exportUrl, '_blank');
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('updateStockModal');
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeStockModal();
+                }
+            });
+            
+            // Manejar envío del formulario
+            const stockForm = document.getElementById('stockForm');
+            if (stockForm) {
+                stockForm.addEventListener('submit', function() {
+                    closeStockModal();
+                });
+            }
+            
+            // Cerrar con Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.style.display === 'block') {
+                    closeStockModal();
+                }
+            });
+        });
+    </script>
+}
+
+@Html.AntiForgeryToken()

@@ -1,0 +1,16 @@
+<step title="Incoming Request" date="2025-11-07T14:29:09.433" instance="c01540" url="/api/zipdeploy?isAsync=true" method="POST" type="request" pid="6304,2,8" Cache-Control="no-cache" Content-Length="69142722" Content-Type="application/octet-stream" Accept="*/*" Accept-Encoding="gzip, deflate" Authorization="Bea..." Host="compuhipermegared-bfa4huctcxhzbdbk.scm.canadacentral-01.azurewebsites.net" User-Agent="AZURECLI/2.79.0 (MSI)" x-ms-client-request-id="1687bdc8-bbe6-11f0-9465-005056c00008" X-ARR-LOG-ID="1687bdc8-bbe6-11f0-9465-005056c00008" CLIENT-IP="200.118.60.49:3871" X-SITE-DEPLOYMENT-ID="compuhipermegared" WAS-DEFAULT-HOSTNAME="compuhipermegared-bfa4huctcxhzbdbk.scm.canadacentral-01.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/zipdeploy?isAsync=true" >
+  <step title="ZipPushDeploy" date="2025-11-07T14:29:09.699" >
+    <step title="ZipDeploy. Extract zip. " date="2025-11-07T14:29:09.714" /><!-- duration: 0ms -->
+    <step title="Starting PushDeployAsync" date="2025-11-07T14:29:09.730" /><!-- duration: 0ms -->
+    <step title="Updating shutdown sentinel last write time" date="2025-11-07T14:29:09.777" SemaphoreCount="7" /><!-- duration: 16ms -->
+    <step title="LockFile &apos;C:\home\site\locks\deployments.lock&apos; acquired" date="2025-11-07T14:29:09.792" /><!-- duration: 0ms -->
+    <step title="Saving request content to C:\local\Temp\zipdeploy\3xpw2ffk.zip" date="2025-11-07T14:29:09.808" >
+      <step title="Total 69,142,722 bytes written to C:\local\Temp\zipdeploy\3xpw2ffk.zip" date="2025-11-07T14:29:20.216" /><!-- duration: 31ms -->
+    </step><!-- duration: 10439ms -->
+    <step title="LockFile &apos;C:\home\site\locks\deployments.lock&apos; released" date="2025-11-07T14:29:20.263" /><!-- duration: 0ms -->
+    <step title="Deleting shutdown sentinel file" date="2025-11-07T14:29:20.279" SemaphoreCount="8" /><!-- duration: 16ms -->
+    <step title="Starting FetchDeploy" date="2025-11-07T14:29:20.294" /><!-- duration: 0ms -->
+    <step title="Start deployment in the background" date="2025-11-07T14:29:20.310" /><!-- duration: 94ms -->
+  </step><!-- duration: 10721ms -->
+  <step title="Outgoing response" date="2025-11-07T14:29:20.450" type="response" statusCode="202" statusText="Accepted" Server="Microsoft-IIS/10.0" x-ms-request-id="1687bdc8-bbe6-11f0-9465-005056c00008" Retry-After="30" Cache-Control="private" X-AspNet-Version="4.0.30319" Location="https://compuhipermegared-bfa4huctcxhzbdbk.scm.canadacentral-01.azurewebsites.net/api/deployments/latest?deployer=ZipDeploy&amp;time=2025-11-07_14-29-20Z" /><!-- duration: 0ms -->
+</step><!-- duration: 11017ms -->

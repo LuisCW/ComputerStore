@@ -1,0 +1,10 @@
+@page
+@model ComputerStore.Pages.DiagnosticProductsModel
+@{
+    ViewData["Title"] = "Database Diagnostic";
+}
+
+<div class="container mt-5">
+  <h1>Database Connection Diagnostic</h1>
+    <pre style="background: #f5f5f5; padding: 20px; border-radius: 5px; font-family: 'Courier New', monospace;">@Model.DiagnosticInfo</pre>
+</div>

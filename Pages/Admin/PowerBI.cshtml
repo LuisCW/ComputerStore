@@ -1,0 +1,318 @@
+@page
+@model ComputerStore.Pages.Admin.PowerBIModel
+@{
+    ViewData["Title"] = "Configuración Power BI";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fab fa-microsoft me-2"></i>
+        Configuración de Power BI
+    </h1>
+    <a href="/Admin/Dashboard" class="btn btn-primary btn-sm shadow-sm">
+        <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+    </a>
+</div>
+
+<!-- Mensaje de Estado -->
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="alert alert-@(Model.Message.Contains("exitosa") || Model.Message.Contains("?") ? "success" : "danger") alert-dismissible fade show" role="alert">
+        @Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Información y Guía -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3 bg-primary text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Guía de Configuración de Power BI
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Pasos para configurar Power BI:</h6>
+                        <ol class="mb-3">
+                            <li><strong>Crear una aplicación en Azure AD</strong></li>
+                            <li><strong>Configurar permisos para Power BI</strong></li>
+                            <li><strong>Crear un workspace en Power BI Service</strong></li>
+                            <li><strong>Publicar tu reporte en el workspace</strong></li>
+                            <li><strong>Obtener el Embed URL y Report ID</strong></li>
+                            <li><strong>Configurar las credenciales aquí</strong></li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info">Recursos útiles:</h6>
+                        <ul class="list-unstyled">
+                            <li>
+                                <a href="https://docs.microsoft.com/power-bi/developer/embedded/embed-sample-for-customers" target="_blank" class="text-decoration-none">
+                                    <i class="fas fa-external-link-alt me-1"></i>
+                                    Documentación oficial de Power BI Embedded
+                                </a>
+                            </li>
+                            <li class="mt-2">
+                                <a href="https://portal.azure.com/" target="_blank" class="text-decoration-none">
+                                    <i class="fab fa-microsoft me-1"></i>
+                                    Portal de Azure
+                                </a>
+                            </li>
+                            <li class="mt-2">
+                                <a href="https://app.powerbi.com/" target="_blank" class="text-decoration-none">
+                                    <i class="fas fa-chart-bar me-1"></i>
+                                    Power BI Service
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario de Configuración -->
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-cog me-2"></i>
+                    Configuración de Conexión
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="post" class="admin-form">
+                    <!-- Azure AD Configuration -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary border-bottom pb-2">
+                                <i class="fab fa-microsoft me-2"></i>
+                                Configuración de Azure AD
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Config.ClientId" class="form-label">Client ID (Application ID)</label>
+                                <input asp-for="Config.ClientId" class="form-control" placeholder="Ej: 12345678-1234-1234-1234-123456789012" />
+                                <div class="form-text">ID de la aplicación registrada en Azure AD</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Config.TenantId" class="form-label">Tenant ID</label>
+                                <input asp-for="Config.TenantId" class="form-control" placeholder="Ej: 87654321-4321-4321-4321-210987654321" />
+                                <div class="form-text">ID del directorio (tenant) de Azure AD</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label asp-for="Config.ClientSecret" class="form-label">Client Secret</label>
+                                <input asp-for="Config.ClientSecret" type="password" class="form-control" placeholder="Secreto de la aplicación" />
+                                <div class="form-text">Secreto generado para la aplicación en Azure AD</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Power BI Configuration -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary border-bottom pb-2">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Configuración de Power BI
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Config.WorkspaceId" class="form-label">Workspace ID</label>
+                                <input asp-for="Config.WorkspaceId" class="form-control" placeholder="ID del workspace en Power BI" />
+                                <div class="form-text">ID del workspace donde está publicado el reporte</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Config.ReportId" class="form-label">Report ID</label>
+                                <input asp-for="Config.ReportId" class="form-control" placeholder="ID del reporte de Power BI" />
+                                <div class="form-text">ID del reporte específico que se va a embeber</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label asp-for="Config.EmbedUrl" class="form-label">Embed URL</label>
+                                <input asp-for="Config.EmbedUrl" class="form-control" placeholder="https://app.powerbi.com/reportEmbed?reportId=..." />
+                                <div class="form-text">URL de embebido del reporte obtenida desde Power BI Service</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuración General -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary border-bottom pb-2">
+                                <i class="fas fa-toggle-on me-2"></i>
+                                Configuración General
+                            </h6>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input asp-for="Config.IsEnabled" class="form-check-input" type="checkbox" />
+                                <label asp-for="Config.IsEnabled" class="form-check-label">
+                                    Habilitar integración con Power BI
+                                </label>
+                                <div class="form-text">Activa o desactiva la integración de Power BI en el dashboard</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Guardar Configuración
+                            </button>
+                            <button type="submit" asp-page-handler="TestConnection" class="btn btn-outline-info ms-2">
+                                <i class="fas fa-plug me-2"></i>
+                                Probar Conexión
+                            </button>
+                        </div>
+                        <div>
+                            <a href="/Admin/Dashboard" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Información -->
+    <div class="col-xl-4 col-lg-5">
+        <!-- Estado de Configuración -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Estado de Configuración
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    @if (Model.IsConfigured)
+                    {
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h6 class="text-success">Power BI Configurado</h6>
+                        <p class="text-muted small">La integración con Power BI está configurada y lista para usar.</p>
+                    }
+                    else
+                    {
+                        <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                        <h6 class="text-warning">Configuración Pendiente</h6>
+                        <p class="text-muted small">Complete la configuración para habilitar Power BI en el dashboard.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Plantilla de Reporte -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-download me-2"></i>
+                    Plantilla de Reporte
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Descarga una plantilla de Power BI preconfigurada para CompuHiperMegaRed:</p>
+                <div class="d-grid gap-2">
+                    <a href="/Admin/PowerBI/DownloadTemplate" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-file-download me-2"></i>
+                        Descargar Plantilla .pbix
+                    </a>
+                    <a href="/Admin/PowerBI/SampleData" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-database me-2"></i>
+                        Datos de Ejemplo
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Métricas Disponibles -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Métricas Disponibles
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <i class="fas fa-circle text-primary me-2"></i>
+                        Ventas por período
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-circle text-success me-2"></i>
+                        Productos más vendidos
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-circle text-info me-2"></i>
+                        Análisis de clientes
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-circle text-warning me-2"></i>
+                        Tendencias de inventario
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-circle text-danger me-2"></i>
+                        Análisis de envíos
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Form validation
+            $('.admin-form').on('submit', function(e) {
+                var isValid = true;
+                
+                // Validate required fields
+                $(this).find('input[required]').each(function() {
+                    if (!$(this).val()) {
+                        isValid = false;
+                        $(this).addClass('is-invalid');
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Por favor complete todos los campos requeridos.');
+                }
+            });
+            
+            // Real-time validation
+            $('input').on('blur', function() {
+                if ($(this).attr('required') && !$(this).val()) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+        });
+    </script>
+}
+
+@Html.AntiForgeryToken()

@@ -1,0 +1,461 @@
+@page
+@model ComputerStore.Pages.Admin.Analytics.SalesModel
+@{
+    ViewData["Title"] = "Analytics - Ventas";
+    Layout = "_AdminLayout";
+}
+<style>
+    .active-filter-badge {
+        cursor: pointer;
+        margin-right: .5rem;
+        margin-bottom: .25rem;
+        transition: all 0.2s ease;
+    }
+    .active-filter-badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .filter-badge-container {
+        gap: 5px
+    }
+    
+    /* Estilos modernos para las cards de gráficos */
+    .card.shadow {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+    
+    .card.shadow:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 12px 12px 0 0 !important;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    /* KPI Cards más atractivas */
+    .card.border-start-primary {
+        border-left: 4px solid #3b82f6 !important;
+        background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-success {
+        border-left: 4px solid #10b981 !important;
+        background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-info {
+        border-left: 4px solid #06b6d4 !important;
+        background: linear-gradient(135deg, #ecfeff 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-warning {
+        border-left: 4px solid #f59e0b !important;
+        background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+    }
+    
+    /* Mejoras en los textos KPI */
+    .text-xs.font-weight-bold {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    
+    .h5.mb-0 {
+        font-weight: 800;
+        font-size: 1.5rem;
+    }
+    
+    /* Animaciones suaves para los canvas */
+    canvas {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    canvas:hover {
+        cursor: pointer;
+    }
+    
+    /* Estilo del header principal */
+    .card-header .text-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+    }
+</style>
+<div class="card shadow mb-4">
+  <div class="card-header py-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-bar me-2"></i>Analytics - Ventas</h6>
+    <div class="d-flex align-items-center gap-2 small filter-badge-container">
+        <div id="activeFilters" class="d-flex flex-wrap"></div>
+        <span id="status" class="text-muted small"></span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="small text-muted mb-3">Fuente: <span id="src">-</span> | Click en cualquier gráfico para filtrar</div>
+    
+    <!-- KPIs -->
+    <div class="row mb-4" id="kpiRow">
+      <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card h-100 border-start-primary shadow"><div class="card-body"><div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Ventas del Mes</div><div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiVentasMes">$0</div><div class="small text-muted">Total Histórico: <span id="kpiVentasTotales">$0</span></div></div></div></div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card h-100 border-start-success shadow"><div class="card-body"><div class="text-xs font-weight-bold text-success text-uppercase mb-1">Pedidos</div><div class="h5 mb-0 font-weight-bold text-gray-800"><span id="kpiPedidosCompletados">0</span> Completados</div><div class="small text-muted">Pendientes: <span id="kpiPedidosPendientes">0</span></div></div></div></div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card h-100 border-start-info shadow"><div class="card-body"><div class="text-xs font-weight-bold text-info text-uppercase mb-1">Transacciones</div><div class="h5 mb-0 font-weight-bold text-gray-800"><span id="kpiTxAprobadas">0</span> Aprobadas</div><div class="small text-muted">Pend: <span id="kpiTxPendientes">0</span> • Rech: <span id="kpiTxRechazadas">0</span></div></div></div></div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card h-100 border-start-warning shadow"><div class="card-body"><div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Monto Tx Aprobadas</div><div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiMontoTx">$0</div><div class="small text-muted">&nbsp;</div></div></div></div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mb-4">
+      <div class="col-xl-8 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Ventas Mensuales (Click para filtrar)</strong></div><div class="card-body"><div style="height:320px"><canvas id="ventas"></canvas></div></div></div></div>
+      <div class="col-xl-4 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Ingresos 30 días (área)</strong></div><div class="card-body"><div style="height:320px"><canvas id="ingresos30"></canvas></div></div></div></div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-xl-6 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Ticket Promedio (Click para filtrar)</strong></div><div class="card-body"><div style="height:320px"><canvas id="ticket"></canvas></div></div></div></div>
+      <div class="col-xl-6 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Ventas por Categoría (Click para filtrar)</strong></div><div class="card-body"><div style="height:320px"><canvas id="stackCat"></canvas></div></div></div></div>
+    </div>
+  </div>
+</div>
+
+@section Scripts{
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sistema de filtrado PowerBI completo
+let RAW_SALES = null;
+let salesCharts = {};
+const palette=['#2563eb','#10b981','#14b8a6','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#22c55e','#f97316'];
+const fmtCur = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const sales_state = { 
+    filtros: { mes: [], categoria: [], estado: [], metodo: [] }, 
+    bloqueo: false 
+};
+
+function badge(text,key,val){
+    var span=document.createElement('span'); 
+    span.className='badge bg-primary active-filter-badge'; 
+    span.textContent=text; 
+    span.dataset.key=key; 
+    span.dataset.value=val; 
+    span.onclick=function(){ removeSalesFilter(key,val); }; 
+    return span; 
+}
+
+function refreshSalesBadges(){
+    var c=document.getElementById('activeFilters'); 
+    if(!c) return; 
+    c.innerHTML=''; 
+    
+    sales_state.filtros.mes.forEach(function(v){ 
+        c.appendChild(badge('Mes: '+v,'mes',v)); 
+    }); 
+    sales_state.filtros.categoria.forEach(function(v){ 
+        c.appendChild(badge('Cat: '+v,'categoria',v)); 
+    }); 
+    sales_state.filtros.estado.forEach(function(v){ 
+        c.appendChild(badge('Estado: '+v,'estado',v)); 
+    }); 
+    sales_state.filtros.metodo.forEach(function(v){ 
+        c.appendChild(badge('Método: '+v,'metodo',v)); 
+    });
+}
+
+function setKPIs(k){ 
+    if(!k) return; 
+    document.getElementById('kpiVentasMes').textContent=fmtCur.format(k.ventas_mes||0); 
+    document.getElementById('kpiVentasTotales').textContent=fmtCur.format(k.ventas_totales||0); 
+    document.getElementById('kpiPedidosCompletados').textContent=(k.pedidos_completados||0); 
+    document.getElementById('kpiPedidosPendientes').textContent=(k.pedidos_pendientes||0); 
+    document.getElementById('kpiTxAprobadas').textContent=(k.tx_aprobadas||0); 
+    document.getElementById('kpiTxPendientes').textContent=(k.tx_pendientes||0); 
+    document.getElementById('kpiTxRechazadas').textContent=(k.tx_rechazadas||0); 
+    document.getElementById('kpiMontoTx').textContent=fmtCur.format(k.monto_tx_aprobadas||0); 
+}
+
+function clearSalesChart(id){ 
+    if(salesCharts[id]){ 
+        salesCharts[id].destroy(); 
+        salesCharts[id]=null; 
+    } 
+}
+
+function buildSalesQuery() {
+    var p = new URLSearchParams();
+    p.set('mode', 'ef');
+    if(sales_state.filtros.mes.length) p.set('mes', sales_state.filtros.mes.join(','));
+    if(sales_state.filtros.categoria.length) p.set('cat', sales_state.filtros.categoria.join(','));
+    if(sales_state.filtros.estado.length) p.set('estado', sales_state.filtros.estado.join(','));
+    if(sales_state.filtros.metodo.length) p.set('metodo', sales_state.filtros.metodo.join(','));
+    return '/Admin/Api/Analytics?' + p.toString();
+}
+
+async function reloadSales() {
+    if(sales_state.bloqueo) return;
+    sales_state.bloqueo = true;
+    var st = document.getElementById('status');
+    if(st) st.textContent = 'Filtrando...';
+    
+    try {
+        var url = buildSalesQuery();
+        console.log('Sales reload URL:', url);
+        var r = await fetch(url);
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        var d = await r.json();
+        
+        RAW_SALES = d;
+        document.getElementById('src').textContent = d.source || 'ef-core';
+        setKPIs(d.kpis);
+        renderAllSalesCharts();
+        refreshSalesBadges();
+        
+        if(st) st.textContent = '';
+    } catch(e) {
+        if(st) st.textContent = 'Error cargando datos';
+        console.error('Sales reload error:', e);
+    } finally {
+        sales_state.bloqueo = false;
+    }
+}
+
+function toggleSalesFilter(key, value) {
+    if(key === 'mes') {
+        value = String(value); // Mantener formato original para fechas
+    } else {
+        value = String(value).toUpperCase();
+    }
+    
+    var arr = sales_state.filtros[key];
+    if(!arr) {
+        arr = sales_state.filtros[key] = [];
+    }
+    
+    var idx = arr.indexOf(value);
+    if(idx >= 0) {
+        arr.splice(idx, 1);
+    } else {
+        arr.push(value);
+    }
+    
+    console.log('Sales filter toggled:', key, value, sales_state.filtros);
+    reloadSales();
+}
+
+function removeSalesFilter(key, value) {
+    var arr = sales_state.filtros[key];
+    if(!arr) return;
+    var i = arr.indexOf(String(value));
+    if(i >= 0) arr.splice(i, 1);
+    reloadSales();
+}
+
+function clearAllSalesFilters() {
+    sales_state.filtros = { mes: [], categoria: [], estado: [], metodo: [] };
+    reloadSales();
+}
+
+function renderAllSalesCharts() {
+    if(!RAW_SALES) return;
+    
+    const data = RAW_SALES;
+    
+    if(data.ventas_mensuales) {
+        comboVentas('ventas', data.ventas_mensuales.labels, data.ventas_mensuales.values);
+    }
+    if(data.ingresos_diarios_30) {
+        line('ingresos30', data.ingresos_diarios_30.labels, data.ingresos_diarios_30.values, 'Ingresos 30 días');
+    }
+    if(data.ticket_promedio_mensual) {
+        line('ticket', data.ticket_promedio_mensual.labels, data.ticket_promedio_mensual.values, 'Ticket Promedio');
+    }
+    if(data.ventas_por_categoria_mes && data.ventas_por_categoria_mes.series) {
+        stacked('stackCat', data.ventas_por_categoria_mes.labels, data.ventas_por_categoria_mes.series);
+    }
+}
+
+function comboVentas(id,labels,values){
+    clearSalesChart(id);
+    const ctx=document.getElementById(id);
+    if(!ctx)return;
+    
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.9)');
+    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.4)');
+    
+    salesCharts[id] = new Chart(ctx,{
+        type:'bar',
+        data:{
+            labels,
+            datasets:[
+                {
+                    label:'?? Ventas Mensuales',
+                    data:values,
+                    backgroundColor: labels.map(function(lbl) {
+                        var isFiltered = sales_state.filtros.mes.indexOf(lbl) !== -1 || sales_state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1;
+                        return isFiltered ? '#ef4444' : gradient;
+                    }),
+                    borderWidth: labels.map(function(lbl) {
+                        var isFiltered = sales_state.filtros.mes.indexOf(lbl) !== -1 || sales_state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1;
+                        return isFiltered ? 3 : 0;
+                    }),
+                    borderColor: '#ffffff',
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    hoverBackgroundColor: labels.map(function(lbl) {
+                        var isFiltered = sales_state.filtros.mes.indexOf(lbl) !== -1 || sales_state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1;
+                        return isFiltered ? '#dc2626' : '#1d4ed8';
+                    }),
+                    hoverBorderColor: '#ffffff',
+                    hoverBorderWidth: 2
+                }
+            ]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            onClick: function(event, elements, chart) {
+                var els = elements && elements.length ? elements : chart.getElementsAtEventForMode(event,'nearest',{intersect:true},true);
+                if(els.length){
+                    const index = els[0].index;
+                    const mes = labels[index];
+                    toggleSalesFilter('mes', mes);
+                }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { usePointStyle: true, padding: 20, font: { size: 12, family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" } } },
+                tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#ffffff', bodyColor: '#ffffff', borderColor: '#3b82f6', borderWidth: 1, cornerRadius: 12, displayColors: true, callbacks: { title: function(context){ return '?? ' + context[0].label; }, label: function(context){ return '?? Ventas: ' + fmtCur.format(context.raw); }, afterLabel: function(){ return '?? Click para filtrar por este mes'; } } }
+            },
+            scales:{
+                y:{ beginAtZero:true, grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false }, ticks:{ color: '#6b7280', font: { size: 11 }, callback:(v)=>fmtCur.format(v) } },
+                x: { grid: { display: false }, ticks: { color: '#6b7280', font: { size: 11 } } }
+            },
+            interaction: { mode: 'nearest', intersect: true }
+        }
+    });
+}
+
+function line(id,l,v,label){
+    clearSalesChart(id);
+    const c=document.getElementById(id);
+    if(!c)return;
+    
+    const gradient = c.getContext('2d').createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(20, 184, 166, 0.6)');
+    gradient.addColorStop(0.3, 'rgba(20, 184, 166, 0.3)');
+    gradient.addColorStop(1, 'rgba(20, 184, 166, 0.05)');
+    
+    salesCharts[id] = new Chart(c,{
+        type:'line',
+        data:{ labels:l, datasets:[{ label: '?? ' + label, data:v, borderColor:'#14b8a6', backgroundColor: gradient, tension:.45, fill:true, pointRadius: 4, pointBackgroundColor: '#14b8a6', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointHoverRadius: 7, pointHoverBackgroundColor: '#0d9488', pointHoverBorderColor: '#ffffff', pointHoverBorderWidth: 3, borderWidth: 3 }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, padding: 20, font: { size: 12, family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", weight: '500' } } }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.85)', titleColor: '#ffffff', bodyColor: '#ffffff', borderColor: '#14b8a6', borderWidth: 2, cornerRadius: 12, displayColors: true, padding: 12, callbacks: { title: function(context){ return '?? ' + context[0].label; }, label: function(context){ return '?? ' + fmtCur.format(context.raw); } } } }, scales:{ y:{ beginAtZero:true, grid: { color: 'rgba(20, 184, 166, 0.1)', drawBorder: false, lineWidth: 1 }, ticks:{ color: '#6b7280', font: { size: 11, weight: '500' }, callback:(v)=>fmtCur.format(v) } }, x: { grid: { display: false }, ticks: { color: '#6b7280', font: { size: 11, weight: '500' }, maxTicksLimit: 10 } } }, interaction: { mode: 'index', intersect: false }, elements: { line: { capBezierPoints: false } } }
+    });
+}
+
+function stacked(id,labels,series){
+    clearSalesChart(id);
+    const c=document.getElementById(id);
+    if(!c)return;
+    
+    const premiumPalette = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16','#ec4899','#64748b'];
+    
+    const ds=series.map((s,i)=>{
+        const baseColor = premiumPalette[i % premiumPalette.length];
+        const isFiltered = sales_state.filtros.categoria.indexOf((s.label||'').toUpperCase()) !== -1;
+        return {
+            label: '??? ' + s.label,
+            data: s.values,
+            backgroundColor: (function(){
+                if(sales_state.filtros.categoria.length > 0 && !isFiltered) return 'rgba(200,200,200,0.2)';
+                return isFiltered ? '#ef4444' : baseColor + 'E6';
+            })(),
+            borderWidth: isFiltered ? 3 : 1,
+            borderColor: '#ffffff',
+            borderRadius: { topLeft: 6, topRight: 6, bottomLeft: i === 0 ? 6 : 0, bottomRight: i === 0 ? 6 : 0 },
+            hoverBackgroundColor: isFiltered ? '#dc2626' : baseColor,
+            hoverBorderWidth: 2,
+            hoverBorderColor: '#ffffff'
+        };
+    });
+    
+    salesCharts[id] = new Chart(c,{
+        type:'bar',
+        data:{ labels:labels, datasets:ds },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            onClick: function(event, elements, chart) {
+                var els = elements && elements.length ? elements : chart.getElementsAtEventForMode(event,'nearest',{intersect:true},true);
+                if(els.length){
+                    const datasetIndex = els[0].datasetIndex;
+                    const categoria = series[datasetIndex].label;
+                    toggleSalesFilter('categoria', categoria);
+                }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rect', padding: 15, font: { size: 11, family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", weight: '500' } } },
+                tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.85)', titleColor: '#ffffff', bodyColor: '#ffffff', borderColor: '#374151', borderWidth: 2, cornerRadius: 12, displayColors: true, padding: 12, callbacks: { title: function(context){ return '?? ' + context[0].label; }, label: function(context){ const categoria = context.dataset.label.replace('??? ', ''); const isFiltered = sales_state.filtros.categoria.indexOf(categoria.toUpperCase()) !== -1; return categoria + ': ' + fmtCur.format(context.raw) + (isFiltered ? ' ? (Filtrado)' : ''); }, afterTitle: function(){ return '?? Click para filtrar por categoría'; }, footer: function(tooltipItems){ let sum = 0; tooltipItems.forEach(function(t){ sum += t.raw; }); return '?? Total: ' + fmtCur.format(sum); } } }
+            },
+            scales:{
+                x:{ stacked:true, grid: { display: false }, ticks: { color: '#6b7280', font: { size: 11, weight: '500' } } },
+                y:{ stacked:true, beginAtZero:true, grid: { color: 'rgba(0, 0, 0, 0.05)', drawBorder: false, lineWidth: 1 }, ticks:{ color: '#6b7280', font: { size: 11, weight: '500' }, callback:(v)=>fmtCur.format(v) } }
+            },
+            interaction: { mode: 'nearest', intersect: true },
+            animation: { duration: 800, easing: 'easeInOutQuart' }
+        }
+    });
+}
+
+async function loadSales(){ 
+    try{ 
+        document.getElementById('status').textContent = 'Cargando...';
+        let r = await fetch('/Admin/Api/Analytics?mode=ef'); 
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        let d = await r.json(); 
+        const hasData = d && d.kpis && ((d.ventas_mensuales && d.ventas_mensuales.values && d.ventas_mensuales.values.some(v => v > 0)) || (d.ingresos_diarios_30 && d.ingresos_diarios_30.values && d.ingresos_diarios_30.values.some(v => v > 0)) || d.kpis.ventas_totales > 0);
+        if(!hasData){ document.getElementById('status').textContent = 'Sin datos reales, cargando demo...'; r = await fetch('/Admin/Api/Analytics?mode=demo'); if(!r.ok) throw new Error('Demo HTTP ' + r.status); d = await r.json(); }
+        RAW_SALES = d;
+        document.getElementById('src').textContent = d.source || 'ef-core'; 
+        setKPIs(d.kpis); 
+        renderAllSalesCharts();
+        refreshSalesBadges();
+        document.getElementById('status').textContent = '';
+    }catch(e){ 
+        document.getElementById('status').textContent='Error cargando datos'; 
+        console.error('Error completo en loadSales:', e);
+        try { const r2 = await fetch('/Admin/Api/Analytics?mode=demo'); const d2 = await r2.json(); RAW_SALES = d2; document.getElementById('src').textContent = 'demo (fallback)'; setKPIs(d2.kpis); renderAllSalesCharts(); refreshSalesBadges(); document.getElementById('status').textContent = 'Usando datos demo'; } catch(demoError) { console.error('Error incluso con datos demo:', demoError); document.getElementById('status').textContent = 'Error: No se pudieron cargar datos'; }
+    } 
+}
+
+// Crear botón limpiar filtros
+document.addEventListener('DOMContentLoaded', function() {
+    loadSales();
+    
+    const statusElement = document.getElementById('status');
+    if(statusElement && statusElement.parentNode) {
+        const clearButton = document.createElement('button');
+        clearButton.innerHTML = '<i class="fas fa-times-circle"></i> Limpiar Filtros';
+        clearButton.className = 'btn btn-sm btn-outline-danger ms-2';
+        clearButton.style.display = 'none';
+        clearButton.onclick = function() {
+            clearAllSalesFilters();
+            this.style.display = 'none';
+        };
+        clearButton.id = 'clearSalesFilters';
+        statusElement.parentNode.appendChild(clearButton);
+        
+        // Mostrar/ocultar botón según haya filtros
+        const originalRefreshBadges = refreshSalesBadges;
+        refreshSalesBadges = function() {
+            originalRefreshBadges();
+            const hasFilters = Object.values(sales_state.filtros).some(arr => arr.length > 0);
+            clearButton.style.display = hasFilters ? 'inline-block' : 'none';
+        };
+    }
+});
+</script>
+}

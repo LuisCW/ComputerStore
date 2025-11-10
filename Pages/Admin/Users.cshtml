@@ -1,0 +1,412 @@
+@page
+@model ComputerStore.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-users me-2"></i>
+        Gestión de Usuarios
+    </h1>
+    <div>
+        <!-- ?? NUEVOS: Botones de Excel -->
+        <div class="btn-group me-2" role="group">
+            <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle shadow-sm" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel me-2"></i>Exportar Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item" href="?handler=ExportUsers">
+                        <i class="fas fa-table me-2"></i>Tabla de Usuarios
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="?handler=ExportUsersAnalysis">
+                        <i class="fas fa-chart-pie me-2"></i>Tabla Dinámica y Análisis
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-success btn-sm shadow-sm me-2" data-bs-toggle="modal" data-bs-target="#createAdminModal">
+            <i class="fas fa-user-plus me-2"></i>Crear Administrador
+        </button>
+        <a href="/Admin/Dashboard" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Mostrar mensajes -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Estadísticas de Usuarios -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Usuarios</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Users.Count</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Administradores</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Admins.Count</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-shield fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Usuarios Activos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Users.Count(u => u.IsActive)</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Usuarios Regulares</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@(Model.Users.Count - Model.Admins.Count)</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Administradores -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-success">
+            <i class="fas fa-user-shield me-2"></i>Administradores del Sistema
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre Completo</th>
+                        <th>Email</th>
+                        <th>Fecha Registro</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Admins.Any())
+                    {
+                        @foreach (var admin in Model.Admins)
+                        {
+                            <tr>
+                                <td><strong>@admin.UserName</strong></td>
+                                <td>@admin.PrimerNombre @admin.SegundoNombre @admin.PrimerApellido @admin.SegundoApellido</td>
+                                <td>@admin.Email</td>
+                                <td>@admin.FechaRegistro.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <span class="badge bg-@(admin.IsActive ? "success" : "danger")">
+                                        @(admin.IsActive ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (admin.UserName != "Admin") // No permitir eliminar el admin principal
+                                    {
+                                        <form method="post" asp-page-handler="ToggleUserRole" class="d-inline">
+                                            <input type="hidden" name="userId" value="@admin.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-warning" 
+                                                    onclick="return confirm('¿Remover rol de administrador a @admin.UserName?')">
+                                                <i class="fas fa-user-minus"></i> Remover Admin
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary">Admin Principal</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No hay administradores registrados</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Todos los Usuarios -->
+<div class="card shadow">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-users me-2"></i>Todos los Usuarios
+        </h6>
+        <div class="card-header-info">
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Exportar Excel incluye análisis por ciudades, departamentos y estadísticas completas
+            </small>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered admin-table" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Documento</th>
+                        <th>Teléfono</th>
+                        <th>Roles</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td><strong>@user.UserName</strong></td>
+                            <td>@user.PrimerNombre @user.PrimerApellido</td>
+                            <td>@user.Email</td>
+                            <td>@user.TipoDocumento @user.NumeroDocumento</td>
+                            <td>@user.PhoneNumber</td>
+                            <td>
+                                @if (Model.Admins.Any(a => a.Id == user.Id))
+                                {
+                                    <span class="badge bg-success">Admin</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info">Usuario</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-@(user.IsActive ? "success" : "danger")">
+                                    @(user.IsActive ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
+                            <td>
+                                @if (!Model.Admins.Any(a => a.Id == user.Id) && user.UserName != "Admin")
+                                {
+                                    <form method="post" asp-page-handler="ToggleUserRole" class="d-inline">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                onclick="return confirm('¿Hacer administrador a @user.UserName?')">
+                                            <i class="fas fa-user-plus"></i> Hacer Admin
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Crear Administrador -->
+<div class="modal fade" id="createAdminModal" tabindex="-1" aria-labelledby="createAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="createAdminModalLabel">
+                    <i class="fas fa-user-plus me-2"></i>Crear Nuevo Administrador
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-page-handler="CreateAdmin">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.UserName" class="form-label">Nombre de Usuario *</label>
+                                <input asp-for="NewAdmin.UserName" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.Email" class="form-label">Email *</label>
+                                <input asp-for="NewAdmin.Email" type="email" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.Password" class="form-label">Contraseña *</label>
+                                <input asp-for="NewAdmin.Password" type="password" class="form-control" required />
+                                <div class="form-text">Mínimo 6 caracteres, debe incluir mayúsculas, minúsculas y números</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.PrimerNombre" class="form-label">Primer Nombre *</label>
+                                <input asp-for="NewAdmin.PrimerNombre" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.SegundoNombre" class="form-label">Segundo Nombre</label>
+                                <input asp-for="NewAdmin.SegundoNombre" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.PrimerApellido" class="form-label">Primer Apellido *</label>
+                                <input asp-for="NewAdmin.PrimerApellido" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.SegundoApellido" class="form-label">Segundo Apellido</label>
+                                <input asp-for="NewAdmin.SegundoApellido" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.TipoDocumento" class="form-label">Tipo Documento *</label>
+                                <select asp-for="NewAdmin.TipoDocumento" class="form-select" required>
+                                    <option value="CC">Cédula de Ciudadanía</option>
+                                    <option value="CE">Cédula de Extranjería</option>
+                                    <option value="PP">Pasaporte</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.NumeroDocumento" class="form-label">Número Documento *</label>
+                                <input asp-for="NewAdmin.NumeroDocumento" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label asp-for="NewAdmin.PhoneNumber" class="form-label">Teléfono</label>
+                                <input asp-for="NewAdmin.PhoneNumber" type="tel" class="form-control" placeholder="+57 300 123 4567" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-user-plus me-2"></i>Crear Administrador
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.admin-table').DataTable({
+                responsive: true,
+                pageLength: 25,
+                order: [[6, 'desc']], // Order by status
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                }
+            });
+
+            // ?? NUEVO: Toast notifications para exportación
+            @if (TempData["SuccessMessage"] != null && TempData["SuccessMessage"].ToString().Contains("exportar"))
+            {
+                <text>
+                showToast('success', 'Excel Exportado', 'El archivo se ha descargado exitosamente');
+                </text>
+            }
+        });
+
+        function showToast(type, title, message) {
+            // Simple toast notification
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}:</strong> ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = toastContainer.lastElementChild;
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+            
+            setTimeout(() => {
+                toastElement.remove();
+            }, 5000);
+        }
+    </script>
+}
+
+@Html.AntiForgeryToken()

@@ -1,0 +1,1234 @@
+﻿@page
+@model ComputerStore.Pages.Admin.Analytics.LocationsModel
+@{
+    ViewData["Title"] = "Analytics - Ubicaciones";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .metric-card h3 {
+            font-size: 2.2rem;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .metric-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .map-container {
+        height: 300px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+    }
+
+    .treemap-container {
+        height: 300px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .filter-active {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+        transform: scale(1.02);
+    }
+
+    .clickable-chart {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .clickable-chart:hover {
+            transform: scale(1.01);
+        }
+
+    .treemap-tooltip {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.9);
+        color: #ffffff;
+        padding: 12px;
+        border-radius: 8px;
+        pointer-events: none;
+        font-size: 0.85rem;
+        z-index: 10000;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        border: 2px solid #FF6B6B;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-map-marked-alt text-primary"></i> Analytics de Ubicaciones
+            </h1>
+            <p class="text-muted">Análisis geográfico interactivo de clientes y ventas</p>
+        </div>
+        <div>
+            <button onclick="resetAllFilters()" class="btn btn-outline-primary">
+                <i class="fas fa-refresh"></i> Reset Filtros
+            </button>
+            <button onclick="exportData()" class="btn btn-success">
+                <i class="fas fa-download"></i> Exportar
+            </button>
+        </div>
+    </div>
+
+    <!-- KPIs Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <p><i class="fas fa-city"></i> Total Ciudades</p>
+                <h3>@Model.TotalCiudades</h3>
+                <small>Con clientes activos</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <p><i class="fas fa-map"></i> Departamentos</p>
+                <h3>@Model.TotalDepartamentos</h3>
+                <small>Cobertura nacional</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <p><i class="fas fa-trophy"></i> Top Ciudad</p>
+                <h3>@Model.CiudadTopVentas</h3>
+                <small>@Model.VentasCiudadTop.ToString("C0", new System.Globalization.CultureInfo("es-CO"))</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <p><i class="fas fa-users"></i> Total Clientes</p>
+                <h3>@Model.ClientesTotales</h3>
+                <small>@Model.PedidosTotales pedidos realizados</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mapa Interactivo de Colombia -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-globe-americas"></i> Mapa Interactivo de Ventas por Ciudad</h5>
+                <div class="map-container" id="colombiaMap"></div>
+                <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-circle text-danger"></i> Alto volumen
+                        <i class="fas fa-circle text-warning ms-3"></i> Medio volumen
+                        <i class="fas fa-circle text-success ms-3"></i> Bajo volumen
+                        <span class="ms-3">🖱️ Click en círculos para filtrar</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-pie"></i> Distribución de Ventas por Región</h5>
+                <canvas id="pieChart" style="max-height: 350px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Treemap y Gráficos Interactivos -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-th-large"></i> Treemap: Ventas por Departamento y Ciudad</h5>
+                <div class="treemap-container" id="treemapChart"></div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted">🖱️ Click en cualquier región para filtrar datos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-bar"></i> Top 10 Ciudades por Ventas</h5>
+                <canvas id="ventasCiudadChart" style="max-height: 350px;"></canvas>
+                <div class="mt-2">
+                    <small class="text-muted">🖱️ Click para filtrar por ciudad seleccionada</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos de Barras Interactivos -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="chart-container clickable-chart">
+                <h5><i class="fas fa-users"></i> Distribución de Clientes por Ciudad</h5>
+                <canvas id="clientesCiudadChart" style="max-height: 300px;"></canvas>
+                <div class="mt-2">
+                    <small class="text-muted">🖱️ Click para filtrar por ciudad seleccionada</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-line"></i> Ticket Promedio por Ciudad</h5>
+                <canvas id="ticketPromedioChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos de Performance -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="chart-container">
+                <h5><i class="fas fa-shopping-cart"></i> Pedidos por Departamento</h5>
+                <canvas id="pedidosDepartamentoChart" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-area"></i> Densidad de Clientes</h5>
+                <canvas id="densidadClientesChart" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <h5><i class="fas fa-info-circle"></i> Información General</h5>
+                <div class="p-3" id="infoGeneralCard">
+                    <p><strong>Total Ciudades:</strong> @Model.TotalCiudades</p>
+                    <p><strong>Total Departamentos:</strong> @Model.TotalDepartamentos</p>
+                    <p><strong>Ciudad Top:</strong> @Model.CiudadTopVentas</p>
+                    <p><strong>Ventas Top:</strong> @Model.VentasCiudadTop.ToString("C0")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Resumen Filtrable -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5><i class="fas fa-table"></i> Resumen Detallado por Ubicación</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped" id="ubicacionesTable">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Ciudad</th>
+                                <th>Departamento</th>
+                                <th>Total Ventas</th>
+                                <th>Clientes</th>
+                                <th>Pedidos</th>
+                                <th>Ticket Promedio</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ciudad in Model.VentasPorCiudad.Take(15))
+                            {
+                                var clientes = Model.ClientesPorCiudad.FirstOrDefault(c => c.Ubicacion == ciudad.Ubicacion)?.TotalClientes ?? 0;
+                                var performance = ciudad.TotalVentas > Model.VentasPromedioPorCiudad ? "Alta" : "Media";
+                                var performanceClass = performance == "Alta" ? "text-success" : "text-warning";
+
+                                <tr>
+                                    <td><strong>@System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(ciudad.Ubicacion.ToLower())</strong></td>
+                                    <td>@GetDepartamentoPorCiudad(ciudad.Ubicacion)</td>
+                                    <td>@ciudad.TotalVentas.ToString("C0", new System.Globalization.CultureInfo("es-CO"))</td>
+                                    <td>@clientes</td>
+                                    <td>@ciudad.CantidadPedidos</td>
+                                    <td>@ciudad.TicketPromedio.ToString("C0", new System.Globalization.CultureInfo("es-CO"))</td>
+                                    <td><span class="badge bg-@(performance == "Alta" ? "success" : "warning")">@performance</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetDepartamentoPorCiudad(string ciudad)
+    {
+        var mapeo = new Dictionary<string, string>
+        {
+            // BOGOTÁ DC - CORRECCIÓN PRINCIPAL
+            ["BOGOTÁ"] = "Bogotá DC",
+            ["BOGOTA"] = "Bogotá DC",
+
+            // CUNDINAMARCA - SIN BOGOTÁ
+            ["CHÍA"] = "Cundinamarca",
+            ["CHIA"] = "Cundinamarca",
+            ["SOACHA"] = "Cundinamarca",
+            ["FUSAGASUGÁ"] = "Cundinamarca",
+            ["GIRARDOT"] = "Cundinamarca",
+            ["ZIPAQUIRÁ"] = "Cundinamarca",
+            ["FACATATIVÁ"] = "Cundinamarca",
+            ["CAJICÁ"] = "Cundinamarca",
+            ["LA CALERA"] = "Cundinamarca",
+
+            // ANTIOQUIA - CORRECCIÓN
+            ["MEDELLÍN"] = "Antioquia",
+            ["MEDELLIN"] = "Antioquia",
+            ["BELLO"] = "Antioquia",
+            ["ITAGÜÍ"] = "Antioquia",
+            ["ENVIGADO"] = "Antioquia",
+            ["RIONEGRO"] = "Antioquia",
+            ["SABANETA"] = "Antioquia",
+
+            // OTROS DEPARTAMENTOS
+            ["CALI"] = "Valle del Cauca",
+            ["BARRANQUILLA"] = "Atlántico",
+            ["CARTAGENA"] = "Bolívar",
+            ["BUCARAMANGA"] = "Santander",
+            ["CÚCUTA"] = "Norte de Santander",
+            ["PEREIRA"] = "Risaralda",
+            ["MANIZALES"] = "Caldas",
+            ["ARMENIA"] = "Quindío",
+            ["IBAGUÉ"] = "Tolima",
+            ["NEIVA"] = "Huila",
+            ["VILLAVICENCIO"] = "Meta",
+            ["PASTO"] = "Nariño",
+            ["POPAYÁN"] = "Cauca",
+            ["MONTERÍA"] = "Córdoba",
+            ["VALLEDUPAR"] = "Cesar",
+            ["SANTA MARTA"] = "Magdalena",
+            ["SINCELEJO"] = "Sucre"
+        };
+        return mapeo.GetValueOrDefault(ciudad.ToUpper(), "N/A");
+    }
+}
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Datos del servidor
+        const ventasPorCiudad = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasPorCiudad));
+        const clientesPorCiudad = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ClientesPorCiudad));
+        const ventasPorDepartamento = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasPorDepartamento));
+        const datosMapaCiudades = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DatosMapaCiudades));
+        const treemapData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TreemapDepartamentos));
+
+        console.log('🎯 DATOS RECIBIDOS DEL SERVIDOR:');
+        console.log('Ciudades:', ventasPorCiudad);
+        console.log('Departamentos:', ventasPorDepartamento);
+        console.log('Clientes:', clientesPorCiudad);
+
+        // Variables globales para filtrado cruzado
+        let chartInstances = {};
+        let datosOriginales = {};
+        let filtroActivo = null;
+        let mapInstance = null;
+
+        // PALETA DE COLORES VIBRANTE Y LLAMATIVA
+        const vibrantPalette = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+            '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+            '#F8C471', '#82E0AA'
+        ];
+
+        // Inicializar todo
+        initializeMap();
+        createTreemap();
+        createCharts();
+        initializeTable();
+
+        function initializeMap() {
+            console.log('🗺️ Inicializando mapa interactivo...');
+            const mapContainer = document.getElementById('colombiaMap');
+
+            if (mapInstance) {
+                try {
+                    mapInstance.remove();
+                } catch (e) {
+                    console.warn('Error removiendo mapa anterior:', e);
+                }
+                mapInstance = null;
+            }
+
+            mapContainer.innerHTML = '';
+
+            try {
+                mapInstance = L.map('colombiaMap').setView([4.7110, -74.0721], 6);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(mapInstance);
+
+                console.log('🗺️ Mapa base creado exitosamente');
+
+                if (!datosMapaCiudades || datosMapaCiudades.length === 0) {
+                    console.warn('⚠️ Sin datos de mapa, usando marcador por defecto');
+                    L.marker([4.7110, -74.0721]).addTo(mapInstance)
+                        .bindPopup('Sin datos de ubicaciones')
+                        .openPopup();
+                    return;
+                }
+
+                console.log(`📍 Procesando ${datosMapaCiudades.length} ciudades para el mapa`);
+
+                let ciudadesAgregadas = 0;
+                datosMapaCiudades.forEach((ciudad, index) => {
+                    try {
+                        const lat = parseFloat(ciudad.Latitud || ciudad.latitud || 4.7110);
+                        const lng = parseFloat(ciudad.Longitud || ciudad.longitud || -74.0721);
+                        const ventas = parseFloat(ciudad.TotalVentas || ciudad.totalVentas || 0);
+                        const clientes = parseInt(ciudad.TotalClientes || ciudad.totalClientes || 0);
+                        const nombre = ciudad.Ciudad || ciudad.ciudad || 'Sin nombre';
+
+                        if (isNaN(lat) || isNaN(lng)) {
+                            console.warn(`⚠️ Coordenadas inválidas para ${nombre}: lat=${lat}, lng=${lng}`);
+                            return;
+                        }
+
+                        let circleColor;
+                        if (filtroActivo && filtroActivo.tipo === 'ciudad') {
+                            circleColor = filtroActivo.valor === nombre.toUpperCase() ? '#FF1744' : '#BDBDBD';
+                        } else if (filtroActivo && filtroActivo.tipo === 'departamento') {
+                            const departamentoCiudad = obtenerDepartamentoPorCiudad(nombre);
+                            circleColor = filtroActivo.valor === departamentoCiudad.toUpperCase() ? '#FF1744' : '#BDBDBD';
+                        } else {
+                            circleColor = ventas > 15000000 ? '#FF1744' : ventas > 8000000 ? '#FF9800' : '#4CAF50';
+                        }
+
+                        const circle = L.circle([lat, lng], {
+                            color: circleColor,
+                            fillColor: circleColor,
+                            fillOpacity: filtroActivo ?
+                                (circleColor === '#FF1744' ? 0.8 : 0.3) : 0.7,
+                            radius: Math.max(ventas / 40000, 8000),
+                            weight: filtroActivo ?
+                                (circleColor === '#FF1744' ? 4 : 2) : 3
+                        }).addTo(mapInstance);
+
+                        circle.bindPopup(`
+                            <div class="p-2">
+                                <h6 class="mb-2 text-primary"><strong>${nombre}</strong></h6>
+                                <p class="mb-1"><i class="fas fa-dollar-sign text-success"></i> Ventas: <strong>$${ventas.toLocaleString()}</strong></p>
+                                <p class="mb-1"><i class="fas fa-users text-info"></i> Clientes: <strong>${clientes}</strong></p>
+                                <p class="mb-1"><i class="fas fa-map-marker-alt text-warning"></i> Depto: <strong>${obtenerDepartamentoPorCiudad(nombre)}</strong></p>
+                                <small class="text-muted">🖱️ Click en el círculo para filtrar</small>
+                            </div>
+                        `);
+
+                        circle.on('click', function(e) {
+                            e.originalEvent.stopPropagation();
+                            aplicarFiltro('ciudad', nombre.toUpperCase());
+                        });
+
+                        circle.on('mouseover', function() {
+                            this.setStyle({ weight: 5, fillOpacity: 0.9 });
+                        });
+
+                        circle.on('mouseout', function() {
+                            this.setStyle({
+                                weight: filtroActivo ? (circleColor === '#FF1744' ? 4 : 2) : 3,
+                                fillOpacity: filtroActivo ? (circleColor === '#FF1744' ? 0.8 : 0.3) : 0.7
+                            });
+                        });
+
+                        ciudadesAgregadas++;
+
+                    } catch (error) {
+                        console.error(`❌ Error procesando ciudad ${ciudad?.Ciudad || 'desconocida'}:`, error);
+                    }
+                });
+
+                console.log(`✅ Mapa completado: ${ciudadesAgregadas} ciudades agregadas`);
+
+            } catch (error) {
+                console.error('❌ Error crítico inicializando mapa:', error);
+                mapContainer.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <p class="text-muted">Error cargando el mapa</p>
+                            <button class="btn btn-sm btn-outline-primary" onclick="initializeMap()">
+                                <i class="fas fa-refresh"></i> Reintentar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function createTreemap() {
+            console.log('🟩 Creando treemap interactivo...');
+            const container = document.getElementById('treemapChart');
+            if (!container) return;
+
+            if (!treemapData || treemapData.length === 0) {
+                container.innerHTML = '<div class="text-center p-4"><p class="text-muted">Sin datos de treemap disponibles</p></div>';
+                return;
+            }
+
+            try {
+                const width = container.clientWidth || 400;
+                const height = 260;
+                container.innerHTML = '';
+
+                const svg = d3.select('#treemapChart').append('svg').attr('width', width).attr('height', height);
+
+                const data = {
+                    children: treemapData.map((item, index) => ({
+                        name: item.Name || 'Sin nombre',
+                        value: item.Value || 1000000,
+                        color: filtroActivo ?
+                            (filtroActivo.valor === (item.Name || 'Sin nombre').toUpperCase() ? '#FF1744' : '#BDBDBD') :
+                            vibrantPalette[index % vibrantPalette.length]
+                    }))
+                };
+
+                const root = d3.hierarchy(data).sum(d => d.value).sort((a, b) => b.value - a.value);
+                const treemap = d3.treemap().size([width, height]).padding(3);
+                treemap(root);
+
+                const cell = svg.selectAll('g')
+                    .data(root.leaves())
+                    .enter().append('g')
+                    .attr('transform', d => `translate(${d.x0},${d.y0})`)
+                    .style('cursor', 'pointer');
+
+                cell.append('rect')
+                    .attr('width', d => d.x1 - d.x0)
+                    .attr('height', d => d.y1 - d.y0)
+                    .attr('fill', d => d.data.color)
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 2)
+                    .attr('rx', 4);
+
+                cell.append('text')
+                    .attr('x', 6)
+                    .attr('y', 18)
+                    .attr('font-size', '12px')
+                    .attr('font-weight', 'bold')
+                    .attr('fill', '#fff')
+                    .style('text-shadow', '1px 1px 2px rgba(0,0,0,0.7)')
+                    .text(d => {
+                        const width = d.x1 - d.x0;
+                        const text = d.data.name;
+                        return width > 80 ? text : text.substring(0, Math.floor(width / 8));
+                    });
+
+                cell.on('click', function(event, d) {
+                    event.stopPropagation();
+                    const regionName = d.data.name.toUpperCase();
+
+                    const esCiudad = datosOriginales.ciudades.some(c => c.Ubicacion === regionName);
+                    const esDepartamento = datosOriginales.departamentos.some(dep => dep.Ubicacion === regionName);
+
+                    if (esCiudad) {
+                        aplicarFiltro('ciudad', regionName);
+                    } else if (esDepartamento) {
+                        aplicarFiltro('departamento', regionName);
+                    }
+                });
+
+                cell.on('mouseover', function(event, d) {
+                    d3.select(this).select('rect').attr('stroke-width', 4).style('filter', 'brightness(1.2)');
+
+                    const tooltip = d3.select('body').append('div')
+                        .attr('class', 'treemap-tooltip')
+                        .style('opacity', 0);
+
+                    tooltip.transition().duration(200).style('opacity', 1);
+                    tooltip.html(`
+                        <strong>${d.data.name}</strong><br>
+                        Valor: $${d.data.value.toLocaleString()}<br>
+                        <small>🖱️ Click para filtrar</small>
+                    `)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function() {
+                    d3.select(this).select('rect').attr('stroke-width', 2).style('filter', 'none');
+                    d3.selectAll('.treemap-tooltip').remove();
+                });
+
+                console.log('✅ Treemap interactivo OK');
+            } catch (error) {
+                console.error('❌ Error treemap:', error);
+                container.innerHTML = '<div class="text-center p-4"><p class="text-danger">Error en treemap</p></div>';
+            }
+        }
+
+        function createCharts() {
+            console.log('📊 Creando gráficos interactivos...');
+
+            // Preparar datos con fallback
+            const ciudadesData = ventasPorCiudad && ventasPorCiudad.length > 0 ? ventasPorCiudad : [
+                {Ubicacion: 'BOGOTÁ', TotalVentas: 35900000, CantidadPedidos: 15, TicketPromedio: 2393333},
+                {Ubicacion: 'CHÍA', TotalVentas: 6200000, CantidadPedidos: 1, TicketPromedio: 6200000},
+                {Ubicacion: 'MEDELLÍN', TotalVentas: 4700000, CantidadPedidos: 1, TicketPromedio: 4700000}
+            ];
+
+            const departamentosData = ventasPorDepartamento && ventasPorDepartamento.length > 0 ? ventasPorDepartamento : [
+                {Ubicacion: 'BOGOTÁ DC', TotalVentas: 35900000, CantidadPedidos: 15},
+                {Ubicacion: 'CUNDINAMARCA', TotalVentas: 6200000, CantidadPedidos: 1},
+                {Ubicacion: 'ANTIOQUIA', TotalVentas: 4700000, CantidadPedidos: 1}
+            ];
+
+            const clientesData = clientesPorCiudad && clientesPorCiudad.length > 0 ? clientesPorCiudad : [
+                {Ubicacion: 'BOGOTÁ', TotalClientes: 5, ClientesActivos: 5},
+                {Ubicacion: 'CHÍA', TotalClientes: 1, ClientesActivos: 1},
+                {Ubicacion: 'MEDELLÍN', TotalClientes: 1, ClientesActivos: 1}
+            ];
+
+            console.log('📊 DATOS FINALES PARA GRÁFICOS:');
+            console.log('Ciudades:', ciudadesData.map(c => c.Ubicacion));
+            console.log('Departamentos:', departamentosData.map(d => d.Ubicacion));
+
+            // Guardar datos originales
+            datosOriginales = { ciudades: ciudadesData, departamentos: departamentosData, clientes: clientesData };
+
+            // Crear gráficos con interactividad
+            createInteractiveCharts(ciudadesData, departamentosData, clientesData);
+        }
+
+        function createInteractiveCharts(ciudadesData, departamentosData, clientesData) {
+            console.log('🎨 Creando gráficos con datos:', {
+                ciudades: ciudadesData.length,
+                departamentos: departamentosData.length,
+                clientes: clientesData.length
+            });
+
+            // Destruir gráficos existentes
+            Object.values(chartInstances).forEach(chart => { if (chart) chart.destroy(); });
+            chartInstances = {};
+
+            // Función para obtener colores dinámicos
+            const getBackgroundColor = (data, tipo, index) => {
+                if (filtroActivo && filtroActivo.tipo === tipo) {
+                    return data[index].Ubicacion === filtroActivo.valor ? '#FF1744' : '#BDBDBD';
+                }
+                return vibrantPalette[index % vibrantPalette.length];
+            };
+
+            // 1. PIE CHART - DEPARTAMENTOS
+            console.log('🥧 Creando PIE CHART con departamentos:', departamentosData.map(d => d.Ubicacion));
+            chartInstances.pie = new Chart(document.getElementById('pieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: departamentosData.map(d => d.Ubicacion),
+                    datasets: [{
+                        data: departamentosData.map(d => d.TotalVentas),
+                        backgroundColor: departamentosData.map((d, i) => getBackgroundColor(departamentosData, 'departamento', i)),
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        hoverBorderWidth: 5,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const departamento = departamentosData[index].Ubicacion;
+                            aplicarFiltro('departamento', departamento);
+                        }
+                    }
+                }
+            });
+
+            // 2. BAR CHART - CIUDADES
+            console.log('📊 Creando BAR CHART con ciudades:', ciudadesData.map(c => c.Ubicacion));
+            chartInstances.bar = new Chart(document.getElementById('ventasCiudadChart'), {
+                type: 'bar',
+                data: {
+                    labels: ciudadesData.map(c => c.Ubicacion),
+                    datasets: [{
+                        label: 'Ventas (COP)',
+                        data: ciudadesData.map(c => c.TotalVentas),
+                        backgroundColor: ciudadesData.map((c, i) => getBackgroundColor(ciudadesData, 'ciudad', i) + '90'),
+                        borderColor: ciudadesData.map((c, i) => getBackgroundColor(ciudadesData, 'ciudad', i)),
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        hoverBackgroundColor: ciudadesData.map((c, i) => getBackgroundColor(ciudadesData, 'ciudad', i)),
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000000).toFixed(1) + 'M';
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const ciudad = ciudadesData[index].Ubicacion;
+                            aplicarFiltro('ciudad', ciudad);
+                        }
+                    }
+                }
+            });
+
+            // 3. CLIENTES CHART
+            chartInstances.clientes = new Chart(document.getElementById('clientesCiudadChart'), {
+                type: 'bar',
+                data: {
+                    labels: clientesData.map(c => c.Ubicacion),
+                    datasets: [{
+                        label: 'Total Clientes',
+                        data: clientesData.map(c => c.TotalClientes),
+                        backgroundColor: clientesData.map((c, i) => getBackgroundColor(clientesData, 'ciudad', i) + '85'),
+                        borderColor: clientesData.map((c, i) => getBackgroundColor(clientesData, 'ciudad', i)),
+                        borderWidth: 2,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const ciudad = clientesData[index].Ubicacion;
+                            aplicarFiltro('ciudad', ciudad);
+                        }
+                    }
+                }
+            });
+
+            // 4. TICKET PROMEDIO
+            chartInstances.ticket = new Chart(document.getElementById('ticketPromedioChart'), {
+                type: 'line',
+                data: {
+                    labels: ciudadesData.map(c => c.Ubicacion),
+                    datasets: [{
+                        label: 'Ticket Promedio',
+                        data: ciudadesData.map(c => c.TicketPromedio),
+                        borderColor: filtroActivo ? '#FF1744' : vibrantPalette[4],
+                        backgroundColor: filtroActivo ? 'rgba(255,23,68,0.1)' : 'rgba(255,234,167,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: ciudadesData.map((c, i) => getBackgroundColor(ciudadesData, 'ciudad', i)),
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        pointRadius: 6,
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(0) + 'K';
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const ciudad = ciudadesData[index].Ubicacion;
+                            aplicarFiltro('ciudad', ciudad);
+                        }
+                    }
+                }
+            });
+
+            // 5. POLAR CHART
+            chartInstances.polar = new Chart(document.getElementById('pedidosDepartamentoChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: departamentosData.map(d => d.Ubicacion),
+                    datasets: [{
+                        data: departamentosData.map(d => d.CantidadPedidos),
+                        backgroundColor: departamentosData.map((d, i) => getBackgroundColor(departamentosData, 'departamento', i) + '70'),
+                        borderColor: departamentosData.map((d, i) => getBackgroundColor(departamentosData, 'departamento', i)),
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const departamento = departamentosData[index].Ubicacion;
+                            aplicarFiltro('departamento', departamento);
+                        }
+                    }
+                }
+            });
+
+            // 6. BUBBLE CHART
+            chartInstances.bubble = new Chart(document.getElementById('densidadClientesChart'), {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Ciudades',
+                        data: ciudadesData.slice(0, 8).map((ciudad, index) => ({
+                            x: ciudad.TotalVentas,
+                            y: clientesData.find(c => c.Ubicacion === ciudad.Ubicacion)?.TotalClientes || 10,
+                            r: Math.sqrt(ciudad.CantidadPedidos) * 4,
+                            ciudad: ciudad.Ubicacion
+                        })),
+                        backgroundColor: ciudadesData.slice(0, 8).map((c, i) => getBackgroundColor(ciudadesData, 'ciudad', i) + '60'),
+                        borderColor: ciudadesData.slice(0, 8).map((c, i) => getBackgroundColor(ciudadesData, 'ciudad', i)),
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000000).toFixed(1) + 'M';
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const dataPoint = elements[0].element.$context.raw;
+                            if (dataPoint && dataPoint.ciudad) {
+                                aplicarFiltro('ciudad', dataPoint.ciudad);
+                            }
+                        }
+                    }
+                }
+            });
+
+            console.log('✅ Gráficos interactivos completados');
+        }
+
+        // FUNCIÓN PRINCIPAL DE FILTRADO MEJORADA
+        function aplicarFiltro(tipo, valor) {
+            console.log(`🎯 FILTRO APLICADO: ${tipo} = ${valor}`);
+
+            // Toggle
+            if (filtroActivo && filtroActivo.tipo === tipo && filtroActivo.valor === valor) {
+                quitarFiltros();
+                return;
+            }
+
+            filtroActivo = { tipo: tipo, valor: valor };
+
+            // Filtrar datos con mejor lógica
+            let ciudadesFiltradas, departamentosFiltrados, clientesFiltrados;
+
+            if (tipo === 'ciudad') {
+                console.log(`🏙️ Filtrando por ciudad: ${valor}`);
+                ciudadesFiltradas = datosOriginales.ciudades.filter(c => c.Ubicacion === valor);
+                clientesFiltrados = datosOriginales.clientes.filter(c => c.Ubicacion === valor);
+
+                // CORREGIR: Encontrar departamento usando la función mejorada
+                const departamentoCiudad = obtenerDepartamentoPorCiudad(valor);
+                console.log(`📍 Ciudad ${valor} pertenece a departamento: ${departamentoCiudad}`);
+
+                if (departamentoCiudad !== 'N/A') {
+                    departamentosFiltrados = datosOriginales.departamentos.filter(d =>
+                        d.Ubicacion.toUpperCase() === departamentoCiudad.toUpperCase()
+                    );
+                } else {
+                    departamentosFiltrados = datosOriginales.departamentos;
+                }
+
+            } else if (tipo === 'departamento') {
+                console.log(`🗺️ Filtrando por departamento: ${valor}`);
+
+                const ciudadesDelDepto = obtenerCiudadesDelDepartamento(valor);
+                console.log(`📍 Ciudades en ${valor}:`, ciudadesDelDepto);
+
+                ciudadesFiltradas = datosOriginales.ciudades.filter(c =>
+                    ciudadesDelDepto.includes(c.Ubicacion.toUpperCase())
+                );
+                clientesFiltrados = datosOriginales.clientes.filter(c =>
+                    ciudadesDelDepto.includes(c.Ubicacion.toUpperCase())
+                );
+                departamentosFiltrados = datosOriginales.departamentos.filter(d =>
+                    d.Ubicacion.toUpperCase() === valor.toUpperCase()
+                );
+
+                console.log(`📊 Datos filtrados para ${valor}:`, {
+                    ciudades: ciudadesFiltradas.length,
+                    clientes: clientesFiltrados.length,
+                    departamentos: departamentosFiltrados.length
+                });
+            }
+
+            // CORREGIR: Validar que tengamos datos antes de actualizar
+            if (ciudadesFiltradas.length === 0) {
+                console.warn(`⚠️ No se encontraron datos para ${tipo}: ${valor}`);
+                filtroActivo = null;
+                alert(`No se encontraron datos para ${tipo}: ${valor}`);
+                return;
+            }
+
+            // Actualizar TODO con datos validados
+            actualizarKPIs(ciudadesFiltradas, clientesFiltrados);
+            createInteractiveCharts(ciudadesFiltradas, departamentosFiltrados, clientesFiltrados);
+
+            // CORREGIR: Recrear mapa y treemap de forma más segura
+            setTimeout(() => {
+                try {
+                    initializeMap();
+                    createTreemap();
+                } catch (error) {
+                    console.error('Error recreando mapa/treemap:', error);
+                }
+            }, 100);
+
+            console.log(`✅ Filtro aplicado exitosamente para ${tipo}: ${valor}`);
+        }
+
+        function quitarFiltros() {
+            console.log('🔄 QUITANDO FILTROS');
+            filtroActivo = null;
+            restaurarKPIs();
+            createInteractiveCharts(datosOriginales.ciudades, datosOriginales.departamentos, datosOriginales.clientes);
+
+            // Recrear mapa y treemap sin filtros
+            setTimeout(() => {
+                initializeMap();
+                createTreemap();
+            }, 100);
+        }
+
+        function actualizarKPIs(ciudadesData, clientesData) {
+            if (!ciudadesData || ciudadesData.length === 0) return;
+
+            const totalVentas = ciudadesData.reduce((sum, c) => sum + (c.TotalVentas || 0), 0);
+            const totalPedidos = ciudadesData.reduce((sum, c) => sum + (c.CantidadPedidos || 0), 0);
+            const totalClientes = clientesData.reduce((sum, c) => sum + (c.TotalClientes || 0), 0);
+            const ciudadTop = ciudadesData.reduce((max, ciudad) =>
+                (ciudad.TotalVentas || 0) > (max.TotalVentas || 0) ? ciudad : max, ciudadesData[0] || {});
+
+            // Actualizar cards con animación
+            const cards = document.querySelectorAll('.metric-card');
+            const cardValues = document.querySelectorAll('.metric-card h3');
+            const cardSubtexts = document.querySelectorAll('.metric-card small');
+
+            cards.forEach(card => {
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => card.style.transform = 'scale(1)', 150);
+            });
+
+            // CORREGIR: Actualizar todos los KPIs correctamente
+            if (cardValues[0]) cardValues[0].textContent = ciudadesData.length;
+            if (cardValues[1]) {
+                const departamentosUnicos = new Set(ciudadesData.map(c => obtenerDepartamentoPorCiudad(c.Ubicacion)).filter(d => d !== 'N/A'));
+                cardValues[1].textContent = departamentosUnicos.size;
+            }
+            // CORREGIR: Mostrar la ciudad top actual, no la original
+            if (cardValues[2]) cardValues[2].textContent = ciudadTop.Ubicacion || 'N/A';
+            if (cardValues[3]) cardValues[3].textContent = totalClientes;
+
+            // CORREGIR: Actualizar el subtexto del KPI Top Ciudad con las ventas reales de la ciudad filtrada
+            if (cardSubtexts[2]) {
+                const ventasTopCiudad = ciudadTop.TotalVentas || 0;
+                cardSubtexts[2].textContent = ventasTopCiudad.toLocaleString('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0
+                });
+            }
+
+            // Actualizar otros subtextos
+            if (cardSubtexts[0]) {
+                cardSubtexts[0].textContent = filtroActivo ?
+                    `Filtrado por ${filtroActivo.tipo}` :
+                    'Con clientes activos';
+            }
+            if (cardSubtexts[1]) {
+                cardSubtexts[1].textContent = filtroActivo ?
+                    'En selección actual' :
+                    'Cobertura nacional';
+            }
+            if (cardSubtexts[3]) {
+                cardSubtexts[3].textContent = filtroActivo ?
+                    `${totalPedidos.toLocaleString()} pedidos en selección` :
+                    `${totalPedidos.toLocaleString()} pedidos realizados`;
+            }
+
+            // Actualizar información general
+            const infoCard = document.getElementById('infoGeneralCard');
+            if (infoCard) {
+                infoCard.innerHTML = `
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-2"><strong><i class="fas fa-city text-primary"></i> Ciudades:</strong> ${ciudadesData.length}</p>
+                            <p class="mb-2"><strong><i class="fas fa-users text-success"></i> Clientes:</strong> ${totalClientes.toLocaleString()}</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-2"><strong><i class="fas fa-shopping-cart text-warning"></i> Pedidos:</strong> ${totalPedidos.toLocaleString()}</p>
+                            <p class="mb-2"><strong><i class="fas fa-dollar-sign text-info"></i> Ventas:</strong> ${totalVentas.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</p>
+                        </div>
+                    </div>
+                    ${filtroActivo ? `<hr><small class="text-muted">📊 Filtrado por ${filtroActivo.tipo}: ${filtroActivo.valor}</small>` : ''}
+                `;
+            }
+
+            // Actualizar tabla
+            actualizarTablaFiltrada(ciudadesData, clientesData);
+
+            console.log('✅ KPIs actualizados:', {
+                ciudades: ciudadesData.length,
+                ciudadTop: ciudadTop.Ubicacion,
+                ventasCiudadTop: ciudadTop.TotalVentas,
+                totalClientes: totalClientes,
+                totalPedidos: totalPedidos
+            });
+        }
+
+        function restaurarKPIs() {
+            const cardValues = document.querySelectorAll('.metric-card h3');
+            const cardSubtexts = document.querySelectorAll('.metric-card small');
+
+            if (cardValues[0]) cardValues[0].textContent = datosOriginales.ciudades.length;
+            if (cardValues[1]) {
+                const departamentosUnicos = new Set(datosOriginales.ciudades.map(c => obtenerDepartamentoPorCiudad(c.Ubicacion)).filter(d => d !== 'N/A'));
+                cardValues[1].textContent = departamentosUnicos.size;
+            }
+            if (cardValues[2]) cardValues[2].textContent = datosOriginales.ciudades[0]?.Ubicacion || 'N/A';
+            if (cardValues[3]) cardValues[3].textContent = datosOriginales.clientes.reduce((sum, c) => sum + (c.TotalClientes || 0), 0);
+
+            // Restaurar subtextos originales
+            if (cardSubtexts[0]) cardSubtexts[0].textContent = 'Con clientes activos';
+            if (cardSubtexts[1]) cardSubtexts[1].textContent = 'Cobertura nacional';
+            if (cardSubtexts[2]) {
+                const ventasTop = datosOriginales.ciudades[0]?.TotalVentas || 0;
+                cardSubtexts[2].textContent = ventasTop.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
+            }
+            if (cardSubtexts[3]) {
+                const totalPedidos = datosOriginales.ciudades.reduce((sum, c) => sum + (c.CantidadPedidos || 0), 0);
+                cardSubtexts[3].textContent = `${totalPedidos.toLocaleString()} pedidos realizados`;
+            }
+
+            const infoCard = document.getElementById('infoGeneralCard');
+            if (infoCard) {
+                const totalVentas = datosOriginales.ciudades.reduce((sum, c) => sum + (c.TotalVentas || 0), 0);
+                infoCard.innerHTML = `
+                    <p><strong>Total Ciudades:</strong> ${datosOriginales.ciudades.length}</p>
+                    <p><strong>Total Departamentos:</strong> ${new Set(datosOriginales.ciudades.map(c => obtenerDepartamentoPorCiudad(c.Ubicacion)).filter(d => d !== 'N/A')).size}</p>
+                    <p><strong>Ciudad Top:</strong> ${datosOriginales.ciudades[0]?.Ubicacion || 'N/A'}</p>
+                    <p><strong>Ventas Top:</strong> ${totalVentas.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</p>
+                `;
+            }
+        }
+
+        function actualizarTablaFiltrada(ciudadesData, clientesData) {
+            const tableBody = document.querySelector('#ubicacionesTable tbody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = '';
+            ciudadesData.slice(0, 15).forEach(ciudad => {
+                const clientesInfo = clientesData.find(c => c.Ubicacion === ciudad.Ubicacion);
+                const clientes = clientesInfo?.TotalClientes || 0;
+                const performance = (ciudad.TotalVentas || 0) > 10000000 ? "Alta" : "Media";
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${ciudad.Ubicacion.charAt(0) + ciudad.Ubicacion.slice(1).toLowerCase()}</strong></td>
+                    <td>${obtenerDepartamentoPorCiudad(ciudad.Ubicacion)}</td>
+                    <td>${(ciudad.TotalVentas || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</td>
+                    <td>${clientes.toLocaleString()}</td>
+                    <td>${(ciudad.CantidadPedidos || 0).toLocaleString()}</td>
+                    <td>${(ciudad.TicketPromedio || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}</td>
+                    <td><span class="badge bg-${performance === "Alta" ? "success" : "warning"}">${performance}</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function obtenerCiudadesDelDepartamento(departamento) {
+            const mapeo = {
+                'BOGOTÁ DC': ['BOGOTÁ', 'BOGOTA'],
+                'CUNDINAMARCA': ['CHÍA', 'CHIA', 'SOACHA', 'FUSAGASUGÁ', 'GIRARDOT', 'ZIPAQUIRÁ', 'FACATATIVÁ', 'CAJICÁ', 'LA CALERA'],
+                'ANTIOQUIA': ['MEDELLÍN', 'MEDELLIN', 'BELLO', 'ITAGÜÍ', 'ENVIGADO', 'RIONEGRO', 'SABANETA', 'COPACABANA', 'APARTADÓ', 'TURBO'],
+                'VALLE DEL CAUCA': ['CALI', 'PALMIRA', 'BUENAVENTURA', 'TULUÁ', 'CARTAGO', 'BUGA', 'JAMUNDÍ', 'YUMBO'],
+                'ATLÁNTICO': ['BARRANQUILLA', 'SOLEDAD', 'MALAMBO', 'PUERTO COLOMBIA', 'GALAPA', 'BARANOA'],
+                'BOLÍVAR': ['CARTAGENA', 'MAGANGUÉ', 'TURBACO', 'ARJONA', 'EL CARMEN DE BOLÍVAR'],
+                'SANTANDER': ['BUCARAMANGA', 'FLORIDABLANCA', 'GIRÓN', 'PIEDECUESTA', 'BARRANCABERMEJA', 'SAN GIL'],
+                'NORTE DE SANTANDER': ['CÚCUTA', 'CUCUTA', 'VILLA DEL ROSARIO', 'LOS PATIOS', 'OCAÑA'],
+                'TOLIMA': ['IBAGUÉ', 'IBAGUE', 'ESPINAL', 'MELGAR', 'HONDA', 'MARIQUITA'],
+                'HUILA': ['NEIVA', 'PITALITO', 'GARZÓN', 'LA PLATA'],
+                'RISARALDA': ['PEREIRA', 'DOSQUEBRADAS', 'LA VIRGINIA', 'SANTA ROSA DE CABAL'],
+                'QUINDÍO': ['ARMENIA', 'CALARCÁ', 'LA TEBAIDA', 'MONTENEGRO'],
+                'CALDAS': ['MANIZALES', 'VILLAMARÍA', 'CHINCHINÁ', 'LA DORADA'],
+                'CÓRDOBA': ['MONTERÍA', 'LORICA', 'CERETÉ', 'SAHAGÚN'],
+                'SUCRE': ['SINCELEJO', 'COROZAL', 'SAMPUÉS'],
+                'MAGDALENA': ['SANTA MARTA', 'CIÉNAGA', 'FUNDACIÓN', 'ARACATACA'],
+                'LA GUAJIRA': ['RIOHACHA', 'MAICAO'],
+                'CESAR': ['VALLEDUPAR', 'AGUACHICA', 'BOSCONIA'],
+                'NARIÑO': ['PASTO', 'TUMACO', 'IPIALES'],
+                'CAUCA': ['POPAYÁN', 'SANTANDER DE QUILICHAO'],
+                'BOYACÁ': ['TUNJA', 'DUITAMA', 'SOGAMOSO', 'CHIQUINQUIRÁ'],
+                'CASANARE': ['YOPAL', 'AGUAZUL', 'VILLANUEVA'],
+                'META': ['VILLAVICENCIO', 'ACACÍAS', 'GRANADA']
+            };
+            return mapeo[departamento.toUpperCase()] || [];
+        }
+
+        function obtenerDepartamentoPorCiudad(ciudad) {
+            const mapeo = {
+                // BOGOTÁ DC
+                'BOGOTÁ': 'Bogotá DC', 'BOGOTA': 'Bogotá DC',
+
+                // CUNDINAMARCA
+                'CHÍA': 'Cundinamarca', 'CHIA': 'Cundinamarca', 'SOACHA': 'Cundinamarca', 
+                'FUSAGASUGÁ': 'Cundinamarca', 'GIRARDOT': 'Cundinamarca', 'ZIPAQUIRÁ': 'Cundinamarca',
+                'FACATATIVÁ': 'Cundinamarca', 'CAJICÁ': 'Cundinamarca', 'LA CALERA': 'Cundinamarca',
+
+                // ANTIOQUIA
+                'MEDELLÍN': 'Antioquia', 'MEDELLIN': 'Antioquia', 'BELLO': 'Antioquia',
+                'ITAGÜÍ': 'Antioquia', 'ENVIGADO': 'Antioquia', 'RIONEGRO': 'Antioquia',
+                'SABANETA': 'Antioquia', 'COPACABANA': 'Antioquia', 'APARTADÓ': 'Antioquia', 'TURBO': 'Antioquia',
+
+                // VALLE DEL CAUCA
+                'CALI': 'Valle del Cauca', 'PALMIRA': 'Valle del Cauca', 'BUENAVENTURA': 'Valle del Cauca',
+                'TULUÁ': 'Valle del Cauca', 'CARTAGO': 'Valle del Cauca', 'BUGA': 'Valle del Cauca',
+                'JAMUNDÍ': 'Valle del Cauca', 'YUMBO': 'Valle del Cauca',
+
+                // ATLÁNTICO
+                'BARRANQUILLA': 'Atlántico', 'SOLEDAD': 'Atlántico', 'MALAMBO': 'Atlántico',
+                'PUERTO COLOMBIA': 'Atlántico', 'GALAPA': 'Atlántico', 'BARANOA': 'Atlántico',
+
+                // BOLÍVAR
+                'CARTAGENA': 'Bolívar', 'MAGANGUÉ': 'Bolívar', 'TURBACO': 'Bolívar',
+                'ARJONA': 'Bolívar', 'EL CARMEN DE BOLÍVAR': 'Bolívar',
+
+                // SANTANDER
+                'BUCARAMANGA': 'Santander', 'FLORIDABLANCA': 'Santander', 'GIRÓN': 'Santander',
+                'PIEDECUESTA': 'Santander', 'BARRANCABERMEJA': 'Santander', 'SAN GIL': 'Santander',
+
+                // OTROS DEPARTAMENTOS
+                'CÚCUTA': 'Norte de Santander', 'CUCUTA': 'Norte de Santander', 'VILLA DEL ROSARIO': 'Norte de Santander',
+                'LOS PATIOS': 'Norte de Santander', 'OCAÑA': 'Norte de Santander',
+                'IBAGUÉ': 'Tolima', 'IBAGUE': 'Tolima', 'ESPINAL': 'Tolima', 'MELGAR': 'Tolima',
+                'NEIVA': 'Huila', 'PITALITO': 'Huila', 'GARZÓN': 'Huila', 'LA PLATA': 'Huila',
+                'PEREIRA': 'Risaralda', 'DOSQUEBRADAS': 'Risaralda', 'LA VIRGINIA': 'Risaralda',
+                'ARMENIA': 'Quindío', 'CALARCÁ': 'Quindío', 'LA TEBAIDA': 'Quindío',
+                'MANIZALES': 'Caldas', 'VILLAMARÍA': 'Caldas', 'CHINCHINÁ': 'Caldas',
+                'MONTERÍA': 'Córdoba', 'LORICA': 'Córdoba', 'CERETÉ': 'Córdoba',
+                'SINCELEJO': 'Sucre', 'COROZAL': 'Sucre', 'SAMPUÉS': 'Sucre',
+                'SANTA MARTA': 'Magdalena', 'CIÉNAGA': 'Magdalena', 'FUNDACIÓN': 'Magdalena',
+                'RIOHACHA': 'La Guajira', 'MAICAO': 'La Guajira',
+                'VALLEDUPAR': 'Cesar', 'AGUACHICA': 'Cesar', 'BOSCONIA': 'Cesar',
+                'PASTO': 'Nariño', 'TUMACO': 'Nariño', 'IPIALES': 'Nariño',
+                'POPAYÁN': 'Cauca', 'SANTANDER DE QUILICHAO': 'Cauca',
+                'TUNJA': 'Boyacá', 'DUITAMA': 'Boyacá', 'SOGAMOSO': 'Boyacá',
+                'YOPAL': 'Casanare', 'AGUAZUL': 'Casanare', 'VILLANUEVA': 'Casanare',
+                'VILLAVICENCIO': 'Meta', 'ACACÍAS': 'Meta', 'GRANADA': 'Meta'
+            };
+            return mapeo[ciudad.toUpperCase()] || 'N/A';
+        }
+
+        function mostrarIndicadorFiltro(tipo, valor) {
+            // NO HACER NADA - Quitamos el indicador molesto completamente
+        }
+
+        function quitarIndicadorFiltro() {
+            // NO HACER NADA - No hay indicador que quitar
+        }
+    });
+</script>
+
+<style>
+    /* Estilos personalizados para la tabla y gráficos */
+    #ubicacionesTable_wrapper {
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+    }
+
+    .dataTables_paginate {
+        padding: 0.5rem 0;
+        text-align: right;
+    }
+
+    .dataTables_paginate .btn {
+        min-width: 50px;
+        height: 38px;
+        padding: 0 12px;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        margin-left: 4px;
+    }
+
+    .dataTables_paginate .btn:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .dataTables_length {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .dataTables_length label {
+        margin-bottom: 0;
+    }
+
+    /* Tooltip para treemap */
+    .treemap-tooltip {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.8);
+        color: #ffffff;
+        padding: 10px;
+        border-radius: 4px;
+        pointer-events: none;
+        font-size: 0.85rem;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+</style>

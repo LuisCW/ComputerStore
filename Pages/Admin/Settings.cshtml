@@ -1,0 +1,418 @@
+@page
+@model ComputerStore.Pages.Admin.SettingsModel
+@{
+    ViewData["Title"] = "Configuración del Sistema";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-cogs me-2"></i>
+        Configuración del Sistema
+    </h1>
+    <div>
+        <a href="/Admin/Dashboard" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Mostrar mensajes -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @Model.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Estadísticas del Sistema -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Usuarios</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Settings.TotalUsuarios.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Productos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Settings.TotalProductos.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Pedidos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Settings.TotalPedidos.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Stock Bajo</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Settings.ProductosBajoStock.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario de Configuración -->
+<form method="post">
+    <div class="row">
+        <!-- Configuración General -->
+        <div class="col-xl-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-globe me-2"></i>Configuración General
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.SiteName" class="form-label"></label>
+                        <input asp-for="Settings.SiteName" class="form-control" />
+                        <span asp-validation-for="Settings.SiteName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.SiteDescription" class="form-label"></label>
+                        <textarea asp-for="Settings.SiteDescription" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Settings.SiteDescription" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.SiteEmail" class="form-label"></label>
+                        <input asp-for="Settings.SiteEmail" type="email" class="form-control" />
+                        <span asp-validation-for="Settings.SiteEmail" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.SitePhone" class="form-label"></label>
+                        <input asp-for="Settings.SitePhone" class="form-control" />
+                        <span asp-validation-for="Settings.SitePhone" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración de PayU -->
+        <div class="col-xl-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-credit-card me-2"></i>Configuración PayU
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.PayUApiKey" class="form-label"></label>
+                        <input asp-for="Settings.PayUApiKey" type="password" class="form-control" />
+                        <span asp-validation-for="Settings.PayUApiKey" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.PayUMerchantId" class="form-label"></label>
+                        <input asp-for="Settings.PayUMerchantId" class="form-control" />
+                        <span asp-validation-for="Settings.PayUMerchantId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.PayUAccountId" class="form-label"></label>
+                        <input asp-for="Settings.PayUAccountId" class="form-control" />
+                        <span asp-validation-for="Settings.PayUAccountId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="Settings.PayUTestMode" class="form-check-input" type="checkbox" />
+                        <label asp-for="Settings.PayUTestMode" class="form-check-label"></label>
+                    </div>
+
+                    <button type="submit" asp-page-handler="TestPayU" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-plug me-1"></i>Probar Conexión
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración de Envíos -->
+        <div class="col-xl-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-shipping-fast me-2"></i>Configuración de Envíos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.EnvioGratis" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="Settings.EnvioGratis" type="number" step="1000" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Settings.EnvioGratis" class="text-danger"></span>
+                        <small class="text-muted">Monto mínimo para envío gratis</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.CostoEnvioBase" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="Settings.CostoEnvioBase" type="number" step="1000" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Settings.CostoEnvioBase" class="text-danger"></span>
+                        <small class="text-muted">Costo base de envío para pedidos menores</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración de Inventario -->
+        <div class="col-xl-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-warehouse me-2"></i>Configuración de Inventario
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.StockMinimoGlobal" class="form-label"></label>
+                        <input asp-for="Settings.StockMinimoGlobal" type="number" min="0" class="form-control" />
+                        <span asp-validation-for="Settings.StockMinimoGlobal" class="text-danger"></span>
+                        <small class="text-muted">Stock mínimo por defecto para nuevos productos</small>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="Settings.AlertaStockBajo" class="form-check-input" type="checkbox" />
+                        <label asp-for="Settings.AlertaStockBajo" class="form-check-label"></label>
+                        <small class="text-muted d-block">Enviar notificaciones cuando el stock sea bajo</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración de Notificaciones -->
+        <div class="col-xl-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-secondary">
+                        <i class="fas fa-bell me-2"></i>Configuración de Notificaciones
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input asp-for="Settings.EmailNotificaciones" class="form-check-input" type="checkbox" />
+                        <label asp-for="Settings.EmailNotificaciones" class="form-check-label"></label>
+                        <small class="text-muted d-block">Enviar notificaciones por correo electrónico</small>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="Settings.SMSNotificaciones" class="form-check-input" type="checkbox" />
+                        <label asp-for="Settings.SMSNotificaciones" class="form-check-label"></label>
+                        <small class="text-muted d-block">Enviar notificaciones por SMS</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuración de Analytics -->
+        <div class="col-xl-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-dark">
+                        <i class="fas fa-chart-line me-2"></i>Configuración de Analytics
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="Settings.AnalyticsUrl" class="form-label"></label>
+                        <input asp-for="Settings.AnalyticsUrl" type="url" class="form-control" />
+                        <span asp-validation-for="Settings.AnalyticsUrl" class="text-danger"></span>
+                        <small class="text-muted">URL del servidor de analytics Python</small>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="Settings.AnalyticsEnabled" class="form-check-input" type="checkbox" />
+                        <label asp-for="Settings.AnalyticsEnabled" class="form-check-label"></label>
+                        <small class="text-muted d-block">Habilitar recolección de datos de analytics</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tools me-2"></i>Acciones del Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-save me-1"></i>Guardar Configuración
+                            </button>
+                            
+                            <button type="submit" asp-page-handler="ClearCache" class="btn btn-outline-warning me-2" 
+                                    onclick="return confirm('¿Está seguro de que desea limpiar el cache?')">
+                                <i class="fas fa-broom me-1"></i>Limpiar Cache
+                            </button>
+                            
+                            <button type="submit" asp-page-handler="OptimizeDatabase" class="btn btn-outline-info me-2"
+                                    onclick="return confirm('¿Está seguro de que desea optimizar la base de datos?')">
+                                <i class="fas fa-database me-1"></i>Optimizar BD
+                            </button>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <a href="/Admin/Dashboard" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Información del Sistema -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-dark">
+                    <i class="fas fa-info-circle me-2"></i>Información del Sistema
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Versión de .NET:</strong></td>
+                                <td>.NET 8.0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Base de datos:</strong></td>
+                                <td>PostgreSQL</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Zona horaria:</strong></td>
+                                <td>GMT-5 (Colombia)</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Servidor web:</strong></td>
+                                <td>Kestrel</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Última actualización:</strong></td>
+                                <td>@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estado:</strong></td>
+                                <td><span class="badge bg-success">Operativo</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Auto-guardar configuraciones cada vez que se cambien
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    // Marcar como modificado
+                    if (!document.title.includes('*')) {
+                        document.title = '* ' + document.title;
+                    }
+                });
+            });
+
+            // Confirmación antes de salir si hay cambios
+            window.addEventListener('beforeunload', function(e) {
+                if (document.title.includes('*')) {
+                    e.preventDefault();
+                    e.returnValue = '¿Está seguro de que desea salir sin guardar los cambios?';
+                    return e.returnValue;
+                }
+            });
+
+            // Remover asterisco al guardar
+            document.querySelector('form').addEventListener('submit', function() {
+                document.title = document.title.replace('* ', '');
+            });
+        });
+    </script>
+}

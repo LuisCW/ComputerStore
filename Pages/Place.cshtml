@@ -1,0 +1,269 @@
+﻿@page
+@model ComputerStore.Pages.PlaceModel
+@{
+    ViewBag.Title = "Nuestra Ubicación";
+}
+
+<div class="container mt-5">
+    <!-- Header con imagen de fondo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-primary text-white p-5 rounded shadow" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/store-bg.jpg') center/cover;">
+                <h1 class="display-4">Visítanos en nuestra tienda</h1>
+                <p class="lead">Encuentra los mejores equipos y la mejor asesoría en tecnología en Chapinero, Bogotá</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de contacto y mapa -->
+    <div class="row">
+        <!-- Información de la tienda -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title text-primary mb-4">
+                        <i class="fas fa-store me-2"></i>
+                        Información de Contacto
+                    </h3>
+                    <div class="mb-3">
+                        <h5><i class="fas fa-clock me-2"></i>Horario de Atención</h5>
+                        <p class="ms-4">
+                            Lunes a Viernes: 9:00 AM - 7:00 PM<br>
+                            Sábados: 9:00 AM - 7:00 PM<br>
+                            Domingos: Cerrado
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <h5><i class="fas fa-map-marker-alt me-2"></i>Dirección</h5>
+                        <p class="ms-4">
+                            Cra. 15 #78-33<br>
+                            Chapinero, Bogotá<br>
+                            Cundinamarca, Colombia
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <h5><i class="fas fa-phone me-2"></i>Teléfono</h5>
+                        <p class="ms-4">
+                            +57 323 768 4390
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <h5><i class="fab fa-whatsapp me-2 text-success"></i>WhatsApp</h5>
+                        <p class="ms-4">
+                            <a href="https://wa.me/573237684390" class="text-success" target="_blank">
+                                +57 323 768 4390
+                            </a>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <h5><i class="fas fa-envelope me-2"></i>Email</h5>
+                        <p class="ms-4">
+                            <a href="mailto:lugapemu98@gmail.com" class="text-primary">
+                                lugapemu98@gmail.com
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mapa de Google -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title text-primary mb-4">
+                        <i class="fas fa-map-marked-alt me-2"></i>
+                        Encuéntranos aquí
+                    </h3>
+                    <div id="map" style="height: 400px;" class="rounded"></div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-map-pin me-1"></i>
+                            Estamos ubicados en el corazón de Chapinero, con fácil acceso en transporte público
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Características de la tienda -->
+    <div class="row mt-4">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <i class="fas fa-tools text-primary fa-3x mb-3"></i>
+                    <h4>Servicio Técnico Especializado</h4>
+                    <p>Soporte técnico profesional y mantenimiento de equipos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <i class="fas fa-handshake text-primary fa-3x mb-3"></i>
+                    <h4>Atención Personalizada</h4>
+                    <p>Asesoría especializada para encontrar el equipo perfecto</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-sm h-100">
+                <div class="card-body">
+                    <i class="fas fa-shield-alt text-primary fa-3x mb-3"></i>
+                    <h4>Productos Garantizados</h4>
+                    <p>Equipos de calidad con garantía y respaldo técnico</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información adicional de transporte -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h4 class="text-primary mb-3">
+                        <i class="fas fa-route me-2"></i>
+                        Cómo llegar
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-subway me-2 text-info"></i>TransMilenio</h6>
+                            <p class="text-muted small">
+                                Estación Calle 76 (Línea Troncal Norte)<br>
+                                Camina 3 cuadras hacia el oriente
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-bus me-2 text-success"></i>Buses urbanos</h6>
+                            <p class="text-muted small">
+                                Rutas que pasan por la Carrera 15:<br>
+                                119, 120, 121, M90, M91
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-car me-2 text-warning"></i>En vehículo</h6>
+                            <p class="text-muted small">
+                                Parqueaderos públicos disponibles<br>
+                                en el sector de Chapinero
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Maps JavaScript -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMTvHc9OcxTmJHJ5_h3d85ugdArZQdRTw&callback=initMap"></script>
+    <script>
+        function initMap() {
+            // Coordenadas exactas de tu tienda en Chapinero, Bogotá
+            const storeLocation = { lat: 4.6648897, lng: -74.0582092 };
+
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 16,
+                center: storeLocation,
+                mapTypeId: 'roadmap',
+                styles: [
+                    {
+                        featureType: 'poi.business',
+                        elementType: 'labels',
+                        stylers: [{ visibility: 'on' }]
+                    }
+                ]
+            });
+
+            // Marcador de la tienda
+            const marker = new google.maps.Marker({
+                position: storeLocation,
+                map: map,
+                title: "CompuHiperMegaRed - Tienda de Computadores",
+                animation: google.maps.Animation.DROP,
+                icon: {
+                    url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                    scaledSize: new google.maps.Size(32, 32)
+                }
+            });
+
+            // Info window con información completa
+            const contentString =
+                '<div class="p-3" style="max-width: 300px;">' +
+                '<h5 class="text-primary mb-2">CompuHiperMegaRed</h5>' +
+                '<p class="mb-2"><strong>Los mejores equipos informáticos</strong></p>' +
+                '<hr>' +
+                '<p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i><strong>Dirección:</strong><br>Cra. 15 #78-33, Chapinero, Bogotá</p>' +
+                '<p class="mb-1"><i class="fas fa-clock me-2"></i><strong>Horario:</strong><br>Lun-Sáb: 9:00 AM - 7:00 PM</p>' +
+                '<p class="mb-1"><i class="fas fa-phone me-2"></i><strong>Teléfono:</strong><br>+57 323 768 4390</p>' +
+                '<p class="mb-2"><i class="fas fa-envelope me-2"></i><strong>Email:</strong><br>lugapemu98@gmail.com</p>' +
+                '<div class="text-center mt-3">' +
+                '<a href="https://wa.me/573237684390" target="_blank" class="btn btn-success btn-sm me-2">' +
+                '<i class="fab fa-whatsapp me-1"></i>WhatsApp' +
+                '</a>' +
+                '<a href="tel:+573237684390" class="btn btn-primary btn-sm">' +
+                '<i class="fas fa-phone me-1"></i>Llamar' +
+                '</a>' +
+                '</div>' +
+                '</div>';
+
+            const infowindow = new google.maps.InfoWindow({
+                content: contentString,
+                maxWidth: 350
+            });
+
+            // Mostrar info window por defecto
+            infowindow.open(map, marker);
+
+            // Click en el marcador para mostrar/ocultar info
+            marker.addListener("click", () => {
+                infowindow.open(map, marker);
+            });
+
+            // Centrar el mapa en caso de redimensión
+            google.maps.event.addDomListener(window, "resize", function() {
+                map.setCenter(storeLocation);
+            });
+        }
+
+        // Inicializar el mapa cuando se carga la página
+        window.onload = initMap;
+    </script>
+
+    <style>
+        /* Estilos adicionales para el mapa */
+        #map {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+        }
+        
+        .card {
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .text-success a {
+            text-decoration: none;
+        }
+        
+        .text-success a:hover {
+            text-decoration: underline;
+        }
+        
+        .text-primary a {
+            text-decoration: none;
+        }
+        
+        .text-primary a:hover {
+            text-decoration: underline;
+        }
+    </style>
+}

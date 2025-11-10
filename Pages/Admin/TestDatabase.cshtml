@@ -1,0 +1,119 @@
+@page
+@model ComputerStore.Pages.Admin.TestDatabaseModel
+@{
+    ViewData["Title"] = "Test Conexión Base de Datos";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">?? Diagnóstico de Conexión a Base de Datos</h1>
+
+    @if (Model.ConnectionSuccessful.HasValue)
+  {
+        if (Model.ConnectionSuccessful.Value)
+        {
+  <div class="alert alert-success">
+     <h4>? Conexión Exitosa</h4>
+            <p><strong>Connection String:</strong> @Model.ConnectionString</p>
+      </div>
+
+    @if (Model.Tables != null && Model.Tables.Any())
+            {
+        <div class="card mb-4">
+<div class="card-header">
+  <h5>?? Tablas en la Base de Datos (@Model.Tables.Count)</h5>
+        </div>
+          <div class="card-body">
+     <ul class="list-group">
+ @foreach (var table in Model.Tables)
+  {
+           <li class="list-group-item">@table</li>
+  }
+  </ul>
+         </div>
+           </div>
+         }
+
+  @if (Model.TableCounts != null && Model.TableCounts.Any())
+{
+           <div class="card mb-4">
+  <div class="card-header">
+               <h5>?? Registros por Tabla</h5>
+         </div>
+    <div class="card-body">
+            <table class="table table-striped">
+          <thead>
+     <tr>
+         <th>Tabla</th>
+             <th>Registros</th>
+    </tr>
+          </thead>
+           <tbody>
+       @foreach (var (table, count) in Model.TableCounts)
+      {
+            <tr>
+        <td>@table</td>
+        <td>
+    @if (count >= 0)
+  {
+  <span class="badge bg-success">@count</span>
+        }
+ else
+  {
+   <span class="badge bg-warning">Error</span>
+  }
+      </td>
+       </tr>
+   }
+ </tbody>
+             </table>
+      </div>
+         </div>
+          }
+
+   @if (Model.Migrations != null && Model.Migrations.Any())
+       {
+          <div class="card mb-4">
+             <div class="card-header">
+       <h5>?? Migraciones Aplicadas (@Model.Migrations.Count)</h5>
+    </div>
+            <div class="card-body">
+ <ul class="list-group">
+   @foreach (var migration in Model.Migrations)
+                {
+         <li class="list-group-item">
+     <strong>@migration.Key</strong>
+      <span class="badge bg-info ms-2">EF Core @migration.Value</span>
+  </li>
+          }
+      </ul>
+                </div>
+          </div>
+      }
+        }
+      else
+    {
+       <div class="alert alert-danger">
+        <h4>? Error de Conexión</h4>
+      <p><strong>Connection String:</strong> @Model.ConnectionString</p>
+          <hr>
+        <h5>Detalles del Error:</h5>
+      <pre>@Model.ErrorMessage</pre>
+        </div>
+        }
+    }
+    else
+    {
+    <div class="alert alert-info">
+       <p>Haz clic en el botón para probar la conexión a la base de datos.</p>
+      </div>
+    }
+
+    <form method="post" class="mt-4">
+ <button type="submit" class="btn btn-primary">
+            ?? Probar Conexión
+        </button>
+ <a href="/Admin/Dashboard" class="btn btn-secondary">
+         ? Volver al Dashboard
+     </a>
+    </form>
+</div>

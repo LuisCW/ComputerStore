@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CompuHiperMegaRed Admin</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <!-- Favicon (ico para toda la app) -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+    <link rel="shortcut icon" href="~/favicon.ico">
+    <style>
+        /* Quick search dropdown */
+        .quicksearch-dropdown{position:absolute;z-index:2000;top:calc(100% + 2px);left:0;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:.5rem;box-shadow:0 10px 25px rgba(0,0,0,.08);display:none;max-height:340px;overflow:auto}
+        .quicksearch-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;border-bottom:1px solid #f1f5f9;cursor:pointer}
+        .quicksearch-item:hover{background:#f8fafc}
+        .quicksearch-item small{color:#6b7280}
+        .sidebar-brand-icon img{width:32px;height:32px}
+    </style>
+</head>
+<body class="admin-body">
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/Admin/Dashboard">
+                <div class="sidebar-brand-icon">
+                    <img src="~/favicon.ico" alt="Logo" />
+                </div>
+                <div class="sidebar-brand-text mx-3">CompuHiper<sup>Admin</sup></div>
+            </a>
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Dashboard" ? "active" : "")">
+                <a class="nav-link" href="/Admin/Dashboard">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">Gestión</div>
+
+            <!-- Nav Item - Products -->
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Products") == true ? "active" : "")">
+                <a class="nav-link" href="/Admin/Products">
+                    <i class="fas fa-fw fa-boxes"></i>
+                    <span>Productos</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Orders -->
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Orders") == true ? "active" : "")">
+                <a class="nav-link" href="/Admin/Orders">
+                    <i class="fas fa-fw fa-shopping-cart"></i>
+                    <span>Pedidos</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Shipping -->
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Shipping") == true ? "active" : "")">
+                <a class="nav-link" href="/Admin/Shipping">
+                    <i class="fas fa-fw fa-truck"></i>
+                    <span>Envíos</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Users -->
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Users") == true ? "active" : "")">
+                <a class="nav-link" href="/Admin/Users">
+                    <i class="fas fa-fw fa-users"></i>
+                    <span>Usuarios</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Marketing Management -->
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Marketing") == true ? "active" : "")">
+                <a class="nav-link" href="/Admin/Marketing">
+                    <i class="fas fa-fw fa-bullhorn"></i>
+                    <span>Marketing</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">Analytics</div>
+
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Analytics" ? "active" : "")">
+                <a class="nav-link" href="/Admin/Analytics">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Reportes</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Analytics/Sales" ? "active" : "")">
+                <a class="nav-link" href="/Admin/Analytics/Sales">
+                    <i class="fas fa-fw fa-chart-bar"></i>
+                    <span>Ventas</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Analytics/Customers" ? "active" : "")">
+                <a class="nav-link" href="/Admin/Analytics/Customers">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Clientes</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Analytics/Operations" ? "active" : "")">
+                <a class="nav-link" href="/Admin/Analytics/Operations">
+                    <i class="fas fa-fw fa-industry"></i>
+                    <span>Operaciones</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Analytics/Marketing" ? "active" : "")">
+                <a class="nav-link" href="/Admin/Analytics/Marketing">
+                    <i class="fas fa-fw fa-bullhorn"></i>
+                    <span>Marketing</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Analytics/Locations" ? "active" : "")">
+                <a class="nav-link" href="/Admin/Analytics/Locations">
+                    <i class="fas fa-fw fa-map-marker-alt"></i>
+                    <span>Ubicaciones</span>
+                </a>
+            </li>
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Analytics/Traffic" ? "active" : "")">
+                <a class="nav-link" href="/Admin/Analytics/Traffic">
+                    <i class="fas fa-fw fa-chart-line"></i>
+                    <span>Tráfico</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">Herramientas</div>
+
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Transactions") == true ? "active" : "")">
+                <a class="nav-link" href="/Admin/Transactions">
+                    <i class="fas fa-fw fa-credit-card"></i>
+                    <span>Transacciones</span>
+                </a>
+            </li>
+
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/Settings") == true ? "active" : "")">
+                <a class="nav-link" href="/Admin/Settings">
+                    <i class="fas fa-fw fa-cogs"></i>
+                    <span>Configuración</span>
+                </a>
+            </li>
+
+            <li class="nav-item @(ViewContext.RouteData.Values["page"]?.ToString().Contains("/Admin/PowerBI") == true ? "active" : "")">
+                <a class="nav-link" href="/Admin/PowerBI">
+                    <i class="fab fa-fw fa-microsoft"></i>
+                    <span>Power BI</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle" type="button" onclick="document.body.classList.toggle('sidebar-toggled');return false;"></button>
+            </div>
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <!-- Main Content -->
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <!-- Hamburger visible on mobile -->
+                    <button id="sidebarToggleTop" type="button" class="btn btn-link d-md-none rounded-circle me-2" title="Menú" onclick="document.body.classList.toggle('sidebar-toggled');return false;">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <!-- Hamburger also visible on md+ -->
+                    <button id="sidebarToggleMain" type="button" class="btn btn-outline-secondary d-none d-md-inline-block me-2" title="Contraer/expandir menú" onclick="document.body.classList.toggle('sidebar-toggled');return false;">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <!-- Topbar Search with quick typeahead -->
+                    <div class="position-relative d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" style="min-width:320px;">
+                        <div class="input-group">
+                            <input id="adminQuickSearch" type="text" class="form-control bg-light border-0 small" placeholder="Buscar pedidos, producto, usuario, envío..." aria-label="Search">
+                            <div class="input-group-append">
+                                <button id="adminQuickSearchBtn" class="btn btn-primary" type="button"><i class="fas fa-search fa-sm"></i></button>
+                            </div>
+                        </div>
+                        <div id="quicksearchDropdown" class="quicksearch-dropdown"></div>
+                    </div>
+
+                    <ul class="navbar-nav ml-auto">
+                        <!-- Alerts -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-bell fa-fw"></i>
+                                <span class="badge bg-danger rounded-pill notification-counter">0</span>
+                            </a>
+                            <div class="dropdown-list dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="alertsDropdown">
+                                <h6 class="dropdown-header d-flex justify-content-between align-items-center">Centro de Alertas
+                                    <button class="btn btn-sm btn-link" id="btnMarkAllRead">Marcar todas como leídas</button>
+                                </h6>
+                                <div class="notifications-container p-0" style="max-height: 320px; overflow:auto;"></div>
+                                <a class="dropdown-item text-center small text-gray-500" href="/Admin/Transactions">Ver transacciones</a>
+                            </div>
+                        </li>
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- User menu -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">@User.Identity?.Name</span>
+                                <img src="~/favicon.ico" alt="Logo" style="width:28px;height:28px;border-radius:4px;opacity:.85" />
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="/Account/Profile"><i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Perfil</a>
+                                <a class="dropdown-item" href="/Admin/Settings"><i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Configuración</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/" target="_blank"><i class="fas fa-external-link-alt fa-sm fa-fw mr-2 text-gray-400"></i>Ver Sitio Web</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="/Account/Logout"><i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>Cerrar Sesión</a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
+            </div>
+
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; CompuHiperMegaRed @DateTime.Now.Year - Panel de Administrador</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <audio id="notifSound" preload="auto">
+        <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+        <source src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" type="audio/ogg">
+    </audio>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    <script>
+        // Quick search (unchanged)
+        (function(){
+            const input = document.getElementById('adminQuickSearch');
+            const btn = document.getElementById('adminQuickSearchBtn');
+            const dd = document.getElementById('quicksearchDropdown');
+            let debounceId = null;
+            function render(items){ if(!items || items.length===0){ dd.style.display='none'; dd.innerHTML=''; return; } dd.innerHTML = items.map(i => `<div class=\"quicksearch-item\" data-url=\"${i.url}\"><div><strong>${i.label}</strong><br><small>${i.sub||''}</small></div><span class=\"badge bg-light text-dark\">${i.type}</span></div>`).join(''); dd.style.display='block'; }
+            async function searchNow(){ const q = input.value.trim(); if(q.length < 2){ render([]); return; } try{ const res = await fetch(`/Admin/Api/SearchQuick?q=${encodeURIComponent(q)}`); if(!res.ok){ input.classList.add('is-invalid'); setTimeout(()=>input.classList.remove('is-invalid'), 1500); window.location.href = `/Admin/Search?q=${encodeURIComponent(q)}`; return; } const j = await res.json(); render(j.items||[]); }catch{ input.classList.add('is-invalid'); setTimeout(()=>input.classList.remove('is-invalid'), 1500); window.location.href = `/Admin/Search?q=${encodeURIComponent(q)}`; } }
+            input.addEventListener('input', function(){ clearTimeout(debounceId); debounceId=setTimeout(searchNow, 250); });
+            input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); const q = input.value.trim(); if(q) window.location.href = `/Admin/Search?q=${encodeURIComponent(q)}`; }});
+            btn.addEventListener('click', searchNow);
+            dd.addEventListener('click', function(e){ const item = e.target.closest('.quicksearch-item'); if(item){ window.location.href = item.dataset.url; }});
+            document.addEventListener('click', function(e){ if(!dd.contains(e.target) && e.target!==input){ dd.style.display='none'; }});
+        })();
+
+        // Full off-canvas sidebar toggle
+        (function(){ function toggle(){ document.body.classList.toggle('sidebar-toggled'); } document.getElementById('sidebarToggleMain')?.addEventListener('click', toggle); document.getElementById('sidebarToggleTop')?.addEventListener('click', toggle); })();
+
+        // Notifications
+        const notifCounter = document.querySelector('.notification-counter');
+        let lastUnread = 0;
+        function extractTxLink(msg){
+            const m = msg && msg.match(/\(TX\s+([^)]+)\)/i);
+            if(m && m[1]){ return `/Admin/Shipping?search=${encodeURIComponent(m[1])}`; }
+            return '';
+        }
+        function renderNotifications(items){
+            const list = document.querySelector('.notifications-container'); if(!list) return; list.innerHTML='';
+            (items||[]).forEach(n=>{
+                const a=document.createElement('a'); a.className='dropdown-item d-flex align-items-center notification-item ' + (n.leida? 'read':'unread'); a.dataset.id = n.id; const link = extractTxLink(n.mensaje); if(link) a.dataset.url = link;
+                a.innerHTML = `<div class=\"me-3\"><div class=\"icon-circle ${n.tipo==='success'?'bg-success':n.tipo==='warning'?'bg-warning':n.tipo==='error'?'bg-danger':'bg-info'}\"><i class=\"fas fa-bell text-white\"></i></div></div><div><div class=\"small text-gray-500\">${new Date(n.fechaCreacion).toLocaleString('es-CO')}</div><span class=\"font-weight-bold\">${n.mensaje}</span></div>`; list.appendChild(a);
+            });
+        }
+        async function refreshNotifications(playSound){
+            try{ const r = await fetch('/Admin/Api/Notifications?take=100'); if(!r.ok) return; const j = await r.json();
+                const items = j.items||[];
+                const derived = items.filter(n=>!n.leida).length;
+                const serverUnread = j.unreadCount||0;
+                const unread = Math.max(serverUnread, derived);
+                if(notifCounter){ const prev = lastUnread; notifCounter.textContent = unread; if(playSound && unread>prev){ const s=document.getElementById('notifSound'); if(s){ try{ await s.play(); }catch{} } notifCounter.classList.add('btn-danger'); setTimeout(()=>notifCounter.classList.remove('btn-danger'), 600); } }
+                renderNotifications(items);
+                lastUnread = unread;
+            }catch(e){ console.warn('Notifications refresh error', e); }
+        }
+        (function(){
+            try{
+                const es = new EventSource('/Admin/Api/NotificationsStream');
+                es.addEventListener('new', function(){ refreshNotifications(true); });
+                es.onmessage = function(){ /* heartbeat */ };
+                es.onerror = function(){ es.close(); setInterval(()=>refreshNotifications(true), 3000); };
+                refreshNotifications(false);
+            }catch{ setInterval(()=>refreshNotifications(true), 3000); refreshNotifications(false); }
+        })();
+
+        // Individual mark-as-read on click + optional redirect
+        document.addEventListener('click', function(e){
+            const it = e.target.closest('.notification-item');
+            if(!it) return;
+            const id = it.dataset.id; const url = it.dataset.url;
+            if(id && !isNaN(+id)){
+                fetch('/Admin/Api/Notifications?handler=MarkRead&id=' + id, { method:'POST' })
+                    .then(()=>{ it.classList.remove('unread'); it.classList.add('read'); const current = parseInt(notifCounter?.textContent||'0'); if(current>0){ notifCounter.textContent = (current-1).toString(); } if(url){ window.location.href = url; } });
+            } else if(url) { window.location.href = url; }
+        });
+
+        // Mark all read button
+        document.getElementById('btnMarkAllRead')?.addEventListener('click', function(ev){ ev.preventDefault(); fetch('/Admin/Api/Notifications?handler=MarkAllRead', { method:'POST' }).then(()=>{ lastUnread=0; if(notifCounter) notifCounter.textContent='0'; refreshNotifications(false); }); });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

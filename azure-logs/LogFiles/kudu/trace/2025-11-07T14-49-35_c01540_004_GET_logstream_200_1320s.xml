@@ -1,0 +1,9 @@
+<step title="Incoming Request" date="2025-11-07T14:49:35.436" instance="c01540" url="/logstream" method="GET" type="request" pid="9628,2,24" Accept-Encoding="identity" Authorization="Bea..." Host="compuhipermegared-bfa4huctcxhzbdbk.scm.canadacentral-01.azurewebsites.net" User-Agent="AZURECLI/2.79.0 (MSI)" x-ms-client-request-id="f2539295-bbe8-11f0-a4b8-005056c00008" X-ARR-LOG-ID="f2539295-bbe8-11f0-a4b8-005056c00008" CLIENT-IP="200.118.60.49:3902" X-SITE-DEPLOYMENT-ID="compuhipermegared" WAS-DEFAULT-HOSTNAME="compuhipermegared-bfa4huctcxhzbdbk.scm.canadacentral-01.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/logstream" >
+  <step title="Cleanup Xml Logs" date="2025-11-07T14:49:35.452" /><!-- duration: 0ms -->
+  <step title="LogStreamHandler.BeginProcessRequest" date="2025-11-07T14:49:35.468" >
+    <step title="LockFile &apos;C:\home\site\locks\hooks.lock&apos; acquired" date="2025-11-07T14:49:35.530" /><!-- duration: 0ms -->
+    <step title="LockFile &apos;C:\home\site\locks\hooks.lock&apos; released" date="2025-11-07T14:49:35.561" /><!-- duration: 0ms -->
+  </step><!-- duration: 94ms -->
+  <step title="LogStreamHandler.EndProcessRequest" date="2025-11-07T15:11:35.671" /><!-- duration: 0ms -->
+  <step title="Outgoing response" date="2025-11-07T15:11:35.671" type="response" statusCode="200" statusText="OK" Server="Microsoft-IIS/10.0" Cache-Control="private" X-AspNet-Version="4.0.30319" Content-Type="text/plain; charset=utf-8" /><!-- duration: 16ms -->
+</step><!-- duration: 1320250ms -->

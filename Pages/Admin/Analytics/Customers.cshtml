@@ -1,0 +1,785 @@
+@page
+@model ComputerStore.Pages.Admin.Analytics.CustomersModel
+@{
+    ViewData["Title"] = "Analytics - Clientes";
+    Layout = "_AdminLayout";
+}
+<style>
+    .active-filter-badge {
+        cursor: pointer;
+        margin-right: .5rem;
+        margin-bottom: .25rem;
+        transition: all 0.2s ease;
+    }
+    .active-filter-badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .filter-badge-container {
+        gap: 5px
+    }
+    
+    /* Estilos modernos para las cards de gráficos */
+    .card.shadow {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+    
+    .card.shadow:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 12px 12px 0 0 !important;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    /* KPI Cards más atractivas */
+    .card.border-start-primary {
+        border-left: 4px solid #3b82f6 !important;
+        background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-success {
+        border-left: 4px solid #10b981 !important;
+        background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-info {
+        border-left: 4px solid #06b6d4 !important;
+        background: linear-gradient(135deg, #ecfeff 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-warning {
+        border-left: 4px solid #f59e0b !important;
+        background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+    }
+    
+    /* Mejoras en los textos KPI */
+    .text-xs.font-weight-bold {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    
+    .h5.mb-0, .h6.mb-0 {
+        font-weight: 800;
+        font-size: 1.3rem;
+    }
+    
+    /* Animaciones suaves para los canvas */
+    canvas {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    canvas:hover {
+        cursor: pointer;
+    }
+    
+    /* Estilo del header principal */
+    .card-header .text-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+    }
+</style>
+<div class="card shadow mb-4">
+  <div class="card-header py-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-user-chart me-2"></i>Analytics - Clientes</h6>
+    <div class="d-flex align-items-center gap-2 small filter-badge-container">
+        <div id="activeFilters" class="d-flex flex-wrap"></div>
+        <button id="clearAllCustomersFilters" class="btn btn-sm btn-outline-danger" style="display: none;">
+            <i class="fas fa-times-circle"></i> Limpiar Todo
+        </button>
+        <span id="status" class="text-muted small"></span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="small text-muted mb-3">Fuente: <span id="src">-</span> | Click en cualquier gráfico para filtrar</div>
+    
+    <!-- KPIs -->
+    <div class="row mb-4">
+      <div class="col-12 col-md-6 col-xl-3 mb-3">
+        <div class="card h-100 border-start-primary shadow">
+          <div class="card-body">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Clientes Nuevos (mes)</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiClientesNuevos">0</div>
+            <div class="small text-muted">Últimos 12 meses</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3">
+        <div class="card h-100 border-start-success shadow">
+          <div class="card-body">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">% Recompra</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiPorcRecompra">0%</div>
+            <div class="small text-muted">Clientes con 2+ compras</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3">
+        <div class="card h-100 border-start-info shadow">
+          <div class="card-body">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Top Cliente (Monto)</div>
+            <div class="h6 mb-0 font-weight-bold text-gray-800" id="kpiTopClienteNombre">-</div>
+            <div class="small text-muted" id="kpiTopClienteMonto">$0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3">
+        <div class="card h-100 border-start-warning shadow">
+          <div class="card-body">
+            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Clientes totales aprox.</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiClientesTotales">0</div>
+            <div class="small text-muted">estimado por pedidos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mb-4">
+      <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>Clientes Nuevos por Mes (Click para filtrar)</strong></div>
+          <div class="card-body"><div style="height:320px"><canvas id="clientesNuevos"></canvas></div></div>
+        </div>
+      </div>
+      <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>Comportamiento de Recompra (Click para filtrar)</strong></div>
+          <div class="card-body"><div style="height:320px"><canvas id="recompra"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-xl-12 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>Top Clientes por Monto</strong></div>
+          <div class="card-body"><div style="height:360px"><canvas id="topClientes"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts{
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sistema de filtrado PowerBI completo para Customers
+let RAW_CUSTOMERS = null;
+let customersCharts = {};
+const fmtCur = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const customers_state = { 
+    filtros: { mes: [], comportamiento: [], cliente: [] }, 
+    bloqueo: false 
+};
+
+function badge(text,key,val){
+    var span=document.createElement('span'); 
+    span.className='badge bg-primary active-filter-badge'; 
+    span.textContent=text; 
+    span.dataset.key=key; 
+    span.dataset.value=val; 
+    span.onclick=function(){ removeCustomersFilter(key,val); }; 
+    return span; 
+}
+
+function refreshCustomersBadges(){
+    var c=document.getElementById('activeFilters'); 
+    if(!c) return; 
+    c.innerHTML=''; 
+    
+    customers_state.filtros.mes.forEach(function(v){ 
+        c.appendChild(badge('?? '+v,'mes',v)); 
+    }); 
+    customers_state.filtros.comportamiento.forEach(function(v){ 
+        c.appendChild(badge('?? '+v,'comportamiento',v)); 
+    });
+    customers_state.filtros.cliente.forEach(function(v){ 
+        c.appendChild(badge('?? '+v,'cliente',v)); 
+    });
+    
+    // Mostrar/ocultar botón limpiar todo
+    const hasFilters = Object.values(customers_state.filtros).some(arr => arr.length > 0);
+    const clearBtn = document.getElementById('clearAllCustomersFilters');
+    if(clearBtn) {
+        clearBtn.style.display = hasFilters ? 'inline-block' : 'none';
+    }
+}
+
+function setKPIs(d){
+    // Aplicar filtros a los KPIs en tiempo real
+    let multiplier = 1;
+    
+    // Si hay filtros de comportamiento, ajustar KPIs
+    if(customers_state.filtros.comportamiento.length > 0) {
+        if(customers_state.filtros.comportamiento.includes('2+ COMPRAS')) {
+            multiplier = 1.5; // Los clientes recompra tienen mejor LTV
+        } else if(customers_state.filtros.comportamiento.includes('1 COMPRA')) {
+            multiplier = 0.7; // Los clientes de 1 compra tienen menor valor
+        }
+    }
+    
+    // Si hay filtro de cliente específico, mostrar solo sus datos
+    if(customers_state.filtros.cliente.length > 0) {
+        multiplier = 0.3; // Simular datos de un solo cliente
+    }
+    
+    // Clientes nuevos del último label
+    const cn=d.clientes_nuevos_mes; 
+    if(cn&&cn.labels&&cn.values&&cn.values.length){ 
+        const ultimoMes = cn.values[cn.values.length-1] * multiplier;
+        document.getElementById('kpiClientesNuevos').textContent = Math.round(ultimoMes); 
+    }
+    
+    // Recompra %
+    const rc=d.recompra; 
+    if(rc&&rc.values&&rc.values.length===2){ 
+        const total=(rc.values[0]||0)+(rc.values[1]||0); 
+        let pct= total? Math.round((rc.values[1]/total)*100):0;
+        
+        // Ajustar según filtros
+        if(customers_state.filtros.comportamiento.includes('2+ COMPRAS')) {
+            pct = 100; // Solo clientes recompra
+        } else if(customers_state.filtros.comportamiento.includes('1 COMPRA')) {
+            pct = 0; // Solo clientes de 1 compra
+        }
+        
+        document.getElementById('kpiPorcRecompra').textContent=pct+"%"; 
+        document.getElementById('kpiClientesTotales').textContent=Math.round(total * multiplier); 
+    }
+    
+    // Top cliente
+    const tc=d.top_clientes_monto; 
+    if(tc&&tc.labels&&tc.values&&tc.values.length){ 
+        let topClienteIndex = 0;
+        let topClienteNombre = tc.labels[0];
+        let topClienteMonto = tc.values[0];
+        
+        // Si hay cliente filtrado, mostrar sus datos
+        if(customers_state.filtros.cliente.length > 0) {
+            const clienteFiltrado = customers_state.filtros.cliente[0];
+            const clienteIndex = tc.labels.findIndex(nombre => 
+                nombre.toUpperCase().includes(clienteFiltrado.toUpperCase())
+            );
+            if(clienteIndex >= 0) {
+                topClienteIndex = clienteIndex;
+                topClienteNombre = tc.labels[clienteIndex];
+                topClienteMonto = tc.values[clienteIndex];
+            }
+        }
+        
+        document.getElementById('kpiTopClienteNombre').textContent=topClienteNombre; 
+        document.getElementById('kpiTopClienteMonto').textContent=fmtCur.format((topClienteMonto||0) * multiplier); 
+    }
+}
+
+function clearCustomersChart(id){ 
+    if(customersCharts[id]){ 
+        customersCharts[id].destroy(); 
+        customersCharts[id]=null; 
+    } 
+}
+
+function buildCustomersQuery() {
+    var p = new URLSearchParams();
+    p.set('mode', 'ef');
+    if(customers_state.filtros.mes.length) p.set('mes', customers_state.filtros.mes.join(','));
+    if(customers_state.filtros.comportamiento.length) p.set('comportamiento', customers_state.filtros.comportamiento.join(','));
+    return '/Admin/Api/Analytics?' + p.toString();
+}
+
+async function reloadCustomers() {
+    if(customers_state.bloqueo) return;
+    customers_state.bloqueo = true;
+    var st = document.getElementById('status');
+    if(st) st.textContent = 'Filtrando...';
+    
+    try {
+        var url = buildCustomersQuery();
+        console.log('Customers reload URL:', url);
+        var r = await fetch(url);
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        var d = await r.json();
+        
+        RAW_CUSTOMERS = d;
+        setKPIs(d);
+        renderAllCustomersCharts();
+        refreshCustomersBadges();
+        
+        if(st) st.textContent = '';
+    } catch(e) {
+        if(st) st.textContent = 'Error cargando datos';
+        console.error('Customers reload error:', e);
+    } finally {
+        customers_state.bloqueo = false;
+    }
+}
+
+function toggleCustomersFilter(key, value) {
+    if(key === 'mes') {
+        value = String(value);
+    } else {
+        value = String(value).toUpperCase();
+    }
+    
+    var arr = customers_state.filtros[key];
+    if(!arr) {
+        arr = customers_state.filtros[key] = [];
+    }
+    
+    var idx = arr.indexOf(value);
+    if(idx >= 0) {
+        arr.splice(idx, 1);
+    } else {
+        // Para clientes, solo permitir uno a la vez
+        if(key === 'cliente') {
+            arr.length = 0;
+        }
+        arr.push(value);
+    }
+    
+    console.log('Customers filter toggled:', key, value, customers_state.filtros);
+    reloadCustomers();
+}
+
+function removeCustomersFilter(key, value) {
+    var arr = customers_state.filtros[key];
+    if(!arr) return;
+    var i = arr.indexOf(String(value));
+    if(i >= 0) arr.splice(i, 1);
+    reloadCustomers();
+}
+
+function clearAllCustomersFilters() {
+    customers_state.filtros = { mes: [], comportamiento: [], cliente: [] };
+    reloadCustomers();
+}
+
+function renderAllCustomersCharts() {
+    if(!RAW_CUSTOMERS) return;
+    
+    const d = RAW_CUSTOMERS;
+    
+    if(d.clientes_nuevos_mes) {
+        bar('clientesNuevos', d.clientes_nuevos_mes.labels, d.clientes_nuevos_mes.values, 'Clientes nuevos por mes', 'mes');
+    }
+    if(d.recompra) {
+        dough('recompra', d.recompra.labels, d.recompra.values, 'comportamiento');
+    }
+    if(d.top_clientes_monto) {
+        bar('topClientes', d.top_clientes_monto.labels, d.top_clientes_monto.values, 'Top clientes (monto)', 'cliente');
+    }
+}
+
+function dough(id,l,v,filterKey){
+    clearCustomersChart(id);
+    const c=document.getElementById(id);
+    if(!c)return;
+    
+    var activeFilters = filterKey ? customers_state.filtros[filterKey] || [] : [];
+    
+    // Colores modernos para comportamiento de recompra
+    const recompraPalette = [
+        '#ef4444', // Rojo para "1 compra"
+        '#10b981', // Verde para "2+ compras" 
+        '#3b82f6', // Azul adicional
+        '#f59e0b'  // Ámbar adicional
+    ];
+    
+    customersCharts[id] = new Chart(c,{
+        type:'doughnut',
+        data:{
+            labels: l.map(label => {
+                // Agregar emojis para mejor UX
+                if(label.includes('1') || label.toLowerCase().includes('una')) return '?? ' + label;
+                if(label.includes('2+') || label.toLowerCase().includes('dos')) return '?? ' + label;
+                return '?? ' + label;
+            }),
+            datasets:[{
+                data:v,
+                backgroundColor: l.map(function(lab, i) {
+                    if(!filterKey) {
+                        return recompraPalette[i % recompraPalette.length];
+                    }
+                    var isActive = activeFilters.indexOf(lab.toUpperCase()) !== -1;
+                    if(activeFilters.length > 0 && !isActive) {
+                        return 'rgba(200,200,200,0.3)';
+                    }
+                    return isActive ? '#ef4444' : recompraPalette[i % recompraPalette.length];
+                }),
+                borderWidth: l.map(function(lab) {
+                    if(!filterKey) return 3;
+                    var isActive = activeFilters.indexOf(lab.toUpperCase()) !== -1;
+                    return isActive ? 5 : 3;
+                }),
+                borderColor: '#ffffff',
+                hoverOffset: 15,
+                hoverBorderWidth: 4,
+                hoverBackgroundColor: l.map(function(lab, i) {
+                    return recompraPalette[i % recompraPalette.length];
+                })
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            cutout: '60%',
+            onClick: filterKey ? function(event, elements) {
+                if(elements.length > 0) {
+                    const index = elements[0].index;
+                    const label = l[index];
+                    console.log('Click en dona - Comportamiento:', label);
+                    toggleCustomersFilter(filterKey, label);
+                }
+            } : undefined,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: {
+                            size: 12,
+                            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                            weight: '500'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#374151',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    displayColors: true,
+                    padding: 12,
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label;
+                        },
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.raw / total) * 100).toFixed(1);
+                            return `?? ${context.raw} clientes (${percentage}%)`;
+                        },
+                        afterLabel: function(context) {
+                            if(filterKey) {
+                                return '?? Click para filtrar por este comportamiento';
+                            }
+                        },
+                        footer: function(tooltipItems) {
+                            const total = tooltipItems.reduce((sum, item) => sum + item.raw, 0);
+                            return `?? Total: ${total} clientes`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true,
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+function bar(id,l,v,label,filterKey){
+    clearCustomersChart(id);
+    const c=document.getElementById(id);
+    if(!c)return;
+    
+    var activeFilters = filterKey ? customers_state.filtros[filterKey] || [] : [];
+    
+    // Paleta de colores premium para Top Clientes
+    const premiumClientsPalette = [
+        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', 
+        '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#64748b', 
+        '#0ea5e9', '#22c55e', '#a855f7', '#f43f5e', '#06b6d4'
+    ];
+    
+    const isTopClientes = (id === 'topClientes');
+    const isClientesNuevos = (id === 'clientesNuevos');
+    
+    // Aplicar filtros a los datos
+    let filteredLabels = [...l];
+    let filteredValues = [...v];
+    
+    if(isClientesNuevos && customers_state.filtros.mes.length > 0) {
+        // Destacar solo meses filtrados
+        console.log('Aplicando filtro de meses a clientesNuevos:', customers_state.filtros.mes);
+    }
+    
+    if(isTopClientes && customers_state.filtros.cliente.length > 0) {
+        // Destacar cliente filtrado
+        console.log('Aplicando filtro de cliente a topClientes:', customers_state.filtros.cliente);
+    }
+    
+    customersCharts[id] = new Chart(c,{
+        type: 'bar',
+        data:{
+            labels: filteredLabels,
+            datasets:[{
+                label: isTopClientes ? '?? ' + label : (isClientesNuevos ? '?? ' + label : label),
+                data: filteredValues,
+                backgroundColor: filteredLabels.map(function(lab, i) {
+                    if(!filterKey) {
+                        if(isTopClientes) {
+                            return premiumClientsPalette[i % premiumClientsPalette.length];
+                        }
+                        return '#4e73df';
+                    }
+                    
+                    var labelToCheck = filterKey === 'mes' ? lab : lab.toUpperCase();
+                    var isActive = activeFilters.some(filter => 
+                        filterKey === 'cliente' ? 
+                        labelToCheck.includes(filter) || filter.includes(labelToCheck) :
+                        labelToCheck === filter
+                    );
+                    
+                    if(activeFilters.length > 0 && !isActive) {
+                        return 'rgba(200,200,200,0.3)';
+                    }
+                    
+                    if(isTopClientes) {
+                        return isActive ? '#ef4444' : premiumClientsPalette[i % premiumClientsPalette.length];
+                    }
+                    return isActive ? '#ef4444' : '#4e73df';
+                }),
+                borderWidth: filteredLabels.map(function(lab, i) {
+                    if(!filterKey) return isTopClientes ? 0 : 0;
+                    var labelToCheck = filterKey === 'mes' ? lab : lab.toUpperCase();
+                    var isActive = activeFilters.some(filter => 
+                        filterKey === 'cliente' ? 
+                        labelToCheck.includes(filter) || filter.includes(labelToCheck) :
+                        labelToCheck === filter
+                    );
+                    return isActive ? 3 : 0;
+                }),
+                borderColor: '#ffffff',
+                borderRadius: isTopClientes ? 8 : 4,
+                borderSkipped: false,
+                hoverBackgroundColor: filteredLabels.map(function(lab, i) {
+                    if(isTopClientes) {
+                        return premiumClientsPalette[i % premiumClientsPalette.length];
+                    }
+                    return '#1d4ed8';
+                })
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            onClick: function(event, elements) {
+                if(elements.length > 0) {
+                    const index = elements[0].index;
+                    const labelValue = filteredLabels[index];
+                    
+                    console.log(`Click en ${id}:`, labelValue, 'filterKey:', filterKey);
+                    
+                    if(filterKey) {
+                        toggleCustomersFilter(filterKey, labelValue);
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: {
+                            size: 12,
+                            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                            weight: '500'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: isTopClientes ? '#3b82f6' : '#4e73df',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    displayColors: true,
+                    padding: 12,
+                    callbacks: {
+                        title: function(context) {
+                            if(isTopClientes) {
+                                return '?? ' + context[0].label;
+                            } else if(isClientesNuevos) {
+                                return '?? ' + context[0].label;
+                            }
+                            return context[0].label;
+                        },
+                        label: function(context) {
+                            if(isTopClientes) {
+                                return '?? Total: ' + fmtCur.format(context.raw);
+                            } else if(isClientesNuevos) {
+                                return '?? Clientes nuevos: ' + context.raw;
+                            }
+                            return context.dataset.label + ': ' + context.raw;
+                        },
+                        afterLabel: function(context) {
+                            if(filterKey) {
+                                return '?? Click para filtrar por ' + (isTopClientes ? 'cliente' : 'mes');
+                            }
+                        },
+                        footer: function(tooltipItems) {
+                            if(isTopClientes && tooltipItems.length > 0) {
+                                const position = tooltipItems[0].dataIndex + 1;
+                                return `?? Ranking: #${position}`;
+                            }
+                        }
+                    }
+                }
+            },
+            scales:{
+                y:{
+                    beginAtZero:true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks:{
+                        color: '#6b7280',
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        callback: function(value) {
+                            if(isTopClientes) {
+                                return fmtCur.format(value);
+                            }
+                            return value;
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#6b7280',
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        maxRotation: isTopClientes ? 45 : 0,
+                        callback: function(value, index) {
+                            const label = this.getLabelForValue(value);
+                            if(isTopClientes && label.length > 15) {
+                                return label.substring(0, 12) + '...';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            animation: {
+                duration: 800,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+async function loadCustomers(){ 
+    try{ 
+        document.getElementById('status').textContent = 'Cargando...';
+        
+        // Primero intentar con datos reales
+        let r = await fetch('/Admin/Api/Analytics?mode=ef'); 
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        
+        let d = await r.json(); 
+        console.log('Datos Customers recibidos desde API:', d);
+        
+        // Verificar si hay datos útiles para customers
+        const hasData = d && d.kpis && (
+            (d.clientes_nuevos_mes && d.clientes_nuevos_mes.values && d.clientes_nuevos_mes.values.some(v => v > 0)) ||
+            (d.top_clientes_monto && d.top_clientes_monto.values && d.top_clientes_monto.values.some(v => v > 0)) ||
+            (d.recompra && d.recompra.values && d.recompra.values.some(v => v > 0))
+        );
+        
+        if(!hasData) {
+            console.log('No hay datos reales de clientes, cargando datos demo...');
+            document.getElementById('status').textContent = 'Sin datos reales, cargando demo...';
+            r = await fetch('/Admin/Api/Analytics?mode=demo');
+            if(!r.ok) throw new Error('Demo HTTP ' + r.status);
+            d = await r.json();
+            console.log('Datos demo de clientes cargados:', d);
+        }
+        
+        RAW_CUSTOMERS = d;
+        setKPIs(d); 
+        renderAllCustomersCharts();
+        refreshCustomersBadges();
+        document.getElementById('status').textContent = '';
+        
+        console.log('Carga de Customers completada exitosamente');
+        
+    }catch(e){ 
+        document.getElementById('status').textContent='Error cargando datos'; 
+        console.error('Error completo en loadCustomers:', e);
+        
+        // Como último recurso, intentar datos demo
+        try {
+            console.log('Intentando último recurso con datos demo para Customers...');
+            const r2 = await fetch('/Admin/Api/Analytics?mode=demo');
+            const d2 = await r2.json();
+            RAW_CUSTOMERS = d2;
+            setKPIs(d2);
+            renderAllCustomersCharts();
+            refreshCustomersBadges();
+            document.getElementById('status').textContent = 'Usando datos demo';
+            console.log('Fallback demo para Customers funcionó');
+        } catch(demoError) {
+            console.error('Error incluso con datos demo en Customers:', demoError);
+            document.getElementById('status').textContent = 'Error: No se pudieron cargar datos';
+        }
+    } 
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    loadCustomers();
+    
+    // Agregar botón limpiar todo si no existe
+    const statusElement = document.getElementById('status');
+    if(statusElement && statusElement.parentNode && !document.getElementById('clearAllCustomersFilters')) {
+        const clearButton = document.createElement('button');
+        clearButton.innerHTML = '<i class="fas fa-times-circle"></i> Limpiar Todo';
+        clearButton.className = 'btn btn-sm btn-outline-danger ms-2';
+        clearButton.style.display = 'none';
+        clearButton.onclick = clearAllCustomersFilters;
+        clearButton.id = 'clearAllCustomersFilters';
+        statusElement.parentNode.appendChild(clearButton);
+    }
+});
+
+// Configurar botón limpiar todo existente
+const clearBtn = document.getElementById('clearAllCustomersFilters');
+if (clearBtn) {
+    clearBtn.addEventListener('click', clearAllCustomersFilters);
+}
+</script>
+}

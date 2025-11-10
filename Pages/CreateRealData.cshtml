@@ -1,0 +1,43 @@
+@page
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crear Datos Reales Rápido</title>
+    <meta charset="utf-8">
+</head>
+<body>
+<div class="container">
+    <h2>?? Crear Datos REALES Rápidamente</h2>
+    <button id="crearDatos" onclick="crearDatosReales()">Crear Usuarios y Pedidos REALES</button>
+    <div id="resultado"></div>
+
+    <script>
+        async function crearDatosReales() {
+            document.getElementById('resultado').innerHTML = 'Creando datos...';
+            
+            try {
+                const response = await fetch('/Admin/Api/CreateRealLocationData', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('resultado').innerHTML = `
+                        <p>? Datos creados: ${result.usuarios} usuarios, ${result.pedidos} pedidos</p>
+                        <a href="/Admin/Analytics/Locations">Ver Analytics</a>
+                    `;
+                } else {
+                    document.getElementById('resultado').innerHTML = `? Error: ${result.error}`;
+                }
+            } catch (error) {
+                document.getElementById('resultado').innerHTML = `? Error: ${error.message}`;
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

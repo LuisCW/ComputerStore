@@ -1,0 +1,146 @@
+﻿@page
+@model PrivacyModel
+@{
+    ViewBag.Title = "Términos y Condiciones";
+}
+
+<div class="container mt-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-light p-4 rounded shadow-sm terms-header">
+                <h1 class="text-center">Términos y Condiciones</h1>
+                <p class="text-center text-muted">Última actualización: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegación rápida -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">Contenido</h4>
+                    <nav id="navbar-terms" class="nav nav-pills flex-column">
+                        <a class="nav-link" href="#section1">1. Información General</a>
+                        <a class="nav-link" href="#section2">2. Productos y Servicios</a>
+                        <a class="nav-link" href="#section3">3. Precios y Formas de Pago</a>
+                        <a class="nav-link" href="#section4">4. Garantías</a>
+                        <a class="nav-link" href="#section5">5. Privacidad y Datos Personales</a>
+                        <a class="nav-link" href="#section6">6. Servicio Técnico</a>
+                        <a class="nav-link" href="#section7">7. Devoluciones</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido de los términos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <section id="section1" class="mb-5">
+                        <h2 class="border-bottom pb-2">1. Información General</h2>
+                        <p>Al acceder y realizar compras en nuestra tienda, usted acepta los siguientes términos y condiciones. Por favor, lea detenidamente este documento. La tienda se reserva el derecho de modificar estos términos sin previo aviso.</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Estos términos aplican a todas las transacciones realizadas en nuestra tienda física y online.
+                        </div>
+                    </section>
+
+                    <section id="section2" class="mb-5">
+                        <h2 class="border-bottom pb-2">2. Productos y Servicios</h2>
+                        <p>Nos comprometemos a ofrecer productos de alta calidad y servicios profesionales. Todos nuestros productos son originales y cuentan con garantía del fabricante.</p>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Productos 100% originales
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Garantía de fabricante
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Soporte técnico especializado
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section id="section3" class="mb-5">
+                        <h2 class="border-bottom pb-2">3. Precios y Formas de Pago</h2>
+                        <p>Los precios mostrados incluyen IVA. Aceptamos diferentes formas de pago para su comodidad.</p>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h5>Medios de Pago Aceptados:</h5>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-credit-card me-2"></i>Tarjetas de crédito/débito</li>
+                                    <li><i class="fas fa-money-bill-wave me-2"></i>Efectivo</li>
+                                    <li><i class="fas fa-university me-2"></i>Transferencia bancaria</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="section4" class="mb-5">
+                        <h2 class="border-bottom pb-2">4. Garantías</h2>
+                        <p>Todos nuestros productos cuentan con garantía según las especificaciones del fabricante.</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            La garantía no cubre daños por mal uso o modificaciones no autorizadas.
+                        </div>
+                    </section>
+
+                    <section id="section5" class="mb-5">
+                        <h2 class="border-bottom pb-2">5. Privacidad y Datos Personales</h2>
+                        <p>Su privacidad es importante para nosotros. Los datos personales recopilados serán utilizados únicamente para procesar su compra y brindarle un mejor servicio.</p>
+                    </section>
+
+                    <section id="section6" class="mb-5">
+                        <h2 class="border-bottom pb-2">6. Servicio Técnico</h2>
+                        <p>Nuestro servicio técnico está disponible para todos los productos adquiridos en la tienda.</p>
+                    </section>
+
+                    <section id="section7" class="mb-5">
+                        <h2 class="border-bottom pb-2">7. Devoluciones</h2>
+                        <p>Se aceptan devoluciones dentro de los primeros 7 días de la compra, presentando el producto en su empaque original y con todos sus accesorios.</p>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer con información de contacto -->
+    <div class="row mt-4 mb-5">
+        <div class="col-12">
+            <div class="card bg-light shadow-sm terms-footer">
+                <div class="card-body text-center">
+                    <h4>¿Necesitas más información?</h4>
+                    <p>Contáctanos a través de:</p>
+                    <div>
+                        <i class="fas fa-envelope me-2"></i>contacto@tutienda.com
+                        <span class="mx-3">|</span>
+                        <i class="fas fa-phone me-2"></i>+123 456 7890
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Script para scroll suave -->
+    <script>
+        document.querySelectorAll('#navbar-terms a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const section = document.querySelector(this.getAttribute('href'));
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+}

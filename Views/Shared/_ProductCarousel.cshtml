@@ -1,0 +1,54 @@
+@model ComputerStore.Models.Products
+
+@{
+    var imagenes = Model.Imagenes?.OrderBy(i => i.Orden).ToList() ?? new List<ComputerStore.Models.ProductoImagen>();
+    var tieneImagenes = imagenes.Any();
+    var imagenPrincipal = !string.IsNullOrEmpty(Model.ImageUrl) ? Model.ImageUrl 
+        : tieneImagenes ? imagenes.First().ImagenUrl 
+        : "https://via.placeholder.com/400x300?text=Sin+Imagen";
+    var carouselId = $"carousel-{Model.Id}";
+}
+
+@if (tieneImagenes && imagenes.Count > 1)
+{
+    <!-- Carrusel múltiple -->
+    <div id="@carouselId" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            @for (int i = 0; i < imagenes.Count; i++)
+            {
+                <button type="button" data-bs-target="#@carouselId" data-bs-slide-to="@i" 
+                        class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" 
+                        aria-label="Slide @(i + 1)"></button>
+            }
+        </div>
+        
+        <div class="carousel-inner">
+            @for (int i = 0; i < imagenes.Count; i++)
+            {
+                var imagen = imagenes[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <img src="@imagen.ImagenUrl" class="d-block w-100" alt="@(imagen.AltText ?? Model.Name)" 
+                         style="height: 250px; object-fit: cover;" loading="lazy">
+                </div>
+            }
+        </div>
+        
+        @if (imagenes.Count > 1)
+        {
+            <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
+        }
+    </div>
+}
+else
+{
+    <!-- Imagen única -->
+    <img src="@imagenPrincipal" class="card-img-top" alt="@Model.Name" 
+         style="height: 250px; object-fit: cover;" loading="lazy">
+}

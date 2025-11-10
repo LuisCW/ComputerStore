@@ -1,0 +1,784 @@
+@page
+@model ComputerStore.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Panel de Administrador";
+    Layout = "_AdminLayout";
+}
+
+<!-- Hero Section (más limpio, sin gradient fuerte) -->
+<div class="mb-4 p-4 bg-white border rounded shadow-sm">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div>
+            <h1 class="fw-bold text-primary m-0">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Panel de Administrador
+            </h1>
+            <small class="text-muted">CompuHiperMegaRed · Dashboard ejecutivo</small>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <span class="badge bg-success me-2"><i class="fas fa-check-circle me-1"></i>Sistema activo</span>
+            <small class="text-muted">Última actualización: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Principales -->
+<div class="row mb-4">
+    <!-- Ventas -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card bg-gradient-primary text-white h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Ventas del Mes</div>
+                        <div class="h5 mb-0 font-weight-bold">@Model.VentasDelMes.ToString("C0")</div>
+                        <div class="mt-2 text-xs">
+                            <span class="text-light">Total: @Model.VentasTotales.ToString("C0")</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pedidos -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card bg-gradient-success text-white h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Pedidos Total</div>
+                        <div class="h5 mb-0 font-weight-bold">@Model.TotalPedidos</div>
+                        <div class="mt-2 text-xs">
+                            <span class="text-light">Completados: @Model.PedidosCompletados</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transacciones -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card bg-gradient-info text-white h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Transacciones</div>
+                        <div class="h5 mb-0 font-weight-bold">@Model.TransaccionesAprobadas</div>
+                        <div class="mt-2 text-xs">
+                            <span class="text-light">Pendientes: @Model.TransaccionesPendientes</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-credit-card fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productos -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card bg-gradient-warning text-white h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Productos</div>
+                        <div class="h5 mb-0 font-weight-bold">@Model.TotalProductos</div>
+                        <div class="mt-2 text-xs">
+                            <span class="text-light">Usuarios: @Model.TotalUsuarios</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-boxes fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row mb-4">
+    <div class="col-xl-8 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-line me-2"></i>Ventas Mensuales</h6>
+                <span id="analyticsStatus" class="text-muted small"></span>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px"><canvas id="chartVentas"></canvas></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-receipt me-2"></i>Pedidos por Estado</h6>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px"><canvas id="chartEstados"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-wallet me-2"></i>Métodos de Pago</h6>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px"><canvas id="chartPagos"></canvas></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-star me-2"></i>Top Productos</h6>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px"><canvas id="chartTopProductos"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Principal -->
+<div class="row">
+    <div class="col-xl-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-credit-card me-2"></i>
+                    Transacciones Recientes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID Transacción</th>
+                                <th>Fecha</th>
+                                <th>Método</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.TransaccionesRecientes.Any())
+                            {
+                                @foreach (var transaccion in Model.TransaccionesRecientes)
+                                {
+                                    <tr>
+                                        <td><code>@transaccion.TransactionId</code></td>
+                                        <td>@transaccion.FechaTransaccion.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            <i class="@Model.GetMetodoPagoIcon(transaccion.MetodoPago) me-1"></i>
+                                            <span class="badge bg-info">@transaccion.MetodoPago</span>
+                                        </td>
+                                        <td><strong>@transaccion.Monto.ToString("C0")</strong></td>
+                                        <td>
+                                            <span class="badge @Model.GetTransactionBadgeClass(transaccion.Estado)">
+                                                @transaccion.Estado
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No hay transacciones recientes</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/Admin/Orders" class="btn btn-primary">
+                        <i class="fas fa-eye me-2"></i>Ver Todas las Transacciones
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-shipping-fast me-2"></i>
+                    Envíos Recientes
+                </h6>
+            </div>
+            <div class="card-body">
+                @if (Model.EnviosRecientes.Any())
+                {
+                    @foreach (var envio in Model.EnviosRecientes)
+                    {
+                        <div class="row mb-3 p-3 border rounded">
+                            <div class="col-md-3">
+                                <strong>@envio.NumeroGuia</strong><br>
+                                <small class="text-muted">Orden #@envio.OrderId</small>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">Destino:</small><br>
+                                <span>@(envio.DireccionEnvio.Length > 50 ? envio.DireccionEnvio.Substring(0, 50) + "..." : envio.DireccionEnvio)</span>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="badge bg-@envio.ColorEstado">
+                                    @envio.EstadoDisplay
+                                </span><br>
+                                <small class="text-muted">@envio.FechaCreacion.ToString("dd/MM/yyyy")</small>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <a href="/Admin/Shipping" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted text-center">No hay envíos recientes</p>
+                }
+                <div class="text-center mt-3">
+                    <a href="/Admin/Shipping" class="btn btn-primary">
+                        <i class="fas fa-truck me-2"></i>Gestionar Envíos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-bolt me-2"></i>
+                    Acciones Rápidas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/Admin/Products" class="btn btn-outline-primary">
+                        <i class="fas fa-boxes me-2"></i>Gestionar Productos
+                    </a>
+                    <a href="/Admin/Orders" class="btn btn-outline-success">
+                        <i class="fas fa-shopping-cart me-2"></i>Ver Pedidos
+                    </a>
+                    <a href="/Admin/Shipping" class="btn btn-outline-info">
+                        <i class="fas fa-truck me-2"></i>Gestionar Envíos
+                    </a>
+                    <a href="/Admin/Users" class="btn btn-outline-warning">
+                        <i class="fas fa-users me-2"></i>Gestionar Usuarios
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-success">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Pedidos Recientes
+                </h6>
+            </div>
+            <div class="card-body">
+                @if (Model.PedidosRecientes.Any())
+                {
+                    @foreach (var pedido in Model.PedidosRecientes)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                            <div>
+                                <strong>@pedido.ReferenceCode</strong><br>
+                                <small class="text-muted">@pedido.User?.UserName</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge @Model.GetEstadoBadgeClass(pedido.Estado)">
+                                    @pedido.Estado
+                                </span><br>
+                                <small class="text-muted">@pedido.Total.ToString("C0")</small>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted text-center">No hay pedidos recientes</p>
+                }
+                <div class="text-center mt-3">
+                    <a href="/Admin/Orders" class="btn btn-success btn-sm">
+                        <i class="fas fa-eye me-2"></i>Ver Todos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Resumen del Sistema
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-users fa-2x text-info mb-2"></i>
+                            <h5>@Model.TotalUsuarios</h5>
+                            <small class="text-muted">Usuarios Registrados</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <h5>@Model.EnviosRecientes.Count(e => e.Estado.Contains("ENTREGADO"))</h5>
+                            <small class="text-muted">Envíos Entregados</small>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h6 class="text-success">Ventas del Mes</h6>
+                    <h4 class="text-primary">@Model.VentasDelMes.ToString("C0")</h4>
+                    <small class="text-muted">Total histórico: @Model.VentasTotales.ToString("C0")</small>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h6 class="text-info">Transacciones PayU</h6>
+                    <h4 class="text-success">@Model.MontoTransaccionesAprobadas.ToString("C0")</h4>
+                    <small class="text-muted">Monto aprobado total</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const fmtCur = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+        
+        // Sistema de filtros como en Analytics - CONECTADO CON LA API
+        let RAW_DASHBOARD = null;
+        let dashboardCharts = {};
+        const dashboard_state = { 
+            filtros: { mes: [], estado: [], metodo: [], prodId: null }, 
+            bloqueo: false 
+        };
+        
+        function buildDashboardQuery() {
+            var p = new URLSearchParams();
+            p.set('mode', 'ef');
+            if(dashboard_state.filtros.mes.length) p.set('mes', dashboard_state.filtros.mes.join(','));
+            if(dashboard_state.filtros.estado.length) p.set('estado', dashboard_state.filtros.estado.join(','));
+            if(dashboard_state.filtros.metodo.length) p.set('metodo', dashboard_state.filtros.metodo.join(','));
+            if(dashboard_state.filtros.prodId) p.set('prodId', dashboard_state.filtros.prodId);
+            return '/Admin/Api/Analytics?' + p.toString();
+        }
+        
+        // Función para actualizar KPIs con datos filtrados
+        function setDashboardKPIs(k) {
+            if(!k) return;
+            
+            // Actualizar los KPIs del dashboard (usar IDs del Dashboard, no de Analytics)
+            var ventasElement = document.querySelector('[data-kpi="ventas-mes"]');
+            if(!ventasElement) {
+                // Si no existe, buscar el elemento por texto
+                var kpiCards = document.querySelectorAll('.card.stats-card .h5');
+                if(kpiCards.length > 0) {
+                    kpiCards[0].textContent = fmtCur.format(k.ventas_mes || 0);
+                }
+            }
+            
+            // Buscar los elementos de KPI y actualizarlos
+            var kpiElements = document.querySelectorAll('.stats-card .h5');
+            if(kpiElements.length >= 4) {
+                kpiElements[0].textContent = fmtCur.format(k.ventas_mes || 0); // Ventas del mes
+                kpiElements[1].textContent = (k.pedidos_completados || 0); // Pedidos total
+                kpiElements[2].textContent = (k.tx_aprobadas || 0); // Transacciones
+                kpiElements[3].textContent = (k.total_productos || 0); // Productos (si existe)
+            }
+            
+            // Actualizar subtextos
+            var subtextElements = document.querySelectorAll('.stats-card .text-xs + .mt-2 .text-light');
+            if(subtextElements.length >= 3) {
+                subtextElements[0].textContent = 'Total: ' + fmtCur.format(k.ventas_totales || 0);
+                subtextElements[1].textContent = 'Completados: ' + (k.pedidos_completados || 0);
+                subtextElements[2].textContent = 'Pendientes: ' + (k.tx_pendientes || 0);
+            }
+        }
+        
+        async function reloadDashboard() {
+            if(dashboard_state.bloqueo) return;
+            dashboard_state.bloqueo = true;
+            var st = document.getElementById('analyticsStatus');
+            if(st) st.textContent = 'Filtrando...';
+            
+            try {
+                var url = buildDashboardQuery();
+                console.log('Dashboard reload URL:', url);
+                var r = await fetch(url);
+                if(!r.ok) throw new Error('HTTP ' + r.status);
+                var d = await r.json();
+                
+                // Si no hay datos, usar demo
+                var empty = !d || (!d.kpis && !d.ventas_mensuales) || 
+                    (((d.ventas_mensuales && d.ventas_mensuales.values) || []).every(function(x) { return (+x || 0) === 0; }));
+                if(empty) {
+                    console.log('Datos vacíos, usando modo demo');
+                    r = await fetch('/Admin/Api/Analytics?mode=demo');
+                    d = await r.json();
+                }
+                
+                RAW_DASHBOARD = d;
+                
+                // Actualizar KPIs primero
+                if(d.kpis) {
+                    console.log('Actualizando KPIs:', d.kpis);
+                    setDashboardKPIs(d.kpis);
+                }
+                
+                // Luego actualizar gráficos
+                renderAllDashboardCharts();
+                updateDashboardFilterStatus();
+                
+                if(st) st.textContent = '';
+            } catch(e) {
+                if(st) st.textContent = 'Error cargando datos';
+                console.error('Dashboard reload error:', e);
+            } finally {
+                dashboard_state.bloqueo = false;
+            }
+        }
+        
+        function toggleDashboardFilter(key, value) {
+            value = String(value).toUpperCase();
+            var arr = dashboard_state.filtros[key];
+            
+            if(key === 'prodId') {
+                // Producto es único
+                if(dashboard_state.filtros.prodId == value) {
+                    dashboard_state.filtros.prodId = null;
+                } else {
+                    dashboard_state.filtros.prodId = value;
+                }
+            } else {
+                // Otros filtros son arrays
+                if(!arr) {
+                    arr = dashboard_state.filtros[key] = [];
+                }
+                var idx = arr.indexOf(value);
+                if(idx >= 0) {
+                    arr.splice(idx, 1);
+                } else {
+                    arr.push(value);
+                }
+            }
+            
+            console.log('Dashboard filter toggled:', key, value, dashboard_state.filtros);
+            reloadDashboard();
+        }
+        
+        function updateDashboardFilterStatus() {
+            const activeFilters = [];
+            if(dashboard_state.filtros.mes.length) {
+                dashboard_state.filtros.mes.forEach(function(m) {
+                    activeFilters.push('Mes: ' + m);
+                });
+            }
+            if(dashboard_state.filtros.estado.length) {
+                dashboard_state.filtros.estado.forEach(function(e) {
+                    activeFilters.push('Estado: ' + e);
+                });
+            }
+            if(dashboard_state.filtros.metodo.length) {
+                dashboard_state.filtros.metodo.forEach(function(m) {
+                    activeFilters.push('Método: ' + m);
+                });
+            }
+            if(dashboard_state.filtros.prodId) {
+                activeFilters.push('Producto ID: ' + dashboard_state.filtros.prodId);
+            }
+            
+            const statusElement = document.getElementById('analyticsStatus');
+            if(activeFilters.length > 0) {
+                statusElement.textContent = 'Filtros activos: ' + activeFilters.join(' | ');
+                statusElement.style.color = '#dc3545';
+                statusElement.style.fontSize = '0.8rem';
+                statusElement.style.fontWeight = 'bold';
+                
+                // Mostrar botón limpiar
+                var clearBtn = document.getElementById('clearDashboardFilters');
+                if(clearBtn) clearBtn.style.display = 'inline-block';
+            } else {
+                statusElement.textContent = '';
+                statusElement.style.color = '';
+                
+                // Ocultar botón limpiar
+                var clearBtn = document.getElementById('clearDashboardFilters');
+                if(clearBtn) clearBtn.style.display = 'none';
+            }
+        }
+        
+        function clearAllDashboardFilters() {
+            dashboard_state.filtros = { mes: [], estado: [], metodo: [], prodId: null };
+            console.log('Limpiando todos los filtros del dashboard');
+            reloadDashboard();
+        }
+        
+        async function loadAnalytics(){
+            try{
+                document.getElementById('analyticsStatus').textContent = 'Cargando...';
+                const r = await fetch('/Admin/Api/Analytics?mode=ef');
+                if(!r.ok){
+                    const txt = await r.text();
+                    document.getElementById('analyticsStatus').textContent = 'Analytics API no disponible';
+                    console.warn('Analytics error', r.status, txt);
+                    return;
+                }
+                
+                const data = await r.json();
+                RAW_DASHBOARD = data;
+                
+                // Actualizar KPIs iniciales
+                if(data.kpis) {
+                    setDashboardKPIs(data.kpis);
+                }
+                
+                renderAllDashboardCharts();
+                updateDashboardFilterStatus();
+                document.getElementById('analyticsStatus').textContent = '';
+            }catch(e){
+                document.getElementById('analyticsStatus').textContent = 'Error cargando analytics';
+                console.error('Analytics fetch failed', e);
+            }
+        }
+        
+        function renderAllDashboardCharts() {
+            if(!RAW_DASHBOARD) return;
+            
+            const data = RAW_DASHBOARD;
+            console.log('Renderizando todos los gráficos con datos:', data);
+            
+            if(data.ventas_mensuales && data.ventas_mensuales.labels && data.ventas_mensuales.values){ 
+                renderLine('chartVentas', data.ventas_mensuales.labels, data.ventas_mensuales.values, 'Ventas'); 
+            }
+            if(data.pedidos_estados && data.pedidos_estados.labels && data.pedidos_estados.values){ 
+                renderDoughnut('chartEstados', data.pedidos_estados.labels, data.pedidos_estados.values); 
+            }
+            if(data.metodos_pago && data.metodos_pago.labels && data.metodos_pago.values){ 
+                renderDoughnut('chartPagos', data.metodos_pago.labels, data.metodos_pago.values); 
+            } else if(data.ventas_por_metodo_monto && data.ventas_por_metodo_monto.labels && data.ventas_por_metodo_monto.values) {
+                renderDoughnut('chartPagos', data.ventas_por_metodo_monto.labels, data.ventas_por_metodo_monto.values);
+            }
+            if(data.top_productos && data.top_productos.labels && data.top_productos.values){ 
+                renderBar('chartTopProductos', data.top_productos.labels, data.top_productos.values, data.top_productos.ids || []); 
+            }
+        }
+        
+        function renderLine(id, labels, values, label){ 
+            const ctx=document.getElementById(id); 
+            if(!ctx) return; 
+            
+            if(dashboardCharts[id]) {
+                dashboardCharts[id].destroy();
+            }
+            
+            dashboardCharts[id] = new Chart(ctx,{
+                type:'line',
+                data:{
+                    labels,
+                    datasets:[{
+                        label,
+                        data:values,
+                        borderColor:'#4e73df',
+                        backgroundColor:'rgba(78,115,223,.1)',
+                        tension:.3,
+                        fill:true,
+                        pointBackgroundColor: labels.map(function(lbl) {
+                            return dashboard_state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1 ? '#ff6b6b' : '#4e73df';
+                        }),
+                        pointRadius: labels.map(function(lbl) {
+                            return dashboard_state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1 ? 8 : 6;
+                        }),
+                        pointHoverRadius: 10
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    onClick: function(event, elements) {
+                        if(elements.length > 0) {
+                            const index = elements[0].index;
+                            const mes = labels[index];
+                            console.log('Dashboard line click:', mes);
+                            toggleDashboardFilter('mes', mes);
+                        }
+                    },
+                    plugins:{
+                        tooltip:{
+                            callbacks:{
+                                label: function(context) {
+                                    return 'Ventas: ' + fmtCur.format(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales:{
+                        y:{
+                            ticks:{
+                                callback: function(value) {
+                                    return fmtCur.format(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            }); 
+        }
+        
+        function renderDoughnut(id, labels, values){ 
+            const ctx=document.getElementById(id); 
+            if(!ctx) return; 
+            
+            if(dashboardCharts[id]) {
+                dashboardCharts[id].destroy();
+            }
+            
+            var filterKey = (id === 'chartEstados') ? 'estado' : 'metodo';
+            var activeFilters = dashboard_state.filtros[filterKey] || [];
+            
+            dashboardCharts[id] = new Chart(ctx,{
+                type:'doughnut',
+                data:{
+                    labels,
+                    datasets:[{
+                        data:values,
+                        backgroundColor: labels.map(function(lab, i) {
+                            var isActive = activeFilters.indexOf(lab.toUpperCase()) !== -1;
+                            if(activeFilters.length > 0 && !isActive) {
+                                return 'rgba(200,200,200,0.3)'; // Atenuado
+                            }
+                            var colors = ['#4e73df','#1cc88a','#36b9cc','#f6c23e','#e74a3b','#858796'];
+                            return isActive ? '#ff6b6b' : colors[i % colors.length];
+                        }),
+                        borderWidth: labels.map(function(lab) {
+                            var isActive = activeFilters.indexOf(lab.toUpperCase()) !== -1;
+                            return isActive ? 4 : 2;
+                        }),
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    onClick: function(event, elements) {
+                        if(elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = labels[index];
+                            console.log('Dashboard doughnut click:', filterKey, label);
+                            toggleDashboardFilter(filterKey, label);
+                        }
+                    },
+                    plugins:{
+                        tooltip:{
+                            callbacks:{
+                                label: function(context) {
+                                    var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                    var porcentaje = ((context.raw / total) * 100).toFixed(1);
+                                    if(id === 'chartPagos' && context.raw > 1000) {
+                                        return context.label + ': ' + fmtCur.format(context.raw) + ' (' + porcentaje + '%)';
+                                    } else {
+                                        return context.label + ': ' + context.raw + ' (' + porcentaje + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }); 
+        }
+        
+        function renderBar(id, labels, values, ids){ 
+            const ctx=document.getElementById(id); 
+            if(!ctx) return; 
+            
+            if(dashboardCharts[id]) {
+                dashboardCharts[id].destroy();
+            }
+            
+            dashboardCharts[id] = new Chart(ctx,{
+                type:'bar',
+                data:{
+                    labels,
+                    datasets:[{
+                        label:'Cantidad vendida',
+                        data:values,
+                        backgroundColor: labels.map(function(lab, i) {
+                            var prodId = ids && ids[i] ? ids[i] : i;
+                            var isActive = dashboard_state.filtros.prodId == prodId;
+                            return isActive ? '#ff6b6b' : '#36b9cc';
+                        }),
+                        borderRadius: 4,
+                        borderWidth: labels.map(function(lab, i) {
+                            var prodId = ids && ids[i] ? ids[i] : i;
+                            var isActive = dashboard_state.filtros.prodId == prodId;
+                            return isActive ? 3 : 0;
+                        }),
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    onClick: function(event, elements) {
+                        if(elements.length > 0) {
+                            const index = elements[0].index;
+                            const prodId = ids && ids[index] ? ids[index] : index;
+                            console.log('Dashboard bar click:', prodId);
+                            toggleDashboardFilter('prodId', prodId);
+                        }
+                    },
+                    plugins:{
+                        tooltip:{
+                            callbacks:{
+                                label: function(context) {
+                                    return 'Vendidos: ' + context.raw.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            }); 
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAnalytics();
+            
+            // Crear botón limpiar filtros
+            const statusElement = document.getElementById('analyticsStatus');
+            if(statusElement && statusElement.parentNode) {
+                const clearButton = document.createElement('button');
+                clearButton.innerHTML = '<i class="fas fa-times-circle"></i> Limpiar Filtros';
+                clearButton.className = 'btn btn-sm btn-outline-danger ms-2';
+                clearButton.style.display = 'none';
+                clearButton.onclick = clearAllDashboardFilters;
+                clearButton.id = 'clearDashboardFilters';
+                statusElement.parentNode.appendChild(clearButton);
+            }
+        });
+    </script>
+}

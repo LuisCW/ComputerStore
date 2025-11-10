@@ -1,0 +1,528 @@
+@page
+@model ComputerStore.Pages.Admin.Analytics.TrafficModel
+@{
+    ViewData["Title"] = "Analytics - Tráfico";
+    Layout = "_AdminLayout";
+}
+<style>
+    .active-filter-badge {
+        cursor: pointer;
+        margin-right: .5rem;
+        margin-bottom: .25rem
+    }
+    .filter-badge-container {
+        gap: 5px
+    }
+</style>
+<div class="card shadow mb-4">
+  <div class="card-header py-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-line me-2"></i>Analytics - Tráfico</h6>
+    <div class="d-flex align-items-center gap-2 small filter-badge-container">
+        <div id="activeFilters" class="d-flex flex-wrap"></div>
+        <span id="status" class="text-muted small"></span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="small text-muted mb-3">Fuente: <span id="src">-</span> | Click en cualquier gráfico para filtrar</div>
+    
+    <!-- KPIs -->
+    <div class="row mb-4">
+      <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card h-100 border-start-primary shadow"><div class="card-body"><div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Visitas (30 días)</div><div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiVisits">0</div><div class="small text-muted">Sesiones únicas</div></div></div></div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card h-100 border-start-success shadow"><div class="card-body"><div class="text-xs font-weight-bold text-success text-uppercase mb-1">Conversion Rate</div><div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiCR">0%</div><div class="small text-muted">Pedidos / Visitas</div></div></div></div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card h-100 border-start-info shadow"><div class="card-body"><div class="text-xs font-weight-bold text-info text-uppercase mb-1">AOV</div><div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiAOV">$0</div><div class="small text-muted">Ticket promedio</div></div></div></div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card h-100 border-start-warning shadow"><div class="card-body"><div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Usuarios Únicos</div><div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiUsers">0</div><div class="small text-muted">Últimos 30 días</div></div></div></div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mb-4">
+      <div class="col-xl-8 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>Visitas vs Pedidos (30 días)</strong></div>
+          <div class="card-body"><div style="height:320px"><canvas id="vxp"></canvas></div></div>
+        </div>
+      </div>
+      <div class="col-xl-4 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>Dispositivos <small class="text-muted">(Click para filtrar)</small></strong></div>
+          <div class="card-body"><div style="height:320px"><canvas id="device"></canvas><div id="deviceEmpty" class="small text-muted d-none">Sin datos de dispositivos</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>Top Páginas <small class="text-muted">(Click para filtrar)</small></strong></div>
+          <div class="card-body"><div style="height:320px"><canvas id="paths"></canvas><div id="pathsEmpty" class="small text-muted d-none">Sin datos de páginas</div></div></div>
+        </div>
+      </div>
+      <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>Fuentes de Tráfico <small class="text-muted">(Click para filtrar)</small></strong></div>
+          <div class="card-body"><div style="height:320px"><canvas id="sources"></canvas><div id="sourcesEmpty" class="small text-muted d-none">Sin datos de fuentes</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="row">
+      <div class="col-12">
+        <div class="alert alert-info">
+          <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Información sobre el tracking</h6>
+          <p class="mb-2"><strong>Dispositivos:</strong> Se detectan automáticamente desde Windows, Mac, Linux, Android, iOS, etc.</p>
+          <p class="mb-2"><strong>Fuentes de tráfico:</strong> Se identifican WhatsApp, Facebook, Google, Instagram, acceso directo y más.</p>
+          <p class="mb-0"><strong>Usuarios únicos:</strong> Se calculan basados en sesiones únicas para proteger privacidad.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts{
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sistema de filtrado PowerBI completo para Traffic
+let RAW_TRAFFIC = null;
+let trafficCharts = {};
+const fmtCur=new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const traffic_state = { 
+    filtros: { dispositivo: [], pagina: [], fuente: [], metodo: [] }, 
+    bloqueo: false 
+};
+
+function badge(text,key,val){
+    var span=document.createElement('span'); 
+    span.className='badge bg-primary active-filter-badge'; 
+    span.textContent=text; 
+    span.dataset.key=key; 
+    span.dataset.value=val; 
+    span.onclick=function(){ removeTrafficFilter(key,val); }; 
+    return span; 
+}
+
+function refreshTrafficBadges(){
+    var c=document.getElementById('activeFilters'); 
+    if(!c) return; 
+    c.innerHTML=''; 
+    
+    traffic_state.filtros.dispositivo.forEach(function(v){ 
+        c.appendChild(badge('Dispositivo: '+v,'dispositivo',v)); 
+    }); 
+    traffic_state.filtros.pagina.forEach(function(v){ 
+        c.appendChild(badge('Página: '+v,'pagina',v)); 
+    });
+    traffic_state.filtros.fuente.forEach(function(v){ 
+        c.appendChild(badge('Fuente: '+v,'fuente',v)); 
+    });
+    traffic_state.filtros.metodo.forEach(function(v){ 
+        c.appendChild(badge('Método: '+v,'metodo',v)); 
+    });
+}
+
+function clearTrafficChart(id){ 
+    if(trafficCharts[id]){ 
+        trafficCharts[id].destroy(); 
+        trafficCharts[id]=null; 
+    } 
+}
+
+function buildTrafficQuery() {
+    var p = new URLSearchParams();
+    p.set('mode', 'python'); // Traffic prefiere python si está disponible
+    if(traffic_state.filtros.metodo.length) p.set('metodo', traffic_state.filtros.metodo.join(','));
+    return '/Admin/Api/Analytics?' + p.toString();
+}
+
+async function reloadTraffic() {
+    if(traffic_state.bloqueo) return;
+    traffic_state.bloqueo = true;
+    var st = document.getElementById('status');
+    if(st) st.textContent = 'Filtrando...';
+    
+    try {
+        var url = buildTrafficQuery();
+        console.log('Traffic reload URL:', url);
+        var r = await fetch(url);
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        var d = await r.json();
+        
+        RAW_TRAFFIC = d;
+        document.getElementById('src').textContent = d.source || 'ef-core';
+        renderAllTrafficCharts();
+        refreshTrafficBadges();
+        
+        if(st) st.textContent = '';
+    } catch(e) {
+        if(st) st.textContent = 'Error cargando datos';
+        console.error('Traffic reload error:', e);
+    } finally {
+        traffic_state.bloqueo = false;
+    }
+}
+
+function toggleTrafficFilter(key, value) {
+    value = String(value).toUpperCase();
+    
+    var arr = traffic_state.filtros[key];
+    if(!arr) {
+        arr = traffic_state.filtros[key] = [];
+    }
+    
+    var idx = arr.indexOf(value);
+    if(idx >= 0) {
+        arr.splice(idx, 1);
+    } else {
+        arr.push(value);
+    }
+    
+    console.log('Traffic filter toggled:', key, value, traffic_state.filtros);
+    reloadTraffic();
+}
+
+function removeTrafficFilter(key, value) {
+    var arr = traffic_state.filtros[key];
+    if(!arr) return;
+    var i = arr.indexOf(String(value).toUpperCase());
+    if(i >= 0) arr.splice(i, 1);
+    reloadTraffic();
+}
+
+function clearAllTrafficFilters() {
+    traffic_state.filtros = { dispositivo: [], pagina: [], fuente: [], metodo: [] };
+    reloadTraffic();
+}
+
+function renderAllTrafficCharts() {
+    if(!RAW_TRAFFIC) return;
+    
+    const d = RAW_TRAFFIC;
+    renderTrafficCharts(d);
+}
+
+function renderTrafficCharts(d) {
+    const traf=d.traffic_diario_30||{labels:[],visitas:[],usuarios:[]};
+    const ordersSeries=d.tx_diarias_30||{labels:[],values:[]};
+    const vm=d.ventas_mensuales?.values||[];
+    const sum=a=>a.reduce((x,y)=>x+(+y||0),0);
+    const visitasTot=sum(traf.visitas||[]);
+    
+    // USAR usuarios únicos reales del API
+    const usuariosUnicos = d.traffic_usuarios_unicos_30d || sum(traf.usuarios||[]);
+    const pedidosTot=sum(ordersSeries.values||[]);
+    const aov = sum(vm)/Math.max(1,pedidosTot);
+    
+    document.getElementById('kpiVisits').textContent=visitasTot.toLocaleString();
+    document.getElementById('kpiUsers').textContent=usuariosUnicos.toLocaleString();
+    document.getElementById('kpiCR').textContent=((pedidosTot/Math.max(1,visitasTot))*100).toFixed(1)+'%';
+    document.getElementById('kpiAOV').textContent=fmtCur.format(aov);
+
+    // Visitas vs Pedidos line
+    const alignedLabels=traf.labels;
+    const pedidosMap={}; 
+    (ordersSeries.labels||[]).forEach((l,i)=>pedidosMap[l]=ordersSeries.values[i]);
+    const pedidosAligned=alignedLabels.map(l=>pedidosMap[l]||0);
+    
+    clearTrafficChart('vxp');
+    trafficCharts['vxp'] = new Chart(document.getElementById('vxp'),{
+        type:'line',
+        data:{
+            labels:alignedLabels,
+            datasets:[
+                {
+                    label:'Visitas',
+                    data:traf.visitas,
+                    borderColor:'#2563eb',
+                    backgroundColor:'rgba(37,99,235,.25)',
+                    tension:.35,
+                    fill:true,
+                    pointRadius: 3
+                },
+                {
+                    label:'Pedidos',
+                    data:pedidosAligned,
+                    borderColor:'#10b981',
+                    backgroundColor:'rgba(16,185,129,.25)',
+                    tension:.35,
+                    fill:true,
+                    pointRadius: 3
+                }
+            ]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            scales:{
+                y:{beginAtZero:true}
+            }
+        }
+    });
+
+    // Device - USAR DATOS REALES
+    const dev=d.traffic_device||{labels:[],values:[]};
+    if(!dev.labels.length) {
+        document.getElementById('deviceEmpty').classList.remove('d-none');
+    } else {
+        document.getElementById('deviceEmpty').classList.add('d-none');
+        clearTrafficChart('device');
+        trafficCharts['device'] = new Chart(document.getElementById('device'),{
+            type:'doughnut',
+            data:{
+                labels:dev.labels,
+                datasets:[{
+                    data:dev.values,
+                    backgroundColor: dev.labels.map(function(lab, i) {
+                        var isActive = traffic_state.filtros.dispositivo.indexOf(lab.toUpperCase()) !== -1;
+                        if(traffic_state.filtros.dispositivo.length > 0 && !isActive) {
+                            return 'rgba(200,200,200,0.3)';
+                        }
+                        // Colores específicos por dispositivo
+                        const deviceColors = {
+                            'WINDOWS': '#0078d4',
+                            'MAC': '#000000', 
+                            'LINUX': '#FCC624',
+                            'ANDROID': '#3DDC84',
+                            'IOS': '#007AFF',
+                            'TABLET': '#FF6B35',
+                            'DESKTOP': '#6B73FF',
+                            'MOBILE': '#FF6B6B',
+                            'CHROMEOS': '#4285f4',
+                            'BOT': '#9ca3af'
+                        };
+                        return isActive ? '#ef4444' : (deviceColors[lab.toUpperCase()] || ['#2563eb','#10b981','#f59e0b','#8b5cf6'][i % 4]);
+                    }),
+                    borderWidth: dev.labels.map(function(lab) {
+                        var isActive = traffic_state.filtros.dispositivo.indexOf(lab.toUpperCase()) !== -1;
+                        return isActive ? 3 : 1;
+                    }),
+                    borderColor: '#ffffff'
+                }]
+            },
+            options:{
+                responsive:true,
+                maintainAspectRatio:false,
+                onClick: function(event, elements) {
+                    if(elements.length > 0) {
+                        const index = elements[0].index;
+                        const dispositivo = dev.labels[index];
+                        toggleTrafficFilter('dispositivo', dispositivo);
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = dev.values.reduce((a, b) => a + b, 0);
+                                const percent = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.raw.toLocaleString()} (${percent}%)`;
+                            },
+                            afterLabel: function() {
+                                return 'Click para filtrar';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Top paths - USAR DATOS REALES
+    const tp=d.traffic_top_paths||{labels:[],values:[]};
+    if(!tp.labels.length) {
+        document.getElementById('pathsEmpty').classList.remove('d-none');
+    } else {
+        document.getElementById('pathsEmpty').classList.add('d-none');
+        clearTrafficChart('paths');
+        trafficCharts['paths'] = new Chart(document.getElementById('paths'),{
+            type:'bar',
+            data:{
+                labels:tp.labels.map(path => {
+                    // Formatear rutas para mejor legibilidad
+                    if(path === '/') return 'Inicio';
+                    if(path.startsWith('/productos')) return 'Productos';
+                    if(path.startsWith('/categoria/')) return 'Categoría';
+                    if(path.startsWith('/carrito')) return 'Carrito';
+                    if(path.startsWith('/account')) return 'Cuenta';
+                    if(path.startsWith('/admin')) return 'Admin';
+                    return path.length > 15 ? path.substring(0, 12) + '...' : path;
+                }),
+                datasets:[{
+                    label:'Visitas',
+                    data:tp.values,
+                    backgroundColor: tp.labels.map(function(lab, i) {
+                        var isActive = traffic_state.filtros.pagina.indexOf(lab.toUpperCase()) !== -1;
+                        if(traffic_state.filtros.pagina.length > 0 && !isActive) {
+                            return 'rgba(200,200,200,0.3)';
+                        }
+                        return isActive ? '#ef4444' : '#14b8a6';
+                    }),
+                    borderWidth: tp.labels.map(function(lab) {
+                        var isActive = traffic_state.filtros.pagina.indexOf(lab.toUpperCase()) !== -1;
+                        return isActive ? 3 : 0;
+                    }),
+                    borderColor: '#ffffff'
+                }]
+            },
+            options:{
+                responsive:true,
+                maintainAspectRatio:false,
+                indexAxis:'y',
+                onClick: function(event, elements) {
+                    if(elements.length > 0) {
+                        const index = elements[0].index;
+                        const pagina = tp.labels[index];
+                        toggleTrafficFilter('pagina', pagina);
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function() {
+                                return 'Click para filtrar';
+                            }
+                        }
+                    }
+                },
+                scales:{
+                    x:{beginAtZero:true}
+                }
+            }
+        });
+    }
+
+    // Fuentes de tráfico - NUEVO GRÁFICO
+    const src=d.traffic_sources||{labels:[],values:[]};
+    if(!src.labels.length) {
+        document.getElementById('sourcesEmpty').classList.remove('d-none');
+    } else {
+        document.getElementById('sourcesEmpty').classList.add('d-none');
+        clearTrafficChart('sources');
+        trafficCharts['sources'] = new Chart(document.getElementById('sources'),{
+            type:'doughnut',
+            data:{
+                labels:src.labels.map(source => {
+                    // Formatear fuentes para mejor legibilidad
+                    const sourceNames = {
+                        'DIRECT': 'Directo',
+                        'GOOGLE': 'Google',
+                        'FACEBOOK': 'Facebook', 
+                        'WHATSAPP': 'WhatsApp',
+                        'INSTAGRAM': 'Instagram',
+                        'LINKEDIN': 'LinkedIn',
+                        'TWITTER': 'Twitter',
+                        'YOUTUBE': 'YouTube',
+                        'TELEGRAM': 'Telegram'
+                    };
+                    return sourceNames[source.toUpperCase()] || source;
+                }),
+                datasets:[{
+                    data:src.values,
+                    backgroundColor: src.labels.map(function(lab, i) {
+                        var isActive = traffic_state.filtros.fuente.indexOf(lab.toUpperCase()) !== -1;
+                        if(traffic_state.filtros.fuente.length > 0 && !isActive) {
+                            return 'rgba(200,200,200,0.3)';
+                        }
+                        // Colores específicos por fuente
+                        const sourceColors = {
+                            'DIRECT': '#6b7280',
+                            'GOOGLE': '#4285f4',
+                            'FACEBOOK': '#1877f2', 
+                            'WHATSAPP': '#25d366',
+                            'INSTAGRAM': '#e4405f',
+                            'LINKEDIN': '#0077b5',
+                            'TWITTER': '#1da1f2',
+                            'YOUTUBE': '#ff0000',
+                            'TELEGRAM': '#0088cc'
+                        };
+                        return isActive ? '#ef4444' : (sourceColors[lab.toUpperCase()] || ['#f59e0b','#8b5cf6','#ec4899','#14b8a6'][i % 4]);
+                    }),
+                    borderWidth: src.labels.map(function(lab) {
+                        var isActive = traffic_state.filtros.fuente.indexOf(lab.toUpperCase()) !== -1;
+                        return isActive ? 3 : 1;
+                    }),
+                    borderColor: '#ffffff'
+                }]
+            },
+            options:{
+                responsive:true,
+                maintainAspectRatio:false,
+                onClick: function(event, elements) {
+                    if(elements.length > 0) {
+                        const index = elements[0].index;
+                        const fuente = src.labels[index];
+                        toggleTrafficFilter('fuente', fuente);
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = src.values.reduce((a, b) => a + b, 0);
+                                const percent = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.raw.toLocaleString()} (${percent}%)`;
+                            },
+                            afterLabel: function() {
+                                return 'Click para filtrar';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+async function loadTraffic(){
+    try{
+        document.getElementById('status').textContent = 'Cargando...';
+        const r=await fetch('/Admin/Api/Analytics?mode=python');
+        if(!r.ok){
+            document.getElementById('status').textContent='API no disponible';
+            return;
+        }
+        const d=await r.json();
+        RAW_TRAFFIC = d;
+        document.getElementById('src').textContent = d.source || 'python-api';
+        renderAllTrafficCharts();
+        refreshTrafficBadges();
+        document.getElementById('status').textContent = '';
+    }catch(e){
+        document.getElementById('status').textContent='Error';
+        console.error(e);
+    }
+}
+
+// Crear botón limpiar filtros
+document.addEventListener('DOMContentLoaded', function() {
+    loadTraffic();
+    
+    const statusElement = document.getElementById('status');
+    if(statusElement && statusElement.parentNode) {
+        const clearButton = document.createElement('button');
+        clearButton.innerHTML = '<i class="fas fa-times-circle"></i> Limpiar Filtros';
+        clearButton.className = 'btn btn-sm btn-outline-danger ms-2';
+        clearButton.style.display = 'none';
+        clearButton.onclick = function() {
+            clearAllTrafficFilters();
+            this.style.display = 'none';
+        };
+        clearButton.id = 'clearTrafficFilters';
+        statusElement.parentNode.appendChild(clearButton);
+        
+        // Mostrar/ocultar botón según haya filtros
+        const originalRefreshBadges = refreshTrafficBadges;
+        refreshTrafficBadges = function() {
+            originalRefreshBadges();
+            const hasFilters = Object.values(traffic_state.filtros).some(arr => arr.length > 0);
+            clearButton.style.display = hasFilters ? 'inline-block' : 'none';
+        };
+    }
+
+    // Auto-refresh cada 5 minutos
+    setInterval(function() {
+        if(!traffic_state.bloqueo) {
+            loadTraffic();
+        }
+    }, 5 * 60 * 1000);
+});
+</script>
+}

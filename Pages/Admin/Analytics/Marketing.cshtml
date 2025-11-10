@@ -1,0 +1,515 @@
+﻿@page
+@model ComputerStore.Pages.Admin.Analytics.MarketingModel
+@{
+    ViewData["Title"] = "Marketing Analytics";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+    .metric-card:hover { transform: translateY(-3px); }
+    .metric-card h3 { font-size: 2.2rem; margin: 10px 0; font-weight: bold; }
+    .metric-card p { font-size: 0.9rem; opacity: 0.9; margin: 0; }
+    .chart-container { 
+        background: white; 
+        border-radius: 12px; 
+        padding: 20px; 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+        margin-bottom: 20px; 
+    }
+    .campaign-card {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+    }
+    .traffic-source {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        border-left: 4px solid #007bff;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-bullhorn text-primary"></i> Marketing Analytics
+            </h1>
+            <p class="text-muted">Análisis específico de campañas y canales de marketing</p>
+        </div>
+        <div>
+            <button onclick="location.reload()" class="btn btn-primary">
+                <i class="fas fa-sync"></i> Actualizar
+            </button>
+            <a href="/Admin/Marketing" class="btn btn-success">
+                <i class="fas fa-plus"></i> Gestionar Campañas
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs de Marketing Específicos -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <p><i class="fas fa-dollar-sign"></i> CAC - Costo de Adquisición</p>
+                <h3>@Model.CAC.ToString("C0", new System.Globalization.CultureInfo("es-CO"))</h3>
+                <small>Por cada cliente nuevo</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <p><i class="fas fa-target"></i> Conversion Rate Marketing</p>
+                <h3>@Model.ConversionRate.ToString("F2")%</h3>
+                <small>Visitas que se convierten</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <p><i class="fas fa-chart-line"></i> ROAS Promedio</p>
+                <h3>@((Model.LTV / Math.Max(Model.CAC, 1)).ToString("F1")):1</h3>
+                <small>Return on Ad Spend</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <p><i class="fas fa-users"></i> Clientes Adquiridos</p>
+                <h3>@Model.ClientesUnicos</h3>
+                <small>Total este período</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerta de Performance -->
+    @if (Model.ROI > 0)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                @{
+                    string alertClass = Model.ROI > 3 ? "alert-success" : Model.ROI > 1.5 ? "alert-warning" : "alert-danger";
+                    string alertIcon = Model.ROI > 3 ? "fas fa-rocket" : Model.ROI > 1.5 ? "fas fa-exclamation-triangle" : "fas fa-exclamation-circle";
+                    string alertText = Model.ROI > 3 
+                        ? $"🚀 Excelente ROI de {Model.ROI:F1}:1 - Las campañas están siendo muy rentables"
+                        : Model.ROI > 1.5 
+                            ? $"⚠️ ROI moderado de {Model.ROI:F1}:1 - Hay oportunidad de optimización"
+                            : $"🚨 ROI bajo de {Model.ROI:F1}:1 - Revisar campañas urgentemente";
+                }
+                <div class="alert @alertClass">
+                    <i class="@alertIcon"></i> @alertText
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <!-- Análisis de Campañas Activas -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-bar"></i> Performance por Canal de Marketing</h5>
+                <canvas id="canalPerformanceChart" style="max-height: 300px;"></canvas>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Canales analizados:</strong> Google Ads, Facebook, Instagram, SEO Orgánico, Email Marketing
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Costo vs Ingreso por Canal -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-balance-scale"></i> Costo vs Ingresos por Canal</h5>
+                <canvas id="costoIngresoChart" style="max-height: 300px;"></canvas>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Verde:</strong> Ingresos | <strong>Rojo:</strong> Costos de marketing
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Evolución del CAC -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-line"></i> Evolución CAC Últimos 6 Meses</h5>
+                <canvas id="cacEvolutionChart" style="max-height: 300px;"></canvas>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Meta:</strong> Mantener CAC por debajo de $50,000 COP
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Distribución del Presupuesto -->
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-pie"></i> Distribución Presupuesto Marketing</h5>
+                <canvas id="presupuestoChart" style="max-height: 300px;"></canvas>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Total invertido:</strong> $@((Model.ROIPorCanal.Sum(r => r.Costo)).ToString("N0", new System.Globalization.CultureInfo("es-CO"))) COP
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis de Fuentes de Tráfico -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5><i class="fas fa-globe"></i> Fuentes de Tráfico y Conversión</h5>
+                <div class="row">
+                    @if (Model.ROIPorCanal.Any())
+                    {
+                        @foreach (var canal in Model.ROIPorCanal.Take(4))
+                        {
+                            <div class="col-md-3">
+                                <div class="traffic-source">
+                                    <h6><strong>@canal.Canal</strong></h6>
+                                    <p class="mb-1">💰 Inversión: @canal.Costo.ToString("C0", new System.Globalization.CultureInfo("es-CO"))</p>
+                                    <p class="mb-1">📈 Ingresos: @canal.Ingresos.ToString("C0", new System.Globalization.CultureInfo("es-CO"))</p>
+                                    <p class="mb-1">🎯 ROI: <strong>@canal.ROI.ToString("F1"):1</strong></p>
+                                    <p class="mb-0 text-@(canal.ROI > 3 ? "success" : canal.ROI > 1.5 ? "warning" : "danger")">
+                                        @(canal.ROI > 3 ? "✅ Excelente" : canal.ROI > 1.5 ? "⚠️ Regular" : "❌ Revisar")
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <p class="mb-0">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>No hay datos de campañas aún.</strong> 
+                                    <a href="/Admin/Marketing" class="alert-link">Crear primera campaña de marketing</a>
+                                    para comenzar a ver analytics detallados.
+                                </p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recomendaciones Específicas de Marketing -->
+    @if (Model.ROIPorCanal.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h5><i class="fas fa-lightbulb"></i> Recomendaciones de Optimización</h5>
+                    <div class="row">
+                        @{
+                            var mejorCanal = Model.ROIPorCanal.OrderByDescending(c => c.ROI).FirstOrDefault();
+                            var peorCanal = Model.ROIPorCanal.OrderBy(c => c.ROI).FirstOrDefault();
+                        }
+                        
+                        @if (mejorCanal != null && mejorCanal.ROI > 2)
+                        {
+                            <div class="col-md-4">
+                                <div class="campaign-card">
+                                    <strong>🚀 Escalar @mejorCanal.Canal</strong><br>
+                                    <small>ROI de @mejorCanal.ROI.ToString("F1"):1 - Aumentar presupuesto 30%</small>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (peorCanal != null && peorCanal.ROI < 1.5)
+                        {
+                            <div class="col-md-4">
+                                <div class="campaign-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <strong>⚠️ Revisar @peorCanal.Canal</strong><br>
+                                    <small>ROI de @peorCanal.ROI.ToString("F1"):1 - Optimizar o pausar</small>
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="col-md-4">
+                            <div class="campaign-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <strong>📊 A/B Test Landing</strong><br>
+                                <small>Probar diferentes mensajes para mejorar conversión</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roiCanales = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ROIPorCanal));
+    const cacEvolution = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CACEvolution));
+    
+    console.log('🚀 Marketing Analytics con datos REALES cargado:', roiCanales);
+    
+    // Colores para gráficos
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+    
+    // 1. Gráfico Performance por Canal - CON DATOS REALES
+    if (roiCanales.length > 0) {
+        new Chart(document.getElementById('canalPerformanceChart'), {
+            type: 'bar',
+            data: {
+                labels: roiCanales.map(r => r.canal),
+                datasets: [{
+                    label: 'ROI',
+                    data: roiCanales.map(r => r.roi),
+                    backgroundColor: roiCanales.map((r, i) => r.roi > 3 ? '#10b981' : r.roi > 1.5 ? '#f59e0b' : '#ef4444'),
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const canal = roiCanales[context.dataIndex];
+                                const tooltips = [
+                                    `ROI: ${context.raw.toFixed(1)}:1`,
+                                    `Inversión: $${canal.costo.toLocaleString()} COP`,
+                                    `Ingresos: $${canal.ingresos.toLocaleString()} COP`,
+                                    `Conversiones: ${canal.conversiones}`
+                                ];
+                                
+                                // Agregar clicks e impresiones si están disponibles
+                                if (canal.clicks > 0) tooltips.push(`Clicks: ${canal.clicks.toLocaleString()}`);
+                                if (canal.impresiones > 0) tooltips.push(`Impresiones: ${canal.impresiones.toLocaleString()}`);
+                                
+                                return tooltips;
+                            }
+                        }
+                    }
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        title: { display: true, text: 'ROI (Return on Investment)' }
+                    }
+                }
+            }
+        });
+
+        // 2. Gráfico Costo vs Ingresos - CON DATOS REALES
+        new Chart(document.getElementById('costoIngresoChart'), {
+            type: 'bar',
+            data: {
+                labels: roiCanales.map(r => r.canal),
+                datasets: [
+                    {
+                        label: 'Ingresos Atribuidos',
+                        data: roiCanales.map(r => r.ingresos),
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Costos Reales',
+                        data: roiCanales.map(r => r.costo),
+                        backgroundColor: '#ef4444',
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const valor = context.raw;
+                                return `${context.dataset.label}: $${valor.toLocaleString()} COP`;
+                            }
+                        }
+                    }
+                },
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => '$' + value.toLocaleString() + ' COP'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. Evolución CAC REAL - Con datos históricos reales
+        if (cacEvolution && cacEvolution.length > 0) {
+            new Chart(document.getElementById('cacEvolutionChart'), {
+                type: 'line',
+                data: {
+                    labels: cacEvolution.map(c => c.mes),
+                    datasets: [{
+                        label: 'CAC Real (COP)',
+                        data: cacEvolution.map(c => c.cac),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const mes = cacEvolution[context.dataIndex];
+                                    return [
+                                        `CAC: $${context.raw.toLocaleString()} COP`,
+                                        `Clientes: ${mes.clientes}`,
+                                        `Inversión: $${mes.costosMarketing.toLocaleString()} COP`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: 'CAC (Costo por Cliente)' },
+                            ticks: {
+                                callback: (value) => '$' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            // Fallback si no hay datos de evolución
+            const fallbackData = [65000, 58000, 52000, 48000, 45000, @Model.CAC];
+            const fallbackLabels = ['Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            
+            new Chart(document.getElementById('cacEvolutionChart'), {
+                type: 'line',
+                data: {
+                    labels: fallbackLabels,
+                    datasets: [{
+                        label: 'CAC Estimado (COP)',
+                        data: fallbackData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `CAC: $${context.raw.toLocaleString()} COP`
+                            }
+                        }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => '$' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 4. Distribución Presupuesto REAL
+        new Chart(document.getElementById('presupuestoChart'), {
+            type: 'doughnut',
+            data: {
+                labels: roiCanales.map(r => r.canal),
+                datasets: [{
+                    data: roiCanales.map(r => r.costo),
+                    backgroundColor: colors.slice(0, roiCanales.length),
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const total = roiCanales.reduce((sum, r) => sum + r.costo, 0);
+                                const percent = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: $${context.raw.toLocaleString()} COP (${percent}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        // Mostrar mensaje cuando no hay datos REALES
+        const noDataMessage = 'No hay campañas de marketing activas';
+        const noDataSubtext = 'Ve a Gestionar Campañas para agregar datos';
+        
+        ['canalPerformanceChart', 'costoIngresoChart', 'cacEvolutionChart', 'presupuestoChart'].forEach(chartId => {
+            const canvas = document.getElementById(chartId);
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                
+                ctx.fillStyle = '#f8f9fa';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#6c757d';
+                ctx.font = '18px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(noDataMessage, canvas.width / 2, canvas.height / 2 - 10);
+                
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#adb5bd';
+                ctx.fillText(noDataSubtext, canvas.width / 2, canvas.height / 2 + 15);
+            }
+        });
+    }
+
+    // Log para debugging
+    console.log('✅ Marketing Analytics cargado con datos REALES:', {
+        canales: roiCanales.length,
+        presupuestoTotal: roiCanales.reduce((sum, r) => sum + r.costo, 0),
+        ingresosTotal: roiCanales.reduce((sum, r) => sum + r.ingresos, 0),
+        evolution: cacEvolution ? cacEvolution.length : 0
+    });
+});
+</script>

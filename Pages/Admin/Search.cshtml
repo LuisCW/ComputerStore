@@ -1,0 +1,139 @@
+@page
+@model ComputerStore.Pages.Admin.SearchModel
+@{
+    ViewData["Title"] = "Búsqueda";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-search me-2"></i>
+        Resultados de búsqueda
+    </h1>
+    <form method="get" class="d-flex">
+        <input name="q" class="form-control me-2" placeholder="Buscar..." value="@Model.Query" />
+        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+    </form>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Query))
+{
+    <p class="text-muted">Mostrando resultados para: <strong>@Model.Query</strong></p>
+}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-box me-2"></i>Productos (@Model.Products.Count)</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Products.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var p in Model.Products)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@p.Name</strong>
+                                    <div class="small text-muted">SKU: @(p.SKU ?? "N/A") - @p.Brand - @p.Category</div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-secondary me-2">@p.Price.ToString("C0")</span>
+                                    <a href="/Admin/EditProduct?id=@p.Id" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">Sin resultados en productos</div>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-users me-2"></i>Usuarios (@Model.Users.Count)</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Users.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var u in Model.Users)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@u.UserName</strong>
+                                    <div class="small text-muted">@u.Email</div>
+                                </div>
+                                <a href="/Admin/Users?search=@u.UserName" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">Sin resultados en usuarios</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-shopping-cart me-2"></i>Pedidos (@Model.Orders.Count)</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Orders.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var o in Model.Orders)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@o.ReferenceCode</strong>
+                                    <div class="small text-muted">Usuario: @o.UserId | Estado: @o.Estado</div>
+                                </div>
+                                <a href="/Admin/Orders?search=@o.ReferenceCode" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">Sin resultados en pedidos</div>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-truck me-2"></i>Envíos (@Model.Shippings.Count)</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Shippings.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var s in Model.Shippings)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@s.NumeroGuia</strong>
+                                    <div class="small text-muted">@s.Estado</div>
+                                </div>
+                                <a href="/Admin/Shipping?search=@s.NumeroGuia" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">Sin resultados en envíos</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

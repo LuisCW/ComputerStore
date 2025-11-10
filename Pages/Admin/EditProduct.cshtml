@@ -1,0 +1,706 @@
+@page
+@model ComputerStore.Pages.Admin.EditProductModel
+@{
+    ViewData["Title"] = "Editar Producto";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-edit me-2"></i>
+        Editar Producto: @Model.Product.Name
+    </h1>
+    <div>
+        <a href="@Model.ReturnUrl" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+</div>
+
+<!-- Mostrar mensajes -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-info-circle me-2"></i>Información del Producto
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="editProductForm">
+            @Html.AntiForgeryToken()
+            <input asp-for="Product.Id" type="hidden" />
+            <input asp-for="ReturnUrl" type="hidden" />
+            <input type="hidden" name="productId" value="@Model.Product.Id" />
+            <input asp-for="Product.Stock" type="hidden" />
+            <input asp-for="Product.StockMinimo" type="hidden" />
+            <input asp-for="Product.SKU" type="hidden" />
+            
+            <!-- Información Básica -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="text-primary border-bottom pb-2">
+                        <i class="fas fa-tag me-2"></i>Información Básica
+                    </h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Name" class="form-label">Nombre del Producto *</label>
+                        <input asp-for="Product.Name" class="form-control" required />
+                        <span asp-validation-for="Product.Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Brand" class="form-label">Marca *</label>
+                        <input asp-for="Product.Brand" class="form-control" required />
+                        <span asp-validation-for="Product.Brand" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Category" class="form-label">Categoría *</label>
+                        <select asp-for="Product.Category" class="form-select" required onchange="toggleSpecifications()">
+                            <option value="">Seleccione una categoría</option>
+                            <option value="Laptops">Laptops</option>
+                            <option value="Computadores">Computadores</option>
+                            <option value="Periféricos">Periféricos</option>
+                            <option value="Monitores">Monitores</option>
+                            <option value="Componentes">Componentes</option>
+                            <option value="Accesorios">Accesorios</option>
+                        </select>
+                        <span asp-validation-for="Product.Category" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Price" class="form-label">?? Precio de Venta *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="Product.Price" type="number" step="0.01" class="form-control" required />
+                        </div>
+                        <span asp-validation-for="Product.Price" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.PrecioCompra" class="form-label">?? Precio Mayorista</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="Product.PrecioCompra" type="number" step="0.01" class="form-control" />
+                        </div>
+                        <small class="text-muted">Costo de reposición/compra al proveedor</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Availability" class="form-label">Disponibilidad</label>
+                        <select asp-for="Product.Availability" class="form-select">
+                            <option value="Disponible">Disponible</option>
+                            <option value="Agotado">Agotado</option>
+                            <option value="Preventa">Preventa</option>
+                            <option value="Descontinuado">Descontinuado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Color" class="form-label">Color</label>
+                        <input asp-for="Product.Color" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Component" class="form-label">Tipo/Componente</label>
+                        <select asp-for="Product.Component" class="form-select">
+                            <option value="">Seleccione un tipo</option>
+                            <option value="Gaming">Gaming</option>
+                            <option value="Oficina">Oficina</option>
+                            <option value="Profesional">Profesional</option>
+                            <option value="Básico">Básico</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Description" class="form-label">Descripción</label>
+                        <textarea asp-for="Product.Description" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <!-- ?? GESTIÓN DE MÚLTIPLES IMÁGENES -->
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-images me-2"></i>Imágenes Actuales
+                            </h6>
+                            
+                            @if (Model.ProductImages.Any())
+                            {
+                                <div class="row g-2 mb-3">
+                                    @foreach (var image in Model.ProductImages)
+                                    {
+                                        <div class="col-md-6 col-4">
+                                            <div class="card">
+                                                <img src="@image.ImagenUrl" class="card-img-top" alt="@image.AltText" 
+                                                     style="height: 120px; object-fit: cover;">
+                                                <div class="card-body p-2">
+                                                    <div class="d-flex justify-content-between">
+                                                        <button type="submit" formaction="?handler=SetMainImage" formmethod="post"
+                                                                name="imageId" value="@image.Id" class="btn btn-sm btn-success" title="Imagen principal">
+                                                            <i class="fas fa-star"></i>
+                                                        </button>
+                                                        <button type="submit" formaction="?handler=DeleteImage" formmethod="post"
+                                                                name="imageId" value="@image.Id" class="btn btn-sm btn-danger" title="Eliminar"
+                                                                onclick="return confirm('¿Eliminar esta imagen?')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                     <small class="text-muted">Orden: @image.Orden</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No hay imágenes para este producto.
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-upload me-2"></i>Subir Nuevas Imágenes
+                            </h6>
+                            
+                            <div class="form-group mb-3">
+                                <label for="imageFiles" class="form-label">Seleccionar Imágenes</label>
+                                <input type="file" asp-for="Product.ImageFiles" multiple accept="image/*" 
+                                       class="form-control" id="imageFiles" onchange="previewNewImages(this)">
+                                <div class="form-text">
+                                    Selecciona múltiples imágenes (JPG, PNG, WebP). 
+                                    <strong>Máximo 10MB por imagen.</strong>
+                                </div>
+                            </div>
+                            
+                            <!-- Vista previa de nuevas imágenes -->
+                            <div id="newImagePreviewContainer" class="row g-2 mb-3" style="display: none;"></div>
+                            
+                            <!-- Placeholder -->
+                            <div id="uploadPlaceholder" class="bg-light d-flex align-items-center justify-content-center" 
+                                 style="height: 120px; border: 2px dashed #dee2e6; border-radius: 8px;">
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                                    <br>Arrastra imágenes aquí o haz clic en "Seleccionar"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Especificaciones para Laptops/Computadores -->
+            <div id="specs-laptops" class="row mb-4" style="display: none;">
+                <div class="col-12">
+                    <h5 class="text-success border-bottom pb-2">
+                        <i class="fas fa-laptop me-2"></i>Especificaciones de Computador/Laptop
+                    </h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Procesador" class="form-label">Procesador</label>
+                        <input asp-for="Product.Procesador" class="form-control" placeholder="Ej: Intel Core i7-13700K" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.RAM" class="form-label">Memoria RAM</label>
+                        <input asp-for="Product.RAM" class="form-control" placeholder="Ej: 16GB DDR4 3200MHz" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Almacenamiento" class="form-label">Almacenamiento</label>
+                        <input asp-for="Product.Almacenamiento" class="form-control" placeholder="Ej: 1TB NVMe SSD" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.TarjetaGrafica" class="form-label">Tarjeta Gráfica</label>
+                        <input asp-for="Product.TarjetaGrafica" class="form-control" placeholder="Ej: NVIDIA RTX 4070 12GB" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Pantalla" class="form-label">Pantalla</label>
+                        <input asp-for="Product.Pantalla" class="form-control" placeholder="Ej: 15.6 Full HD 144Hz" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.SistemaOperativo" class="form-label">Sistema Operativo</label>
+                        <input asp-for="Product.SistemaOperativo" class="form-control" placeholder="Ej: Windows 11 Home" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Especificaciones para Periféricos -->
+            <div id="specs-perifericos" class="row mb-4" style="display: none;">
+                <div class="col-12">
+                    <h5 class="text-info border-bottom pb-2">
+                        <i class="fas fa-mouse me-2"></i>Especificaciones de Periféricos
+                    </h5>
+                </div>
+                <!-- Mouse -->
+                <div id="mouse-specs" style="display: none;">
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            <label asp-for="Product.DPI" class="form-label">DPI</label>
+                            <input asp-for="Product.DPI" class="form-control" placeholder="Ej: 25,600 DPI" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            <label asp-for="Product.Botones" class="form-label">Botones</label>
+                            <input asp-for="Product.Botones" class="form-control" placeholder="Ej: 11 programables" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            <label asp-for="Product.Peso" class="form-label">Peso</label>
+                            <input asp-for="Product.Peso" class="form-control" placeholder="Ej: 121g" />
+                        </div>
+                    </div>
+                </div>
+                <!-- Teclado -->
+                <div id="keyboard-specs" style="display: none;">
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            <label asp-for="Product.Switch" class="form-label">Switch</label>
+                            <input asp-for="Product.Switch" class="form-control" placeholder="Ej: Cherry MX Red" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            <label asp-for="Product.Retroiluminacion" class="form-label">Retroiluminación</label>
+                            <input asp-for="Product.Retroiluminacion" class="form-control" placeholder="Ej: RGB por tecla" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            <label asp-for="Product.Layout" class="form-label">Layout</label>
+                            <input asp-for="Product.Layout" class="form-control" placeholder="Ej: Español" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Especificaciones para Monitores -->
+            <div id="specs-monitores" class="row mb-4" style="display: none;">
+                <div class="col-12">
+                    <h5 class="text-warning border-bottom pb-2">
+                        <i class="fas fa-desktop me-2"></i>Especificaciones de Monitor
+                    </h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Resolucion" class="form-label">Resolución</label>
+                        <input asp-for="Product.Resolucion" class="form-control" placeholder="Ej: 2560 x 1440 (QHD)" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Frecuencia" class="form-label">Frecuencia</label>
+                        <input asp-for="Product.Frecuencia" class="form-control" placeholder="Ej: 240Hz" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Panel" class="form-label">Tipo de Panel</label>
+                        <input asp-for="Product.Panel" class="form-control" placeholder="Ej: VA Curvo (1000R)" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.HDR" class="form-label">HDR</label>
+                        <input asp-for="Product.HDR" class="form-control" placeholder="Ej: HDR600" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Especificaciones Comunes -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="text-secondary border-bottom pb-2">
+                        <i class="fas fa-cogs me-2"></i>Especificaciones Adicionales
+                    </h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Conectividad" class="form-label">Conectividad</label>
+                        <textarea asp-for="Product.Conectividad" class="form-control" rows="2" placeholder="Ej: USB-C, HDMI 2.1, DisplayPort 1.4"></textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label asp-for="Product.Garantia" class="form-label">Garantía</label>
+                        <input asp-for="Product.Garantia" class="form-control" placeholder="Ej: 2 años" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ?? SECCIÓN DE DESCUENTOS -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="text-danger border-bottom pb-2">
+                        <i class="fas fa-percent me-2"></i>Descuentos y Promociones
+                    </h5>
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="form-check form-switch">
+                        <input asp-for="Product.TieneDescuento" class="form-check-input" type="checkbox" 
+                               id="tieneDescuentoSwitch" onchange="toggleDescuentoFields()">
+                        <label class="form-check-label" for="tieneDescuentoSwitch">
+                            <strong>¿Aplicar descuento a este producto?</strong>
+                        </label>
+                    </div>
+                    <small class="text-muted">Activa esta opción para ofrecer un descuento temporal en este producto</small>
+                </div>
+                
+                <!-- Campos de descuento -->
+                <div id="descuentoFields" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="Product.PorcentajeDescuento" class="form-label">
+                                    Porcentaje de Descuento *
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="Product.PorcentajeDescuento" type="number" 
+                                           min="0" max="100" step="0.01" class="form-control" 
+                                           id="porcentajeDescuento" placeholder="15.00">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <small class="text-muted">Entre 0 y 100</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="Product.FechaInicioDescuento" class="form-label">
+                                    Fecha de Inicio
+                                </label>
+                                <input asp-for="Product.FechaInicioDescuento" type="datetime-local" 
+                                       class="form-control" id="fechaInicioDescuento">
+                                <small class="text-muted">Opcional: déjalo vacío para que inicie ahora</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="Product.FechaFinDescuento" class="form-label">
+                                    Fecha de Fin
+                                </label>
+                                <input asp-for="Product.FechaFinDescuento" type="datetime-local" 
+                                       class="form-control" id="fechaFinDescuento">
+                                <small class="text-muted">Opcional: déjalo vacío para descuento permanente</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Vista previa del descuento -->
+                    <div class="col-12">
+                        <div class="alert alert-info" id="descuentoPreview" style="display: none;">
+                            <h6><i class="fas fa-calculator me-2"></i>Vista Previa del Descuento</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Precio Original:</strong>
+                                    <span id="precioOriginalPreview" class="text-decoration-line-through">$0</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Descuento:</strong>
+                                    <span id="descuentoAplicadoPreview" class="text-danger">-$0 (<span id="porcentajePreview">0</span>%)</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Precio Final:</strong>
+                                    <span id="precioFinalPreview" class="text-success fw-bold">$0</span>
+                                </div>
+                            </div>
+                            
+                            @if (Model.Product.FechaInicioDescuento.HasValue || Model.Product.FechaFinDescuento.HasValue)
+                            {
+                                <hr>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <strong><i class="fas fa-calendar me-2"></i>Vigencia:</strong>
+                                        @if (Model.Product.FechaInicioDescuento.HasValue)
+                                        {
+                                            <span>Desde: @Model.Product.FechaInicioDescuento.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        }
+                                        @if (Model.Product.FechaFinDescuento.HasValue)
+                                        {
+                                            <span class="ms-2">Hasta: @Model.Product.FechaFinDescuento.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between">
+                        <a href="@Model.ReturnUrl" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleSpecifications() {
+            const category = document.getElementById('Product_Category').value.toLowerCase();
+            const productName = document.getElementById('Product_Name').value.toLowerCase();
+            
+            // Ocultar todas las especificaciones
+            document.getElementById('specs-laptops').style.display = 'none';
+            document.getElementById('specs-perifericos').style.display = 'none';
+            document.getElementById('specs-monitores').style.display = 'none';
+            document.getElementById('mouse-specs').style.display = 'none';
+            document.getElementById('keyboard-specs').style.display = 'none';
+            
+            // Mostrar especificaciones según categoría
+            if (category === 'laptops' || category === 'computadores') {
+                document.getElementById('specs-laptops').style.display = 'block';
+            } else if (category === 'periféricos') {
+                document.getElementById('specs-perifericos').style.display = 'block';
+                
+                // Detectar tipo de periférico
+                if (productName.includes('mouse') || productName.includes('ratón')) {
+                    document.getElementById('mouse-specs').style.display = 'block';
+                } else if (productName.includes('teclado') || productName.includes('keyboard')) {
+                    document.getElementById('keyboard-specs').style.display = 'block';
+                }
+            } else if (category === 'monitores') {
+                document.getElementById('specs-monitores').style.display = 'block';
+            }
+        }
+        
+        // ?? TOGGLE CAMPOS DE DESCUENTO
+        function toggleDescuentoFields() {
+            const checkbox = document.getElementById('tieneDescuentoSwitch');
+            const fields = document.getElementById('descuentoFields');
+            
+            if (checkbox && fields) {
+                if (checkbox.checked) {
+                    fields.style.display = 'block';
+                    // Hacer campos requeridos cuando se activa
+                    const porcentajeInput = document.getElementById('porcentajeDescuento');
+                    if (porcentajeInput) {
+                        porcentajeInput.setAttribute('required', 'required');
+                    }
+                    calcularDescuentoPreview();
+                } else {
+                    fields.style.display = 'none';
+                    // Quitar requerimiento cuando se desactiva
+                    const porcentajeInput = document.getElementById('porcentajeDescuento');
+                    if (porcentajeInput) {
+                        porcentajeInput.removeAttribute('required');
+                    }
+                    const preview = document.getElementById('descuentoPreview');
+                    if (preview) {
+                        preview.style.display = 'none';
+                    }
+                }
+            }
+        }
+        
+        // ?? CALCULAR Y MOSTRAR PREVIEW DEL DESCUENTO
+        function calcularDescuentoPreview() {
+            const precioInput = document.getElementById('Product_Price');
+            const porcentajeInput = document.getElementById('porcentajeDescuento');
+            const preview = document.getElementById('descuentoPreview');
+            
+            if (!precioInput || !porcentajeInput || !preview) return;
+            
+            const precio = parseFloat(precioInput.value) || 0;
+            const porcentaje = parseFloat(porcentajeInput.value) || 0;
+            
+            if (precio > 0 && porcentaje > 0) {
+                const descuento = precio * (porcentaje / 100);
+                const precioFinal = precio - descuento;
+                
+                // Formatear moneda colombiana
+                const formatCOP = (num) => new Intl.NumberFormat('es-CO', { 
+                    style: 'currency', 
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(num);
+                
+                document.getElementById('precioOriginalPreview').textContent = formatCOP(precio);
+                document.getElementById('descuentoAplicadoPreview').innerHTML = 
+                    `-${formatCOP(descuento)} (<span id="porcentajePreview">${porcentaje}</span>%)`;
+                document.getElementById('precioFinalPreview').textContent = formatCOP(precioFinal);
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+        
+        // ?? FUNCIÓN PARA VISTA PREVIA DE NUEVAS IMÁGENES
+        function previewNewImages(input) {
+            const container = document.getElementById('newImagePreviewContainer');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            
+            // Limpiar previews anteriores
+            container.innerHTML = '';
+            
+            if (input.files && input.files.length > 0) {
+                container.style.display = 'flex';
+                placeholder.style.display = 'none';
+                
+                Array.from(input.files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const col = document.createElement('div');
+                            col.className = 'col-6 col-md-4';
+                            col.innerHTML = `
+                                <div class="position-relative">
+                                    <img src="${e.target.result}" class="img-thumbnail" 
+                                         style="width: 100%; height: 80px; object-fit: cover;">
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-1">
+                                        ${index + 1}
+                                    </span>
+                                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1" 
+                                            onclick="removeNewImagePreview(this, ${index})" style="padding: 2px 6px;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="text-center mt-1">
+                                        <small class="text-muted">${(file.size / (1024*1024)).toFixed(1)}MB</small>
+                                    </div>
+                                </div>
+                            `;
+                            container.appendChild(col);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            } else {
+                container.style.display = 'none';
+                placeholder.style.display = 'flex';
+            }
+        }
+        
+        // Remover imagen de preview
+        function removeNewImagePreview(button, index) {
+            const input = document.getElementById('imageFiles');
+            const dt = new DataTransfer();
+            
+            // Reconstruir FileList sin el archivo eliminado
+            for (let i = 0; i < input.files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(input.files[i]);
+                }
+            }
+            
+            input.files = dt.files;
+            previewNewImages(input);
+        }
+        
+        // Drag & Drop para imágenes
+        function setupDragAndDrop() {
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const fileInput = document.getElementById('imageFiles');
+            
+            placeholder.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                placeholder.classList.add('bg-primary', 'text-white');
+            });
+            
+            placeholder.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                placeholder.classList.remove('bg-primary', 'text-white');
+            });
+            
+            placeholder.addEventListener('drop', (e) => {
+                e.preventDefault();
+                placeholder.classList.remove('bg-primary', 'text-white');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    previewNewImages(fileInput);
+                }
+            });
+            
+            placeholder.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+        
+        // Llamar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleSpecifications();
+            setupDragAndDrop();
+            toggleDescuentoFields(); // Inicializar estado de descuentos
+            
+            // ?? EVENTOS PARA PREVIEW DE DESCUENTO
+            const precioInput = document.getElementById('Product_Price');
+            const porcentajeInput = document.getElementById('porcentajeDescuento');
+            
+            if (precioInput) {
+                precioInput.addEventListener('input', calcularDescuentoPreview);
+            }
+            if (porcentajeInput) {
+                porcentajeInput.addEventListener('input', calcularDescuentoPreview);
+            }
+            
+            // También al cambiar el nombre del producto
+            document.getElementById('Product_Name').addEventListener('input', toggleSpecifications);
+            
+            // Mostrar alertas de éxito/error si existen
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                setTimeout(() => {
+                    toastr.success('@Html.Raw(TempData["SuccessMessage"])');
+                }, 500);
+                </text>
+            }
+            
+            @if (TempData["WarningMessage"] != null)
+            {
+                <text>
+                setTimeout(() => {
+                    toastr.warning('@Html.Raw(TempData["WarningMessage"])');
+                }, 500);
+                </text>
+            }
+        });
+    </script>
+}
+
+@Html.AntiForgeryToken()

@@ -1,0 +1,300 @@
+@page
+@model ComputerStore.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Crear Cuenta";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-success text-white text-center py-4 rounded-top-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Crear Cuenta Nueva
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">Únete a la familia CompuHiperMegaRed</p>
+                </div>
+                <div class="card-body p-5">
+                    <form id="registerForm" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Información Personal -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-user me-2"></i>Información Personal
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Input.PrimerNombre" class="form-label fw-bold">Primer Nombre *</label>
+                                    <input asp-for="Input.PrimerNombre" class="form-control" placeholder="Juan" />
+                                    <span asp-validation-for="Input.PrimerNombre" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Input.SegundoNombre" class="form-label fw-bold">Segundo Nombre</label>
+                                    <input asp-for="Input.SegundoNombre" class="form-control" placeholder="Carlos" />
+                                    <span asp-validation-for="Input.SegundoNombre" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Input.PrimerApellido" class="form-label fw-bold">Primer Apellido *</label>
+                                    <input asp-for="Input.PrimerApellido" class="form-control" placeholder="García" />
+                                    <span asp-validation-for="Input.PrimerApellido" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Input.SegundoApellido" class="form-label fw-bold">Segundo Apellido</label>
+                                    <input asp-for="Input.SegundoApellido" class="form-control" placeholder="López" />
+                                    <span asp-validation-for="Input.SegundoApellido" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documento de Identidad -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-id-card me-2"></i>Documento de Identidad
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label asp-for="Input.TipoDocumento" class="form-label fw-bold">Tipo de Documento *</label>
+                                    <select asp-for="Input.TipoDocumento" class="form-select">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="CC">Cédula de Ciudadanía</option>
+                                        <option value="CE">Cédula de Extranjería</option>
+                                        <option value="PP">Pasaporte</option>
+                                        <option value="TI">Tarjeta de Identidad</option>
+                                        <option value="NIT">NIT</option>
+                                    </select>
+                                    <span asp-validation-for="Input.TipoDocumento" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-8">
+                                    <label asp-for="Input.NumeroDocumento" class="form-label fw-bold">Número de Documento *</label>
+                                    <input asp-for="Input.NumeroDocumento" class="form-control" placeholder="12345678" />
+                                    <span asp-validation-for="Input.NumeroDocumento" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de Contacto -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-phone me-2"></i>Información de Contacto
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Input.Email" class="form-label fw-bold">Correo Electrónico *</label>
+                                    <input asp-for="Input.Email" class="form-control" placeholder="tu@email.com" />
+                                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Input.PhoneNumber" class="form-label fw-bold">Teléfono *</label>
+                                    <input asp-for="Input.PhoneNumber" class="form-control" placeholder="300 123 4567" />
+                                    <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dirección de Envío -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-map-marker-alt me-2"></i>Dirección de Envío
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label asp-for="Input.Direccion" class="form-label fw-bold">Dirección Principal *</label>
+                                    <input asp-for="Input.Direccion" class="form-control" placeholder="Calle 123 #45-67" />
+                                    <span asp-validation-for="Input.Direccion" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="Input.Ciudad" class="form-label fw-bold">Ciudad *</label>
+                                    <input asp-for="Input.Ciudad" class="form-control" placeholder="Bogotá" />
+                                    <span asp-validation-for="Input.Ciudad" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="Input.Departamento" class="form-label fw-bold">Departamento *</label>
+                                    <input asp-for="Input.Departamento" class="form-control" placeholder="Cundinamarca" />
+                                    <span asp-validation-for="Input.Departamento" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="Input.CodigoPostal" class="form-label fw-bold">Código Postal *</label>
+                                    <input asp-for="Input.CodigoPostal" class="form-control" placeholder="110221" />
+                                    <span asp-validation-for="Input.CodigoPostal" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="Input.DireccionSecundaria" class="form-label fw-bold">Dirección Adicional (Opcional)</label>
+                                    <input asp-for="Input.DireccionSecundaria" class="form-control" placeholder="Apartamento, conjunto, etc." />
+                                    <span asp-validation-for="Input.DireccionSecundaria" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="Input.NotasEntrega" class="form-label fw-bold">Notas de Entrega (Opcional)</label>
+                                    <textarea asp-for="Input.NotasEntrega" class="form-control" rows="2" placeholder="Instrucciones especiales para la entrega..."></textarea>
+                                    <span asp-validation-for="Input.NotasEntrega" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-lock me-2"></i>Contraseña de Acceso
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Input.Password" class="form-label fw-bold">Contraseña *</label>
+                                    <div class="input-group">
+                                        <input asp-for="Input.Password" class="form-control" type="password" placeholder="Mínimo 6 caracteres" />
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="fas fa-eye" id="eyeIcon"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Input.ConfirmPassword" class="form-label fw-bold">Confirmar Contraseña *</label>
+                                    <div class="input-group">
+                                        <input asp-for="Input.ConfirmPassword" class="form-control" type="password" placeholder="Repetir contraseña" />
+                                        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                            <i class="fas fa-eye" id="eyeIconConfirm"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Términos y Condiciones -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input asp-for="Input.AceptaTerminos" class="form-check-input" />
+                                <label asp-for="Input.AceptaTerminos" class="form-check-label">
+                                    Acepto los <a href="/Privacy" target="_blank">términos y condiciones</a> y las políticas de privacidad *
+                                </label>
+                                <span asp-validation-for="Input.AceptaTerminos" class="text-danger small d-block"></span>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-success btn-lg" id="registerButton">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Crear Mi Cuenta
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="text-muted">¿Ya tienes una cuenta?</p>
+                            <a class="btn btn-outline-primary" asp-page="./Login">
+                                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle password visibility
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('Input_Password');
+            const eyeIcon = document.getElementById('eyeIcon');
+
+            if (togglePassword && passwordInput && eyeIcon) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    eyeIcon.classList.toggle('fa-eye');
+                    eyeIcon.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // Toggle confirm password visibility
+            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+            const confirmPasswordInput = document.getElementById('Input_ConfirmPassword');
+            const eyeIconConfirm = document.getElementById('eyeIconConfirm');
+
+            if (toggleConfirmPassword && confirmPasswordInput && eyeIconConfirm) {
+                toggleConfirmPassword.addEventListener('click', function() {
+                    const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    confirmPasswordInput.setAttribute('type', type);
+                    
+                    eyeIconConfirm.classList.toggle('fa-eye');
+                    eyeIconConfirm.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // Form submission with loading state
+            const registerForm = document.getElementById('registerForm');
+            const registerButton = document.getElementById('registerButton');
+            
+            if (registerForm && registerButton) {
+                registerForm.addEventListener('submit', function() {
+                    if (registerForm.checkValidity()) {
+                        registerButton.disabled = true;
+                        registerButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creando cuenta...';
+                    }
+                });
+            }
+
+            // Auto-format phone number
+            const phoneInput = document.getElementById('Input_PhoneNumber');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length >= 10) {
+                        value = value.substring(0, 10);
+                        e.target.value = value.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+                    }
+                });
+            }
+
+            // Auto-format document number
+            const documentInput = document.getElementById('Input_NumeroDocumento');
+            if (documentInput) {
+                documentInput.addEventListener('input', function(e) {
+                    // Solo permitir números
+                    e.target.value = e.target.value.replace(/\D/g, '');
+                });
+            }
+        });
+    </script>
+
+    <style>
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #198754, #146c43);
+            border: none;
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, #146c43, #0f5132);
+        }
+
+        .card {
+            transition: transform 0.3s ease;
+        }
+        
+        .border-bottom {
+            border-bottom: 2px solid #e9ecef !important;
+        }
+        
+        h5.text-primary {
+            color: #198754 !important;
+        }
+
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+    </style>
+}

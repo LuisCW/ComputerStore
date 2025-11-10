@@ -1,0 +1,614 @@
+@page
+@model ComputerStore.Pages.EnviosModel
+@{
+    ViewData["Title"] = "Seguimiento de Envíos";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0">
+                    <i class="fas fa-truck me-2 shipping-truck-icon"></i>
+                    Seguimiento de Envíos
+                </h1>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#trackingModal">
+                    <i class="fas fa-search me-2"></i>
+                    Rastrear Envío
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mostrar mensajes -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Estadísticas rápidas mejoradas -->
+    @if (Model.Envios.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <i class="fas fa-box fa-2x mb-2"></i>
+                        <h4>@Model.Envios.Count(e => e.Estado == "PREPARANDO")</h4>
+                        <p class="mb-0 small">Preparando</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-hand-paper fa-2x mb-2"></i>
+                        <h4>@Model.Envios.Count(e => e.Estado == "RECOLECTADO")</h4>
+                        <p class="mb-0 small">Recolectado</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-warehouse fa-2x mb-2"></i>
+                        <h4>@Model.Envios.Count(e => e.Estado == "EN_CENTRO_DISTRIBUCION")</h4>
+                        <p class="mb-0 small">En Centro</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-truck fa-2x mb-2"></i>
+                        <h4>@Model.Envios.Count(e => e.Estado == "EN_TRANSITO_A_DESTINO")</h4>
+                        <p class="mb-0 small">En Tránsito</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <i class="fas fa-map-marker-alt fa-2x mb-2"></i>
+                        <h4>@Model.Envios.Count(e => e.Estado == "EN_RUTA_ENTREGA")</h4>
+                        <p class="mb-0 small">En Ruta</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                        <h4>@Model.Envios.Count(e => e.Estado == "ENTREGADO")</h4>
+                        <p class="mb-0 small">Entregados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Lista de envíos mejorada -->
+    @if (Model.Envios.Any())
+    {
+        <div class="row">
+            @foreach (var envio in Model.Envios.OrderByDescending(e => e.FechaCreacion))
+            {
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                            <h6 class="mb-0">
+                                <i class="fas fa-box me-2"></i>
+                                Orden #@envio.OrderId
+                            </h6>
+                            <span class="badge bg-@GetEstadoColor(envio.Estado)">
+                                <i class="@GetEstadoIcon(envio.Estado) me-1"></i>
+                                @GetEstadoDescripcion(envio.Estado)
+                            </span>
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Barra de progreso -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-muted">Progreso de entrega</small>
+                                    <small class="text-muted">@GetProgresoPorcentaje(envio.Estado)%</small>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-@GetEstadoColor(envio.Estado)" 
+                                         role="progressbar" 
+                                         style="width: @GetProgresoPorcentaje(envio.Estado)%"></div>
+                                </div>
+                                <small class="text-muted">@GetProximoPaso(envio.Estado)</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <strong class="text-primary">
+                                    <i class="fas fa-barcode me-2"></i>
+                                    @envio.NumeroGuia
+                                </strong>
+                            </div>
+
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-truck me-1"></i>
+                                    @envio.Transportadora
+                                </small>
+                            </div>
+
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    @envio.DireccionEnvio
+                                </small>
+                            </div>
+
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-city me-1"></i>
+                                    @envio.DireccionEnvio
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Creado: @envio.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
+                                </small>
+                            </div>
+
+                            @if (envio.FechaEnvio.HasValue)
+                            {
+                                <div class="mb-2">
+                                    <small class="text-info">
+                                        <i class="fas fa-paper-plane me-1"></i>
+                                        Enviado: @envio.FechaEnvio.Value.ToString("dd/MM/yyyy HH:mm")
+                                    </small>
+                                </div>
+                            }
+
+                            @if (envio.FechaEntrega.HasValue)
+                            {
+                                <div class="mb-2">
+                                    <small class="text-success">
+                                        <i class="fas fa-check me-1"></i>
+                                        Entregado: @envio.FechaEntrega.Value.ToString("dd/MM/yyyy HH:mm")
+                                    </small>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-2">
+                                    <small class="text-warning">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Entrega estimada: @envio.FechaEstimadaEntrega.ToString("dd/MM/yyyy")
+                                    </small>
+                                </div>
+                            }
+
+                            <!-- Productos -->
+                            <div class="mt-3">
+                                <h6 class="text-muted mb-2">
+                                    <i class="fas fa-boxes me-1"></i>
+                                    Productos:
+                                </h6>
+                                @foreach (var producto in envio.Productos)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                                        <small>@producto.Nombre</small>
+                                        <small class="text-muted">@producto.Precio.ToString("C0")</small>
+                                    </div>
+                                }
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(envio.Observaciones))
+                            {
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-comment me-1"></i>
+                                        @envio.Observaciones
+                                    </small>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-footer bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button class="btn btn-sm btn-outline-primary" onclick="showTrackingDetails('@envio.NumeroGuia', '@envio.Estado')">
+                                    <i class="fas fa-route me-1"></i>
+                                    Ver Trayecto
+                                </button>
+                                
+                                @if (envio.Estado != "ENTREGADO" && User.IsInRole("Admin"))
+                                {
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-edit me-1"></i>Actualizar
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            @{
+                                                var siguientesEstados = GetSiguientesEstados(envio.Estado);
+                                            }
+                                            @foreach (var estado in siguientesEstados)
+                                            {
+                                                <li>
+                                                    <form method="post" asp-page-handler="ActualizarEstado" class="d-inline">
+                                                        <input type="hidden" name="orderId" value="@envio.OrderId" />
+                                                        <input type="hidden" name="nuevoEstado" value="@estado.Key" />
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="@estado.Value.icon me-2"></i>@estado.Value.texto
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="text-muted">
+                <i class="fas fa-shipping-fast fa-4x mb-3"></i>
+                <h4>No hay envíos registrados</h4>
+                <p>@Model.Mensaje</p>
+                <a href="/Products" class="btn btn-primary">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Realizar una compra
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal de detalles de rastreo mejorado -->
+<div class="modal fade" id="trackingDetailsModal" tabindex="-1" aria-labelledby="trackingDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="trackingDetailsModalLabel">
+                    <i class="fas fa-route me-2"></i>
+                    Trayecto Detallado del Envío
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="trackingDetailsContent">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        function showTrackingDetails(numeroGuia, estadoActual) {
+            // Datos del trayecto completo ordenado
+            const trayectoCompleto = [
+                { 
+                    estado: 'PREPARANDO', 
+                    titulo: 'Preparando el pedido',
+                    descripcion: 'El pedido está siendo preparado en nuestras instalaciones',
+                    ubicacion: 'CompuHiperMegaRed - Centro de Distribución',
+                    icon: 'fas fa-box',
+                    color: 'warning'
+                },
+                { 
+                    estado: 'RECOLECTADO', 
+                    titulo: 'Recolectado por transportadora',
+                    descripcion: 'La transportadora ha recolectado el paquete',
+                    ubicacion: 'Servientrega - Punto de Recolección',
+                    icon: 'fas fa-hand-paper',
+                    color: 'info'
+                },
+                { 
+                    estado: 'EN_CENTRO_DISTRIBUCION', 
+                    titulo: 'En centro de distribución',
+                    descripcion: 'El paquete está en proceso de clasificación',
+                    ubicacion: 'Centro de Distribución Regional',
+                    icon: 'fas fa-warehouse',
+                    color: 'primary'
+                },
+                { 
+                    estado: 'EN_TRANSITO_A_DESTINO', 
+                    titulo: 'En tránsito hacia destino',
+                    descripcion: 'El paquete viaja hacia tu ciudad',
+                    ubicacion: 'En tránsito por carretera',
+                    icon: 'fas fa-truck',
+                    color: 'info'
+                },
+                { 
+                    estado: 'EN_RUTA_ENTREGA', 
+                    titulo: 'En ruta de entrega',
+                    descripcion: 'El repartidor está en camino a tu domicilio',
+                    ubicacion: 'Vehículo de entrega local',
+                    icon: 'fas fa-map-marker-alt',
+                    color: 'warning'
+                },
+                { 
+                    estado: 'ENTREGADO', 
+                    titulo: '¡Entregado exitosamente!',
+                    descripcion: 'El pedido ha sido entregado en la dirección registrada',
+                    ubicacion: 'Domicilio del cliente',
+                    icon: 'fas fa-check-circle',
+                    color: 'success'
+                }
+            ];
+
+            // Obtener índice del estado actual
+            const estadoIndex = trayectoCompleto.findIndex(t => t.estado === estadoActual);
+            
+            let content = `
+                <div class="mb-3">
+                    <h6 class="text-primary">
+                        <i class="fas fa-barcode me-2"></i>
+                        Número de Guía: ${numeroGuia}
+                    </h6>
+                </div>
+                <div class="shipping-timeline">
+            `;
+
+            trayectoCompleto.forEach((paso, index) => {
+                const isCompleted = index <= estadoIndex;
+                const isCurrent = index === estadoIndex;
+                const timeDisplay = isCompleted ? new Date().toLocaleDateString() : 'Pendiente';
+                
+                content += `
+                    <div class="timeline-step ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
+                        <div class="timeline-marker bg-${isCompleted ? paso.color : 'light'} ${isCurrent ? 'pulse' : ''}">
+                            <i class="${paso.icon} ${isCompleted ? 'text-white' : 'text-muted'}"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h6 class="mb-1 ${isCurrent ? 'text-primary fw-bold' : ''}">${paso.titulo}</h6>
+                                <small class="text-muted">${isCompleted ? timeDisplay : ''}</small>
+                            </div>
+                            <p class="text-muted mb-1 small">${paso.descripcion}</p>
+                            <small class="text-muted"><i class="fas fa-map-pin me-1"></i>${paso.ubicacion}</small>
+                            ${isCurrent ? '<div class="mt-2"><span class="badge bg-primary">Estado Actual</span></div>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            content += `
+                </div>
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h6 class="text-primary mb-2">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información de Entrega
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Horario de entrega:</small>
+                            <strong>Lunes a Viernes: 8:00 AM - 6:00 PM</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Tiempo estimado:</small>
+                            <strong>3-5 días hábiles</strong>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-home me-2"></i>
+                            <strong>Entrega a domicilio:</strong> El paquete será entregado en la dirección que registraste en tu perfil.
+                        </p>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-phone me-2"></i>
+                            <strong>Contacto:</strong> +57 323 768 4390 para información adicional.
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('trackingDetailsContent').innerHTML = content;
+            new bootstrap.Modal(document.getElementById('trackingDetailsModal')).show();
+        }
+    </script>
+
+    <style>
+        .shipping-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-step {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 30px;
+        }
+
+        .timeline-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 48px;
+            bottom: -30px;
+            width: 2px;
+            background: #dee2e6;
+        }
+
+        .timeline-step.completed:not(:last-child)::after {
+            background: #198754;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #dee2e6;
+            background: white;
+        }
+
+        .timeline-step.completed .timeline-marker {
+            border-color: var(--bs-success);
+        }
+
+        .timeline-step.current .timeline-marker {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2);
+        }
+
+        .timeline-marker.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(13, 110, 253, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(13, 110, 253, 0); }
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #dee2e6;
+        }
+
+        .timeline-step.completed .timeline-content {
+            border-left-color: var(--bs-success);
+        }
+
+        .timeline-step.current .timeline-content {
+            border-left-color: var(--bs-primary);
+            background: #f8f9ff;
+        }
+    </style>
+}
+
+@functions {
+    public string GetEstadoDescripcion(string estado)
+    {
+        return estado switch
+        {
+            "PREPARANDO" => "Preparando",
+            "RECOLECTADO" => "Recolectado",
+            "EN_CENTRO_DISTRIBUCION" => "En Centro",
+            "EN_TRANSITO_A_DESTINO" => "En Tránsito",
+            "EN_RUTA_ENTREGA" => "En Ruta",
+            "ENTREGADO" => "Entregado",
+            "FALLIDO" => "Intento Fallido",
+            _ => estado
+        };
+    }
+
+    public string GetEstadoColor(string estado)
+    {
+        return estado switch
+        {
+            "PREPARANDO" => "warning",
+            "RECOLECTADO" => "info",
+            "EN_CENTRO_DISTRIBUCION" => "primary",
+            "EN_TRANSITO_A_DESTINO" => "info",
+            "EN_RUTA_ENTREGA" => "warning",
+            "ENTREGADO" => "success",
+            "FALLIDO" => "danger",
+            _ => "secondary"
+        };
+    }
+
+    public string GetEstadoIcon(string estado)
+    {
+        return estado switch
+        {
+            "PREPARANDO" => "fas fa-box",
+            "RECOLECTADO" => "fas fa-hand-paper",
+            "EN_CENTRO_DISTRIBUCION" => "fas fa-warehouse",
+            "EN_TRANSITO_A_DESTINO" => "fas fa-truck",
+            "EN_RUTA_ENTREGA" => "fas fa-map-marker-alt",
+            "ENTREGADO" => "fas fa-check-circle",
+            "FALLIDO" => "fas fa-exclamation-triangle",
+            _ => "fas fa-question"
+        };
+    }
+
+    public int GetProgresoPorcentaje(string estado)
+    {
+        return estado switch
+        {
+            "PREPARANDO" => 10,
+            "RECOLECTADO" => 25,
+            "EN_CENTRO_DISTRIBUCION" => 40,
+            "EN_TRANSITO_A_DESTINO" => 60,
+            "EN_RUTA_ENTREGA" => 85,
+            "ENTREGADO" => 100,
+            "FALLIDO" => 100,
+            _ => 0
+        };
+    }
+
+    public string GetProximoPaso(string estado)
+    {
+        return estado switch
+        {
+            "PREPARANDO" => "El pedido será recolectado por la transportadora",
+            "RECOLECTADO" => "El pedido se dirigirá al centro de distribución",
+            "EN_CENTRO_DISTRIBUCION" => "El pedido será enviado hacia tu ciudad",
+            "EN_TRANSITO_A_DESTINO" => "El pedido llegará a tu ciudad para entrega local",
+            "EN_RUTA_ENTREGA" => "El repartidor se dirigirá a tu domicilio registrado",
+            "ENTREGADO" => "¡Pedido entregado! Gracias por tu compra",
+            "FALLIDO" => "Se programará un nuevo intento de entrega",
+            _ => "Información no disponible"
+        };
+    }
+
+    public Dictionary<string, (string texto, string icon)> GetSiguientesEstados(string estadoActual)
+    {
+        return estadoActual switch
+        {
+            "PREPARANDO" => new Dictionary<string, (string, string)> 
+            { 
+                { "RECOLECTADO", ("Marcar como Recolectado", "fas fa-hand-paper") } 
+            },
+            "RECOLECTADO" => new Dictionary<string, (string, string)> 
+            { 
+                { "EN_CENTRO_DISTRIBUCION", ("En Centro de Distribución", "fas fa-warehouse") } 
+            },
+            "EN_CENTRO_DISTRIBUCION" => new Dictionary<string, (string, string)> 
+            { 
+                { "EN_TRANSITO_A_DESTINO", ("En Tránsito a Destino", "fas fa-truck") } 
+            },
+            "EN_TRANSITO_A_DESTINO" => new Dictionary<string, (string, string)> 
+            { 
+                { "EN_RUTA_ENTREGA", ("EN ruta de Entrega", "fas fa-map-marker-alt") } 
+            },
+            "EN_RUTA_ENTREGA" => new Dictionary<string, (string, string)> 
+            { 
+                { "ENTREGADO", ("Marcar como Entregado", "fas fa-check-circle") },
+                { "FALLIDO", ("Intento Fallido", "fas fa-exclamation-triangle") }
+            },
+            "FALLIDO" => new Dictionary<string, (string, string)> 
+            { 
+                { "EN_RUTA_ENTREGA", ("Reintentar Entrega", "fas fa-redo") } 
+            },
+            _ => new Dictionary<string, (string, string)>()
+        };
+    }
+}

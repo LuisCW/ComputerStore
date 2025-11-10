@@ -1,0 +1,202 @@
+@page
+@model ComputerStore.Pages.Account.ProfileModel
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Mi Perfil
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Información Personal -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-id-card me-2"></i>Información Personal
+                                </h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.PrimerNombre" class="form-label"></label>
+                                <input asp-for="Input.PrimerNombre" class="form-control" />
+                                <span asp-validation-for="Input.PrimerNombre" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.SegundoNombre" class="form-label"></label>
+                                <input asp-for="Input.SegundoNombre" class="form-control" />
+                                <span asp-validation-for="Input.SegundoNombre" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.PrimerApellido" class="form-label"></label>
+                                <input asp-for="Input.PrimerApellido" class="form-control" />
+                                <span asp-validation-for="Input.PrimerApellido" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.SegundoApellido" class="form-label"></label>
+                                <input asp-for="Input.SegundoApellido" class="form-control" />
+                                <span asp-validation-for="Input.SegundoApellido" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Información de Contacto -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-envelope me-2"></i>Información de Contacto
+                                </h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.Email" class="form-label"></label>
+                                <input asp-for="Input.Email" class="form-control" type="email" />
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                                <input asp-for="Input.PhoneNumber" class="form-control" type="tel" />
+                                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Documentación -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-id-badge me-2"></i>Documentación
+                                </h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.TipoDocumento" class="form-label"></label>
+                                <select asp-for="Input.TipoDocumento" class="form-select">
+                                    <option value="">Seleccione tipo de documento</option>
+                                    <option value="CC">Cédula de Ciudadanía</option>
+                                    <option value="CE">Cédula de Extranjería</option>
+                                    <option value="PP">Pasaporte</option>
+                                    <option value="TI">Tarjeta de Identidad</option>
+                                    <option value="RC">Registro Civil</option>
+                                </select>
+                                <span asp-validation-for="Input.TipoDocumento" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.NumeroDocumento" class="form-label"></label>
+                                <input asp-for="Input.NumeroDocumento" class="form-control" />
+                                <span asp-validation-for="Input.NumeroDocumento" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Dirección de Entrega
+                                </h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.Direccion" class="form-label"></label>
+                                <input asp-for="Input.Direccion" class="form-control" placeholder="Ej: Cra. 15 #78-33" />
+                                <span asp-validation-for="Input.Direccion" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.DireccionSecundaria" class="form-label"></label>
+                                <input asp-for="Input.DireccionSecundaria" class="form-control" placeholder="Ej: Apto 301, Torre B" />
+                                <span asp-validation-for="Input.DireccionSecundaria" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Input.Ciudad" class="form-label"></label>
+                                <input asp-for="Input.Ciudad" class="form-control" placeholder="Ej: Bogotá" />
+                                <span asp-validation-for="Input.Ciudad" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Input.Departamento" class="form-label"></label>
+                                <select asp-for="Input.Departamento" class="form-select">
+                                    <option value="">Seleccione departamento</option>
+                                    <option value="Antioquia">Antioquia</option>
+                                    <option value="Atlántico">Atlántico</option>
+                                    <option value="Bogotá D.C.">Bogotá D.C.</option>
+                                    <option value="Bolívar">Bolívar</option>
+                                    <option value="Boyacá">Boyacá</option>
+                                    <option value="Caldas">Caldas</option>
+                                    <option value="Caquetá">Caquetá</option>
+                                    <option value="Cauca">Cauca</option>
+                                    <option value="Cesar">Cesar</option>
+                                    <option value="Córdoba">Córdoba</option>
+                                    <option value="Cundinamarca">Cundinamarca</option>
+                                    <option value="Huila">Huila</option>
+                                    <option value="La Guajira">La Guajira</option>
+                                    <option value="Magdalena">Magdalena</option>
+                                    <option value="Meta">Meta</option>
+                                    <option value="Nariño">Nariño</option>
+                                    <option value="Norte de Santander">Norte de Santander</option>
+                                    <option value="Quindío">Quindío</option>
+                                    <option value="Risaralda">Risaralda</option>
+                                    <option value="Santander">Santander</option>
+                                    <option value="Sucre">Sucre</option>
+                                    <option value="Tolima">Tolima</option>
+                                    <option value="Valle del Cauca">Valle del Cauca</option>
+                                </select>
+                                <span asp-validation-for="Input.Departamento" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Input.CodigoPostal" class="form-label"></label>
+                                <input asp-for="Input.CodigoPostal" class="form-control" placeholder="Ej: 110111" />
+                                <span asp-validation-for="Input.CodigoPostal" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label asp-for="Input.NotasEntrega" class="form-label"></label>
+                                <textarea asp-for="Input.NotasEntrega" class="form-control" rows="3" 
+                                         placeholder="Instrucciones especiales para la entrega (opcional)"></textarea>
+                                <span asp-validation-for="Input.NotasEntrega" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="row">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex gap-2 justify-content-between">
+                                    <a href="/Index" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Volver al Inicio
+                                    </a>
+                                    <div class="d-flex gap-2">
+                                        <a href="/Account/Orders" class="btn btn-info">
+                                            <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
+                                        </a>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>Información Importante
+                    </h6>
+                    <ul class="list-unstyled mb-0 text-muted small">
+                        <li><i class="fas fa-check me-2 text-success"></i>Tu información personal está protegida y encriptada</li>
+                        <li><i class="fas fa-check me-2 text-success"></i>Los cambios en la dirección afectarán tus próximos pedidos</li>
+                        <li><i class="fas fa-check me-2 text-success"></i>Puedes actualizar tu información en cualquier momento</li>
+                        <li><i class="fas fa-check me-2 text-success"></i>Las notas de entrega se incluirán en todos tus pedidos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,696 @@
+@page
+@model ComputerStore.Pages.Admin.Marketing.IndexModel
+@{
+    ViewData["Title"] = "Centro de Control - Marketing";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .account-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    .account-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .account-card.connected {
+        border-left-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #ffffff 100%);
+    }
+    .account-card.disconnected {
+        border-left-color: #dc3545;
+        background: linear-gradient(135deg, #f8d7da 0%, #ffffff 100%);
+    }
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    .status-connected { background-color: #28a745; }
+    .status-disconnected { background-color: #dc3545; }
+    .campaign-row:hover {
+        background-color: #f8f9fa;
+    }
+    .modal-lg { max-width: 800px; }
+    
+    /* FIXES PARA MODALES - EVITAR BACKDROP PEGADO */
+    .modal {
+        z-index: 1055 !important;
+    }
+    .modal-backdrop {
+        z-index: 1050 !important;
+        opacity: 0.5 !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* Evitar que el backdrop se quede pegado */
+    .modal.show {
+        display: block !important;
+    }
+    
+    /* Asegurar que el backdrop no interfiera con clicks */
+    .modal-backdrop.show {
+        opacity: 0.5 !important;
+    }
+    
+    /* Animaciones suaves para modales */
+    .modal.fade .modal-dialog {
+        transition: transform 0.15s ease-out;
+        transform: translate(0, -50px);
+    }
+    .modal.show .modal-dialog {
+        transform: none;
+    }
+</style>
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-rocket me-2"></i>Centro de Control - Marketing
+    </h1>
+    <div class="btn-group">
+        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCampana">
+            <i class="fas fa-plus me-1"></i>Nueva Campaña
+        </button>
+        <a href="/Admin/Analytics/Marketing" class="btn btn-primary btn-sm">
+            <i class="fas fa-chart-line me-1"></i>Ver Analytics
+        </a>
+    </div>
+</div>
+
+<!-- Mensajes de estado -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show">
+        <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Warning"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.TablaExiste)
+{
+    <!-- Setup inicial -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Configuración Inicial Requerida</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-database me-2"></i>Tabla MarketingCosts no encontrada</h6>
+                        <p class="mb-3">Para comenzar a gestionar tu marketing, necesitamos configurar la base de datos.</p>
+                        <form method="post" asp-page-handler="CrearTabla" class="d-inline">
+                            <button type="submit" class="btn btn-warning me-2" onclick="return confirm('¿Crear tabla MarketingCosts?')">
+                                <i class="fas fa-plus-circle me-1"></i>Configurar Base de Datos
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Dashboard principal de marketing -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tachometer-alt me-2"></i>Panel de Control
+                    </h6>
+                    <small class="text-muted">Datos de los últimos 30 días</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start-success h-100">
+                                <div class="card-body text-center">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Costo Total Mes</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        @Model.CostoTotalMes.ToString("C0", new System.Globalization.CultureInfo("es-CO"))
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start-info h-100">
+                                <div class="card-body text-center">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Campañas Activas</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalRegistros</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start-warning h-100">
+                                <div class="card-body text-center">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Canales Activos</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.CostoPorCanal.Count</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border-start-danger h-100">
+                                <div class="card-body text-center">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Costo Promedio/Día</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        @((Model.CostoTotalMes / 30).ToString("C0", new System.Globalization.CultureInfo("es-CO")))
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cuentas de Marketing -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-link me-2"></i>Cuentas de Marketing Conectadas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var cuenta in Model.CuentasMarketing)
+                        {
+                            var conectado = Model.EstadoCuentas.GetValueOrDefault(cuenta.Canal, false);
+                            var ultimaActualizacion = Model.UltimaActualizacion.GetValueOrDefault(cuenta.Canal, DateTime.MinValue);
+                            
+                            <div class="col-lg-4 col-md-6 mb-3">
+                                <div class="card account-card h-100 @(conectado ? "connected" : "disconnected")">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="me-3">
+                                                <i class="@cuenta.Icono fa-2x text-@cuenta.Color"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0 font-weight-bold">@cuenta.Canal</h6>
+                                                <small class="text-muted">@cuenta.Plataforma</small>
+                                            </div>
+                                            <div>
+                                                <span class="status-indicator @(conectado ? "status-connected" : "status-disconnected")"></span>
+                                                <small class="text-@(conectado ? "success" : "danger")">
+                                                    @(conectado ? "Conectado" : "Desconectado")
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        @if (conectado && ultimaActualizacion > DateTime.MinValue)
+                                        {
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                Actualizado: @ultimaActualizacion.ToString("HH:mm")
+                                            </small>
+                                        }
+                                        
+                                        <div class="mt-3">
+                                            @if (cuenta.RequiereApi)
+                                            {
+                                                <button class="btn btn-sm btn-outline-@cuenta.Color" 
+                                                        onclick="configurarCuenta('@cuenta.Canal', '@cuenta.Plataforma')">
+                                                    <i class="fas fa-cog me-1"></i>
+                                                    @(conectado ? "Reconfigurar" : "Conectar API")
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>No requiere configuración
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de campañas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bullhorn me-2"></i>Campañas de Marketing
+                    </h6>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="filtrarPorCanal('')">Todos</button>
+                        @foreach (var canal in Model.CostoPorCanal.Keys.Take(3))
+                        {
+                            <button class="btn btn-outline-primary" onclick="filtrarPorCanal('@canal')">@canal</button>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.MarketingCosts.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="tablaCampanas">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Canal</th>
+                                        <th>Campaña</th>
+                                        <th>Fecha</th>
+                                        <th>Costo</th>
+                                        <th>CPC</th>
+                                        <th>Clicks</th>
+                                        <th>Impresiones</th>
+                                        <th>Tipo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var campana in Model.MarketingCosts.Take(20))
+                                    {
+                                        <tr class="campaign-row" data-canal="@campana.Canal">
+                                            <td>
+                                                <span class="badge badge-@(campana.Canal switch {
+                                                    "Google Ads" => "warning",
+                                                    "Facebook Ads" => "primary", 
+                                                    "SEO" => "success",
+                                                    "Email" => "info",
+                                                    "Referrals" => "secondary",
+                                                    _ => "light"
+                                                })">
+                                                    @campana.Canal
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>@campana.Campana</strong>
+                                                @if (!string.IsNullOrEmpty(campana.Notas))
+                                                {
+                                                    <br><small class="text-muted">@campana.Notas</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@campana.Fecha.ToString("dd/MM/yyyy")</small>
+                                            </td>
+                                            <td>
+                                                <strong>@campana.CostoTotal.ToString("C0", new System.Globalization.CultureInfo("es-CO"))</strong>
+                                            </td>
+                                            <td>
+                                                @if (campana.CostoPorClick.HasValue)
+                                                {
+                                                    <span>@campana.CostoPorClick.Value.ToString("C0", new System.Globalization.CultureInfo("es-CO"))</span>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">N/A</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (campana.Clicks.HasValue)
+                                                {
+                                                    <span>@campana.Clicks.Value.ToString("N0")</span>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">N/A</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (campana.Impresiones.HasValue)
+                                                {
+                                                    <span>@campana.Impresiones.Value.ToString("N0")</span>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">N/A</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@campana.TipoCampana</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" onclick="editarCampana(@campana.Id)">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <form method="post" asp-page-handler="EliminarCampana" asp-route-id="@campana.Id" class="d-inline">
+                                                        <button type="submit" class="btn btn-outline-danger" 
+                                                                onclick="return confirm('¿Eliminar esta campaña?')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay campañas registradas.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCampana">
+                                <i class="fas fa-plus me-1"></i>Crear Primera Campaña
+                            </button>
+                        </div>
+                    }
+                </div>
+                
+                @if (Model.MarketingCosts.Any())
+                {
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form method="post" asp-page-handler="InsertarDatos" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm me-2" 
+                                            onclick="return confirm('¿Insertar datos de prueba adicionales?')">
+                                        <i class="fas fa-database me-1"></i>Datos de Prueba
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <form method="post" asp-page-handler="LimpiarDatos" class="d-inline">
+                                    <button type="submit" class="btn btn-warning btn-sm" 
+                                            onclick="return confirm('¿Eliminar todos los datos de marketing? Esta acción no se puede deshacer.')">
+                                        <i class="fas fa-broom me-1"></i>Limpiar Datos
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal para agregar/editar campaña - VERSIÓN CORREGIDA -->
+<div class="modal fade" id="modalCampana" tabindex="-1" aria-labelledby="modalCampanaLabel" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="AgregarCampana" id="formCampana">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCampanaLabel">
+                        <i class="fas fa-plus-circle me-2"></i>Nueva Campaña de Marketing
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="EditandoCampanaId" id="editandoCampanaId" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NuevaCampana.Canal" class="form-label">Canal de Marketing *</label>
+                            <select asp-for="NuevaCampana.Canal" class="form-select" required>
+                                <option value="">Seleccionar canal...</option>
+                                <option value="Google Ads">?? Google Ads</option>
+                                <option value="Facebook Ads">?? Facebook Ads</option>
+                                <option value="SEO">?? SEO</option>
+                                <option value="Email">?? Email Marketing</option>
+                                <option value="Referrals">?? Referrals</option>
+                                <option value="Instagram">?? Instagram</option>
+                                <option value="LinkedIn">?? LinkedIn</option>
+                                <option value="TikTok">?? TikTok</option>
+                                <option value="YouTube">?? YouTube</option>
+                                <option value="Display">??? Display Ads</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NuevaCampana.TipoCampana" class="form-label">Tipo de Campaña</label>
+                            <select asp-for="NuevaCampana.TipoCampana" class="form-select">
+                                <option value="">Seleccionar tipo...</option>
+                                <option value="PPC">PPC (Pago Por Clic)</option>
+                                <option value="Social">Social Media</option>
+                                <option value="Display">Display</option>
+                                <option value="Email">Email</option>
+                                <option value="Organic">Orgánico</option>
+                                <option value="Referral">Referido</option>
+                                <option value="Affiliate">Afiliado</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="NuevaCampana.Campana" class="form-label">Nombre de la Campaña *</label>
+                        <input asp-for="NuevaCampana.Campana" class="form-control" placeholder="Ej: Black Friday 2024 - Laptops Gaming" required />
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="NuevaCampana.CostoTotal" class="form-label">Costo Total (COP) *</label>
+                            <input type="number" asp-for="NuevaCampana.CostoTotal" class="form-control" 
+                                   placeholder="0" min="0" step="1000" required />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="NuevaCampana.CostoPorClick" class="form-label">Costo Por Clic (COP)</label>
+                            <input type="number" asp-for="NuevaCampana.CostoPorClick" class="form-control" 
+                                   placeholder="0" min="0" step="100" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="NuevaCampana.Clicks" class="form-label">Número de Clicks</label>
+                            <input type="number" asp-for="NuevaCampana.Clicks" class="form-control" 
+                                   placeholder="0" min="0" />
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="NuevaCampana.Impresiones" class="form-label">Impresiones</label>
+                        <input type="number" asp-for="NuevaCampana.Impresiones" class="form-control" 
+                               placeholder="0" min="0" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="NuevaCampana.Notas" class="form-label">Notas Adicionales</label>
+                        <textarea asp-for="NuevaCampana.Notas" class="form-control" rows="3" 
+                                  placeholder="Descripción, objetivos, observaciones..."></textarea>
+                    </div>
+
+                    <hr>
+                    <div class="mb-2">
+                        <h6 class="text-danger"><i class="fas fa-percent me-2"></i>Descuento de la campaña</h6>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check form-switch mt-2">
+                                <input asp-for="NuevaCampana.AplicaDescuento" class="form-check-input" type="checkbox" id="aplicaDescuentoSwitch">
+                                <label class="form-check-label" for="aplicaDescuentoSwitch">Aplicar descuento</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="NuevaCampana.PorcentajeDescuento" class="form-label">Porcentaje</label>
+                            <div class="input-group">
+                                <input asp-for="NuevaCampana.PorcentajeDescuento" type="number" min="0" max="100" step="0.01" class="form-control">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="NuevaCampana.CategoriaDescuento" class="form-label">Categoría</label>
+                            <select asp-for="NuevaCampana.CategoriaDescuento" class="form-select">
+                                <option value="Todos">Todos los productos</option>
+                                <option value="Laptops">Laptops</option>
+                                <option value="Computadores">Computadores</option>
+                                <option value="Periféricos">Periféricos</option>
+                                <option value="Monitores">Monitores</option>
+                                <option value="Componentes">Componentes</option>
+                                <option value="Accesorios">Accesorios</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NuevaCampana.FechaInicioDescuento" class="form-label">Inicio</label>
+                            <input asp-for="NuevaCampana.FechaInicioDescuento" type="datetime-local" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="NuevaCampana.FechaFinDescuento" class="form-label">Fin</label>
+                            <input asp-for="NuevaCampana.FechaFinDescuento" type="datetime-local" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Guardar Campaña
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para configurar cuenta - VERSIÓN CORREGIDA -->
+<div class="modal fade" id="modalConfigurarCuenta" tabindex="-1" aria-labelledby="modalConfiguracionLabel" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConfiguracionLabel">
+                    <i class="fas fa-link me-2"></i>Configurar Cuenta de Marketing
+                </h5>
+                <button type="button" class="btn-close" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="configuracionCuenta">
+                    <!-- Contenido dinámico según la plataforma -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          limpiarTodoCompleto();
+            
+    document.querySelectorAll('[data-bs-target="#modalCampana"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+         e.preventDefault();
+   abrirModalCampana();
+   });
+  });
+      
+// Configurar switch de descuento
+            const sw = document.getElementById('aplicaDescuentoSwitch');
+ if (sw) {
+       sw.addEventListener('change', toggleCamposDescuento);
+    toggleCamposDescuento();
+   }
+        });
+
+    function limpiarTodoCompleto() {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.querySelectorAll('.modal').forEach(modal => {
+       modal.classList.remove('show', 'fade');
+    modal.style.display = 'none';
+         modal.setAttribute('aria-hidden', 'true');
+                modal.removeAttribute('aria-modal');
+          });
+            document.body.classList.remove('modal-open');
+       document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '0px';
+        }
+
+        function abrirModalCampana() {
+          limpiarTodoCompleto();
+            setTimeout(() => {
+        const form = document.getElementById('formCampana');
+                if (form) {
+     form.reset();
+  document.getElementById('editandoCampanaId').value = '';
+             document.getElementById('modalCampanaLabel').innerHTML = '<i class="fas fa-plus-circle me-2"></i>Nueva Campaña de Marketing';
+     }
+       const modal = document.getElementById('modalCampana');
+    modal.style.display = 'block';
+       modal.classList.add('show');
+         modal.setAttribute('aria-modal', 'true');
+           configurarCierreModal('modalCampana');
+        toggleCamposDescuento();
+   }, 50);
+        }
+
+   function configurarCierreModal(modalId) {
+            const modal = document.getElementById(modalId);
+        modal.querySelectorAll('.btn-close, .btn-secondary').forEach(btn => {
+       btn.onclick = () => cerrarModal(modalId);
+});
+            document.onkeydown = function(e) {
+          if (e.key === 'Escape') cerrarModal(modalId);
+ };
+        }
+
+        function cerrarModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+    modal.classList.remove('show');
+          modal.style.display = 'none';
+   modal.setAttribute('aria-hidden', 'true');
+            }
+            limpiarTodoCompleto();
+        }
+
+   async function editarCampana(id) {
+         try {
+         const response = await fetch(`?handler=EditarCampana&id=${id}`);
+    const result = await response.json();
+           if (result.success) {
+    limpiarTodoCompleto();
+            setTimeout(() => {
+             const data = result.data;
+      document.getElementById('editandoCampanaId').value = data.id;
+   document.querySelector('[name="NuevaCampana.Canal"]').value = data.canal;
+       document.querySelector('[name="NuevaCampana.Campana"]').value = data.campana;
+       document.querySelector('[name="NuevaCampana.CostoTotal"]').value = data.costoTotal;
+              document.querySelector('[name="NuevaCampana.CostoPorClick"]').value = data.costoPorClick || '';
+       document.querySelector('[name="NuevaCampana.Clicks"]').value = data.clicks || '';
+      document.querySelector('[name="NuevaCampana.Impresiones"]').value = data.impresiones || '';
+        document.querySelector('[name="NuevaCampana.TipoCampana"]').value = data.tipoCampana || '';
+             document.querySelector('[name="NuevaCampana.Notas"]').value = data.notas || '';
+    const sw = document.getElementById('aplicaDescuentoSwitch');
+        if (sw) sw.checked = !!data.aplicaDescuento;
+           const pct = document.querySelector('[name="NuevaCampana.PorcentajeDescuento"]');
+     const cat = document.querySelector('[name="NuevaCampana.CategoriaDescuento"]');
+               const fIni = document.querySelector('[name="NuevaCampana.FechaInicioDescuento"]');
+          const fFin = document.querySelector('[name="NuevaCampana.FechaFinDescuento"]');
+    if (pct) pct.value = (data.porcentajeDescuento ?? '').toString();
+          if (cat && data.categoriaDescuento) cat.value = data.categoriaDescuento;
+ if (fIni) fIni.value = data.fechaInicioDescuento || '';
+    if (fFin) fFin.value = data.fechaFinDescuento || '';
+             toggleCamposDescuento();
+     document.getElementById('modalCampanaLabel').innerHTML = '<i class="fas fa-edit me-2"></i>Editar Campaña de Marketing';
+        const modal = document.getElementById('modalCampana');
+   modal.style.display = 'block';
+           modal.classList.add('show');
+        modal.setAttribute('aria-modal', 'true');
+   configurarCierreModal('modalCampana');
+            }, 100);
+     } else {
+     alert('Error: ' + result.message);
+      }
+    } catch (error) {
+       console.error('Error:', error);
+       alert('Error cargando campaña');
+      }
+   }
+
+ function toggleCamposDescuento() {
+     const sw = document.getElementById('aplicaDescuentoSwitch');
+        const enabled = sw && sw.checked;
+            const pct = document.querySelector('[name="NuevaCampana.PorcentajeDescuento"]');
+       const cat = document.querySelector('[name="NuevaCampana.CategoriaDescuento"]');
+       const fIni = document.querySelector('[name="NuevaCampana.FechaInicioDescuento"]');
+       const fFin = document.querySelector('[name="NuevaCampana.FechaFinDescuento"]');
+            [pct, cat, fIni, fFin].forEach(el => { if (el) el.disabled = !enabled; });
+        if (pct) {
+    if (enabled) pct.setAttribute('required','required');
+                else pct.removeAttribute('required');
+            }
+  }
+    </script>
+}

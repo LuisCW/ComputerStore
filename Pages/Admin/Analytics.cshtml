@@ -1,0 +1,1350 @@
+@page
+@model ComputerStore.Pages.Admin.AnalyticsModel
+@{
+    ViewData["Title"] = "Reportes";
+    Layout = "_AdminLayout";
+}
+<style>
+    .kpi-card .card-body {
+        background: linear-gradient(135deg,#eef2ff,#ffffff)
+    }
+
+    .card-header {
+        background: #f8fafc
+    }
+
+    .active-filter-badge {
+        cursor: pointer;
+        margin-right: .5rem;
+        margin-bottom: .25rem
+    }
+
+    .empty-note {
+        color: #6c757d;
+        font-size: .9rem
+    }
+    /* Mejoras visuales para filtros */
+    .filter-section {
+        background: #f9fafb;
+        border-radius: .5rem;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.1)
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #4b5563
+    }
+
+    .filter-badge-container {
+        gap: 5px
+    }
+
+    /* Estilo para dropdown de categorías */
+    .dropdown-menu-categories {
+        max-height: 240px;
+        overflow-y: auto;
+        padding: 8px;
+        width: 100%;
+    }
+
+    .dropdown-item-checkbox {
+        display: block;
+        padding: 4px 8px;
+        margin-bottom: 4px;
+    }
+
+        .dropdown-item-checkbox:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-item-checkbox input {
+            margin-right: 8px;
+        }
+
+    /* Estilos para treemap */
+    .treemap-container {
+        position: relative;
+    }
+
+    .treemap-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        background-color: rgba(255,255,255,0.7);
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+    }
+</style>
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-area me-2"></i>Reportes</h6>
+        <div class="d-flex align-items-center gap-2 small filter-badge-container">
+            <div id="activeFilters" class="d-flex flex-wrap"></div>
+            <span id="status" class="text-muted small"></span>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- KPIs -->
+        <div class="row mb-4" id="kpiRow">
+            <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card kpi-card h-100 border-start-primary shadow"><div class="card-body"><div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Ventas del Mes</div><div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiVentasMes">$0</div><div class="small text-muted">Total Histórico: <span id="kpiVentasTotales">$0</span></div></div></div></div>
+            <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card kpi-card h-100 border-start-success shadow"><div class="card-body"><div class="text-xs font-weight-bold text-success text-uppercase mb-1">Pedidos</div><div class="h5 mb-0 font-weight-bold text-gray-800"><span id="kpiPedidosCompletados">0</span> Completados</div><div class="small text-muted">Pendientes: <span id="kpiPedidosPendientes">0</span></div></div></div></div>
+            <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card kpi-card h-100 border-start-info shadow"><div class="card-body"><div class="text-xs font-weight-bold text-info text-uppercase mb-1">Transacciones</div><div class="h5 mb-0 font-weight-bold text-gray-800"><span id="kpiTxAprobadas">0</span> Aprobadas</div><div class="small text-muted">Pend: <span id="kpiTxPendientes">0</span> · Rech: <span id="kpiTxRechazadas">0</span></div></div></div></div>
+            <div class="col-12 col-md-6 col-xl-3 mb-3"><div class="card kpi-card h-100 border-start-warning shadow"><div class="card-body"><div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Monto Tx Aprobadas</div><div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiMontoTx">$0</div><div class="small text-muted">Métodos: <span id="kpiMetodosCount">0</span></div></div></div></div>
+        </div>
+
+        <!-- Filtros manuales básicos -->
+        <div class="row g-3 align-items-end mb-4 filter-section">
+            <div class="col-md-3"><label class="form-label">Desde</label><input type="date" id="fDesde" class="form-control" /></div>
+            <div class="col-md-3"><label class="form-label">Hasta</label><input type="date" id="fHasta" class="form-control" /></div>
+            <div class="col-md-3">
+                <label class="form-label">Categorías</label>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" id="categoriasDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Seleccionar categorías
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-categories" id="categoriasMenu" aria-labelledby="categoriasDropdown">
+                        <div id="categoriasList">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                <div class="form-text">Seleccione múltiples categorías</div>
+            </div>
+            <div class="col-md-2"><label class="form-label">Top N Productos</label><input type="number" id="fTopN" class="form-control" value="8" min="3" max="20" /></div>
+            <div class="col-md-1 text-end"><button id="btnAplicarFiltros" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i></button></div>
+        </div>
+
+        <!-- Gráficos fila 1 -->
+        <div class="row mb-4">
+            <div class="col-xl-8 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Ventas Mensuales</strong></div><div class="card-body"><div style="height:320px"><canvas id="ventas"></canvas><div id="ventasEmpty" class="empty-note d-none">Sin datos</div></div></div></div></div>
+            <div class="col-xl-4 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Pedidos por Estado</strong></div><div class="card-body"><div style="height:320px"><canvas id="funnel"></canvas><div id="funnelEmpty" class="empty-note d-none">Sin datos de funnel</div></div></div></div></div>
+        </div>
+        <!-- Gráficos fila 2 -->
+        <div class="row mb-4">
+            <div class="col-xl-6 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Ingresos 30 días (Área)</strong></div><div class="card-body"><div style="height:320px"><canvas id="ingresos30"></canvas><div id="ingresosEmpty" class="empty-note d-none">Sin datos</div></div></div></div></div>
+            <div class="col-xl-6 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Pedidos por Estado</strong></div><div class="card-body"><div style="height:320px"><canvas id="estados"></canvas><div id="estadosEmpty" class="empty-note d-none">Sin datos</div></div></div></div></div>
+        </div>
+        <!-- Gráficos fila 3 -->
+        <div class="row mb-4">
+            <div class="col-xl-6 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Métodos de Pago (Monto)</strong></div><div class="card-body"><div style="height:320px"><canvas id="pagosMonto"></canvas><div id="pagosEmpty" class="empty-note d-none">Sin datos</div></div></div></div></div>
+            <div class="col-xl-6 mb-4"><div class="card shadow h-100"><div class="card-header py-2"><strong>Top Productos (click filtra)</strong></div><div class="card-body"><div style="height:320px"><canvas id="top"></canvas><div id="topEmpty" class="empty-note d-none">Sin datos</div></div></div></div></div>
+        </div>
+        <!-- Gráficos fila 4 -->
+        <div class="row mb-4">
+            <div class="col-xl-12 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header py-2"><strong>Mapa de Categorías (Treemap)</strong></div>
+                    <div class="card-body">
+                        <div class="treemap-container" style="height:360px">
+                            <canvas id="treemap"></canvas>
+                            <div id="treemapEmpty" class="empty-note d-none">Sin datos de categorías</div>
+                            <div id="treemapOverlay" class="treemap-overlay">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-funnel@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2"></script>
+    <script>
+        let RAW=null; let charts={}; let topIds=[];
+        const palette=['#2563eb','#10b981','#14b8a6','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#22c55e','#f97316'];
+        const fmtCur = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+        const state={ filtros:{cat:[],estado:[],mes:[],prodId:null, metodo:[]}, bloqueo:false, selectedCategories:[] };
+        window.addEventListener('error', function(e){ var msg=(e && e.message)? e.message : 'error'; var s=document.getElementById('status'); if(s) s.textContent='Procesando...'; });
+        const parseLabelToDate=function(lbl){ if(!lbl) return null; var p=lbl.split('-'); if(p.length===2) return new Date(+p[0],+p[1]-1,1); if(p.length===3) return new Date(+p[0],+p[1]-1,+p[2]); return null; };
+        function badge(text,key,val){var span=document.createElement('span'); span.className='badge bg-primary active-filter-badge'; span.textContent=text; span.dataset.key=key; span.dataset.value=val; span.onclick=function(){ removeFilter(key,val); }; return span; }
+        function refreshBadges(){
+            var c=document.getElementById('activeFilters'); 
+            if(!c) return; 
+            c.innerHTML=''; 
+            
+            if(state.filtros.prodId) {
+                c.appendChild(badge('Prod#'+state.filtros.prodId,'prodId',state.filtros.prodId)); 
+            }
+            
+            state.filtros.cat.forEach(function(v){ 
+                c.appendChild(badge('Cat: '+v,'cat',v)); 
+            }); 
+            
+            state.filtros.estado.forEach(function(v){ 
+                c.appendChild(badge('Estado: '+v,'estado',v)); 
+            }); 
+            
+            // Corregir badges de mes para mostrar formato correcto
+            state.filtros.mes.forEach(function(v){ 
+                c.appendChild(badge('Mes: '+v,'mes',v)); 
+            }); 
+            
+            state.filtros.metodo.forEach(function(v){ 
+                c.appendChild(badge('Método: '+v,'metodo',v)); 
+            });
+            
+            console.log('Badges actualizados. Estado actual:', state.filtros);
+        }
+        function setKPIs(k){ 
+            if(!k) return; 
+            document.getElementById('kpiVentasMes').textContent=fmtCur.format(k.ventas_mes||0); 
+            document.getElementById('kpiVentasTotales').textContent=fmtCur.format(k.ventas_totales||0); 
+            document.getElementById('kpiPedidosCompletados').textContent=k.pedidos_completados||0; 
+            document.getElementById('kpiPedidosPendientes').textContent=k.pedidos_pendientes||0; 
+            document.getElementById('kpiTxAprobadas').textContent=k.tx_aprobadas||0; 
+            document.getElementById('kpiTxPendientes').textContent=k.tx_pendientes||0; 
+            document.getElementById('kpiTxRechazadas').textContent=k.tx_rechazadas||0; 
+            document.getElementById('kpiMontoTx').textContent=fmtCur.format(k.monto_tx_aprobadas||0); 
+            
+            // Actualizar conteo de métodos usando ambos datasets posibles
+            var metodosCount = 0;
+            if(RAW && RAW.metodos_pago && RAW.metodos_pago.labels) {
+                metodosCount = RAW.metodos_pago.labels.length;
+            } else if(RAW && RAW.ventas_por_metodo_monto && RAW.ventas_por_metodo_monto.labels) {
+                metodosCount = RAW.ventas_por_metodo_monto.labels.length;
+            }
+            document.getElementById('kpiMetodosCount').textContent = metodosCount;
+        }
+        function clearChart(id){ if(charts[id]){ charts[id].destroy(); charts[id]=null; } }
+        function renderComboVentas(vm){ 
+            clearChart('ventas'); 
+            var ctx=document.getElementById('ventas'); 
+            var empty=document.getElementById('ventasEmpty'); 
+            if(!ctx) return; 
+            var labels=(vm&&vm.labels)? vm.labels.slice(): []; 
+            var values=(vm&&vm.values)? vm.values.slice(): []; 
+            if(values.length===0 || values.every(function(v){return (+v||0)===0;})){ 
+                if(empty) empty.classList.remove('d-none'); 
+                return; 
+            } 
+            if(empty) empty.classList.add('d-none'); 
+            
+            console.log('Renderizando ventas mensuales:', 'labels:', labels, 'filtros mes:', state.filtros.mes);
+            
+            // Gráfico de línea limpio y elegante con indicadores de filtro
+            charts['ventas']=new Chart(ctx,{ 
+                type:'line', 
+                data:{ 
+                    labels:labels, 
+                    datasets:[ 
+                        {
+                            label:'Ventas Mensuales',
+                            data:values,
+                            borderColor:'#3b82f6',
+                            backgroundColor:'rgba(59, 130, 246, 0.1)',
+                            borderWidth:3,
+                            fill:true,
+                            tension:0.4,
+                            // Colores dinámicos para puntos filtrados
+                            pointBackgroundColor: labels.map(function(lbl) {
+                                var isFiltered = state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1;
+                                console.log('Punto:', lbl, 'Filtrado:', isFiltered, 'Filtros actuales:', state.filtros.mes);
+                                return isFiltered ? '#ef4444' : '#3b82f6'; // Rojo si está filtrado, azul normal
+                            }),
+                            pointBorderColor:'#ffffff',
+                            pointBorderWidth: labels.map(function(lbl) {
+                                var isFiltered = state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1;
+                                return isFiltered ? 3 : 2; // Borde más grueso si está filtrado
+                            }),
+                            pointRadius: labels.map(function(lbl) {
+                                var isFiltered = state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1;
+                                return isFiltered ? 8 : 5; // Punto más grande si está filtrado  
+                            }),
+                            pointHoverRadius:10,
+                            pointHoverBackgroundColor: labels.map(function(lbl) {
+                                var isFiltered = state.filtros.mes.indexOf(lbl.toUpperCase()) !== -1;
+                                return isFiltered ? '#dc2626' : '#1d4ed8';
+                            }),
+                            pointHoverBorderColor:'#ffffff',
+                            pointHoverBorderWidth:3
+                        }
+                    ] 
+                }, 
+                options:{ 
+                    onClick:function(e){ 
+                        var p=charts['ventas'].getElementsAtEventForMode(e,'nearest',{intersect:true},true); 
+                        if(p.length){ 
+                            var clickedLabel = labels[p[0].index];
+                            console.log('Click en ventas mensuales:', clickedLabel, 'Filtros actuales:', state.filtros.mes);
+                            // Asegurar que el formato sea consistente
+                            toggleFilter('mes', clickedLabel); 
+                        }
+                    }, 
+                    responsive:true, 
+                    maintainAspectRatio:false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins:{ 
+                        legend:{
+                            position:'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        }, 
+                        tooltip:{ 
+                            backgroundColor:'rgba(0, 0, 0, 0.8)',
+                            titleColor:'#ffffff',
+                            bodyColor:'#ffffff',
+                            borderColor:'#3b82f6',
+                            borderWidth:1,
+                            cornerRadius:8,
+                            displayColors:false,
+                            callbacks:{ 
+                                title: function(context) {
+                                    var mes = context[0].label;
+                                    var isFiltered = state.filtros.mes.indexOf(mes.toUpperCase()) !== -1;
+                                    return 'Mes: ' + mes + (isFiltered ? ' (FILTRADO)' : '');
+                                },
+                                label:function(c){ 
+                                    return 'Ventas: ' + fmtCur.format(c.raw); 
+                                },
+                                afterLabel: function(context) {
+                                    return 'Click para filtrar por este mes';
+                                }
+                            } 
+                        } 
+                    }, 
+                    scales:{ 
+                        y:{ 
+                            beginAtZero:true, 
+                            grid:{
+                                display:true, 
+                                drawBorder:false,
+                                color:'rgba(0, 0, 0, 0.05)'
+                            }, 
+                            ticks:{ 
+                                color:'#6b7280',
+                                callback:function(v){return fmtCur.format(v);} 
+                            } 
+                        }, 
+                        x: { 
+                            grid:{
+                                display:false, 
+                                drawBorder:false
+                            },
+                            ticks:{
+                                color:'#6b7280'
+                            }
+                        } 
+                    } 
+                } 
+            }); 
+        }
+        
+        function renderDough(id,l,v,filterKey){ 
+            clearChart(id); 
+            var c=document.getElementById(id); 
+            var empty=document.getElementById(id==='estados'?'estadosEmpty':'pagosEmpty'); 
+            if(!c) return; 
+            if(!v || v.length===0 || v.every(function(x){return (+x||0)===0;})){ 
+                if(empty) empty.classList.remove('d-none'); 
+                return; 
+            } 
+            if(empty) empty.classList.add('d-none'); 
+            
+            console.log('Renderizando gráfico de dona:', id, 'filterKey:', filterKey, 'labels:', l, 'values:', v);
+            
+            charts[id]=new Chart(c,{ 
+                type:'doughnut', 
+                data:{ 
+                    labels:l, 
+                    datasets:[ 
+                        { 
+                            data:v, 
+                            backgroundColor:l.map(function(lab,i){
+                                var filterArr = filterKey === 'estado' ? state.filtros.estado : state.filtros.metodo;
+                                var isFiltered = (filterArr.length && filterArr.indexOf(lab.toUpperCase())===-1);
+                                console.log('Label:', lab, 'FilterKey:', filterKey, 'FilterArr:', filterArr, 'IsFiltered:', isFiltered);
+                                return isFiltered ? 'rgba(37,99,235,.2)' : palette[i%palette.length]; 
+                            }),
+                            borderWidth:3,
+                            borderColor:'#ffffff',
+                            hoverOffset:15,
+                            hoverBorderWidth:4
+                        } 
+                    ] 
+                }, 
+                options:{ 
+                    onClick:function(e){ 
+                        var p=charts[id].getElementsAtEventForMode(e,'nearest',{intersect:true},true); 
+                        if(p.length) {
+                            var clickedLabel = l[p[0].index];
+                            console.log('Click en gráfico de dona:', id, 'filterKey:', filterKey, 'clickedLabel:', clickedLabel);
+                            toggleFilter(filterKey, clickedLabel.toUpperCase()); 
+                        }
+                    }, 
+                    responsive:true, 
+                    maintainAspectRatio:false,
+                    cutout:'60%',
+                    interaction: {
+                        intersect: false
+                    },
+                    plugins:{ 
+                        legend:{
+                            position:'bottom', 
+                            labels:{
+                                boxWidth:12, 
+                                padding:15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }, 
+                        tooltip:{
+                            backgroundColor:'rgba(0, 0, 0, 0.8)',
+                            titleColor:'#ffffff',
+                            bodyColor:'#ffffff',
+                            borderColor:'#374151',
+                            borderWidth:1,
+                            cornerRadius:8,
+                            displayColors:true,
+                            callbacks:{
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label:function(context){
+                                    var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                    var porcentaje = ((context.raw / total) * 100).toFixed(1);
+                                    // Mostrar formato monetario para métodos de pago
+                                    if(filterKey === 'metodo' && context.raw > 1000) {
+                                        return fmtCur.format(context.raw) + ' (' + porcentaje + '%)';
+                                    } else {
+                                        return context.raw + ' pedidos (' + porcentaje + '%)';
+                                    }
+                                }
+                            }
+                        } 
+                    } 
+                } 
+            }); 
+        }
+        
+        function renderArea(id,l,v,label){ 
+            clearChart(id); 
+            var c=document.getElementById(id); 
+            var empty=document.getElementById('ingresosEmpty'); 
+            if(!c) return; 
+            if(!v || v.length===0 || v.every(function(x){return (+x||0)===0;})){ 
+                if(empty) empty.classList.remove('d-none'); 
+                return; 
+            } 
+            if(empty) empty.classList.add('d-none'); 
+            
+            charts[id]=new Chart(c,{ 
+                type:'line', 
+                data:{ 
+                    labels:l, 
+                    datasets:[ 
+                        { 
+                            label:label, 
+                            data:v, 
+                            borderColor:'#14b8a6', 
+                            backgroundColor:'rgba(20, 184, 166, 0.15)', 
+                            borderWidth:3,
+                            tension:0.4, 
+                            fill:true,
+                            pointBackgroundColor:'#14b8a6',
+                            pointBorderColor:'#ffffff',
+                            pointBorderWidth:2,
+                            pointRadius:4,
+                            pointHoverRadius:6,
+                            pointHoverBackgroundColor:'#0d9488',
+                            pointHoverBorderColor:'#ffffff',
+                            pointHoverBorderWidth:3
+                        } 
+                    ] 
+                }, 
+                options:{ 
+                    responsive:true, 
+                    maintainAspectRatio:false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor:'rgba(0, 0, 0, 0.8)',
+                            titleColor:'#ffffff',
+                            bodyColor:'#ffffff',
+                            borderColor:'#14b8a6',
+                            borderWidth:1,
+                            cornerRadius:8,
+                            displayColors:false,
+                            callbacks: {
+                                title: function(context) {
+                                    return 'Fecha: ' + context[0].label;
+                                },
+                                label: function(context) {
+                                    return 'Ingresos: ' + fmtCur.format(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true,
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                color: '#6b7280',
+                                callback: function(value) {
+                                    return fmtCur.format(value);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#6b7280',
+                                maxTicksLimit: 8
+                            }
+                        }
+                    }
+                } 
+            }); 
+        }
+        function renderFunnel(){ 
+            var c=document.getElementById('funnel'); 
+            var msg=document.getElementById('funnelEmpty'); 
+            if(!c) return; 
+            var est=(RAW&&RAW.pedidos_estados)? RAW.pedidos_estados: {labels:[],values:[]}; 
+            if(!est.values || est.values.length===0){ 
+                if(msg) msg.classList.remove('d-none'); 
+                return; 
+            } 
+            if(msg) msg.classList.add('d-none'); 
+            
+            var map={}; 
+            est.labels.forEach(function(l,i){ 
+                map[String(l).toUpperCase()]=est.values[i]||0; 
+            }); 
+            
+            // Crear gráfico de barras horizontales más intuitivo
+            var estados = ['NUEVO', 'PENDIENTE', 'PAGADO', 'COMPLETADO', 'ENTREGADO'];
+            var colores = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#22c55e'];
+            var datos = [];
+            var etiquetas = [];
+            var backgroundColors = [];
+            
+            estados.forEach(function(estado, index) {
+                var valor = map[estado] || 0;
+                if(valor > 0) {
+                    datos.push(valor);
+                    etiquetas.push(estado);
+                    backgroundColors.push(colores[index]);
+                }
+            });
+            
+            clearChart('funnel'); 
+            charts['funnel']=new Chart(c,{ 
+                type:'bar', 
+                data:{ 
+                    labels:etiquetas, 
+                    datasets:[ 
+                        { 
+                            label:'Pedidos por Estado',
+                            data:datos, 
+                            backgroundColor:backgroundColors,
+                            borderRadius:6,
+                            borderWidth:0
+                        } 
+                    ] 
+                }, 
+                options:{ 
+                    indexAxis: 'y',
+                    responsive:true, 
+                    maintainAspectRatio:false, 
+                    onClick: function(e){ 
+                        var el = charts['funnel'].getElementsAtEventForMode(e,'nearest',{intersect:true},true); 
+                        if(el.length){ 
+                            var index = el[0].index; 
+                            toggleFilter('estado', etiquetas[index]); 
+                        } 
+                    }, 
+                    plugins:{ 
+                        legend:{
+                            display:false
+                        }, 
+                        tooltip:{
+                            backgroundColor:'rgba(0, 0, 0, 0.8)',
+                            titleColor:'#ffffff',
+                            bodyColor:'#ffffff',
+                            borderColor:'#374151',
+                            borderWidth:1,
+                            cornerRadius:8,
+                            displayColors:true,
+                            callbacks:{
+                                title: function(context) {
+                                    return 'Estado: ' + context[0].label;
+                                },
+                                label: function(context) {
+                                    var total = datos.reduce(function(a, b) { return a + b; }, 0);
+                                    var porcentaje = ((context.raw / total) * 100).toFixed(1);
+                                    return context.raw + ' pedidos (' + porcentaje + '%)';
+                                }
+                            }
+                        } 
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true,
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                color: '#6b7280'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#6b7280',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    } 
+                } 
+            }); 
+        }
+        function renderTreemap(){
+            clearChart('treemap');
+            var c = document.getElementById('treemap');
+            var msg = document.getElementById('treemapEmpty');
+            var overlay = document.getElementById('treemapOverlay');
+
+            if(!c) return;
+
+            // Mostrar overlay de carga
+            if(overlay) overlay.style.display = 'flex';
+
+            try {
+                console.log("Iniciando renderizado de Treemap con datos reales");
+                
+                // Verificar si hay datos reales de categorías desde la API
+                var series = (RAW && RAW.ventas_por_categoria_mes && RAW.ventas_por_categoria_mes.series) ?
+                         RAW.ventas_por_categoria_mes.series : [];
+
+                // Si no hay datos reales, mostrar mensaje vacío (NO datos ficticios)
+                if(series.length === 0){
+                    console.log("No hay datos de categorías disponibles");
+                    if(msg) {
+                        msg.textContent = "No hay datos de ventas por categoría disponibles";
+                        msg.classList.remove('d-none');
+                    }
+                    if(overlay) overlay.style.display = 'none';
+                    return;
+                }
+
+                if(msg) msg.classList.add('d-none');
+
+                // Preparar datos reales para el treemap
+                var items = [];
+                series.forEach(function(s) {
+                    if (!s || !s.label) return;
+
+                    var val = (s.values || []).reduce(function(a, b) {
+                        return a + (+b || 0);
+                    }, 0);
+
+                    if (val > 0) {
+                        items.push({
+                            category: s.label,
+                            value: val
+                        });
+                    }
+                });
+
+                // Si después del procesamiento no hay datos válidos
+                if(items.length === 0) {
+                    console.log("No hay datos válidos después del procesamiento");
+                    if(msg) {
+                        msg.textContent = "No hay ventas registradas por categoría";
+                        msg.classList.remove('d-none');
+                    }
+                    if(overlay) overlay.style.display = 'none';
+                    return;
+                }
+
+                console.log("Datos reales encontrados para treemap:", items);
+                
+                // Asegurarse de que el plugin está registrado
+                if(window.ChartTreemap) {
+                    Chart.register(window.ChartTreemap);
+                } else if(window.TreemapController) {
+                    Chart.register(window.TreemapController);
+                }
+                
+                // Crear el Treemap con datos reales
+                charts['treemap'] = new Chart(c, {
+                    type: 'treemap',
+                    data: {
+                        datasets: [{
+                            tree: items,
+                            key: 'value',
+                            groups: ['category'],
+                            spacing: 2,
+                            backgroundColor: function(ctx) {
+                                if(!ctx.raw) return palette[0];
+                                
+                                var cat = ctx.raw.g || ctx.raw.category || '';
+                                
+                                // Si está filtrado y no coincide, atenuar el color
+                                if (state.filtros.cat.length && 
+                                    state.filtros.cat.indexOf(String(cat).toUpperCase()) === -1) {
+                                    return 'rgba(37,99,235,.2)';
+                                }
+                                
+                                // Usar colores de la paleta existente
+                                return palette[ctx.dataIndex % palette.length];
+                            },
+                            borderWidth: 1,
+                            borderColor: '#fff',
+                            labels: {
+                                display: true,
+                                align: 'center',
+                                position: 'middle',
+                                color: '#fff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                formatter: function(ctx) {
+                                    if(!ctx.raw) return '';
+                                    var cat = ctx.raw.g || ctx.raw.category || '';
+                                    var val = ctx.raw.v || 0;
+                                    return cat + '\n' + fmtCur.format(val);
+                                }
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(items) {
+                                        if(!items.length || !items[0].raw) return '';
+                                        return items[0].raw.g || items[0].raw.category || '';
+                                    },
+                                    label: function(item) {
+                                        if(!item.raw) return '';
+                                        return fmtCur.format(item.raw.v || 0);
+                                    }
+                                }
+                            }
+                        },
+                        onClick: function(e) {
+                            var el = charts['treemap'].getElementsAtEventForMode(
+                                e, 'nearest', {intersect: true}, true
+                            );
+                            if(el.length && el[0].element.$context && el[0].element.$context.raw) {
+                                var raw = el[0].element.$context.raw;
+                                if(raw && (raw.g || raw.category)) {
+                                    var cat = String(raw.g || raw.category || '').toUpperCase();
+                                    toggleFilter('cat', cat);
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                console.log("Treemap renderizado exitosamente con datos reales");
+                
+            } catch(error) {
+                console.error("Error al renderizar treemap:", error);
+                if(msg) {
+                    msg.textContent = "Error al procesar datos de categorías";
+                    msg.classList.remove('d-none');
+                }
+            } finally {
+                // Ocultar overlay de carga
+                if(overlay) overlay.style.display = 'none';
+            }
+        }
+
+        // Función de Treemap usando datos reales de la base de datos
+        function renderTreemap(){
+            clearChart('treemap');
+            var c = document.getElementById('treemap');
+            var msg = document.getElementById('treemapEmpty');
+            var overlay = document.getElementById('treemapOverlay');
+
+            if(!c) return;
+
+            // Mostrar overlay de carga
+            if(overlay) overlay.style.display = 'flex';
+
+            try {
+                console.log("Iniciando renderizado de Treemap con datos reales");
+                
+                // Verificar si hay datos reales de categorías desde la API
+                var series = (RAW && RAW.ventas_por_categoria_mes && RAW.ventas_por_categoria_mes.series) ?
+                         RAW.ventas_por_categoria_mes.series : [];
+
+                // Si no hay datos reales, mostrar mensaje vacío (NO datos ficticios)
+                if(series.length === 0){
+                    console.log("No hay datos de categorías disponibles");
+                    if(msg) {
+                        msg.textContent = "No hay datos de ventas por categoría disponibles";
+                        msg.classList.remove('d-none');
+                    }
+                    if(overlay) overlay.style.display = 'none';
+                    return;
+                }
+
+                if(msg) msg.classList.add('d-none');
+
+                // Preparar datos reales para el treemap
+                var items = [];
+                series.forEach(function(s) {
+                    if (!s || !s.label) return;
+
+                    var val = (s.values || []).reduce(function(a, b) {
+                        return a + (+b || 0);
+                    }, 0);
+
+                    if (val > 0) {
+                        items.push({
+                            category: s.label,
+                            value: val
+                        });
+                    }
+                });
+
+                // Si después del procesamiento no hay datos válidos
+                if(items.length === 0) {
+                    console.log("No hay datos válidos después del procesamiento");
+                    if(msg) {
+                        msg.textContent = "No hay ventas registradas por categoría";
+                        msg.classList.remove('d-none');
+                    }
+                    if(overlay) overlay.style.display = 'none';
+                    return;
+                }
+
+                console.log("Datos reales encontrados para treemap:", items);
+                
+                // Asegurarse de que el plugin está registrado
+                if(window.ChartTreemap) {
+                    Chart.register(window.ChartTreemap);
+                } else if(window.TreemapController) {
+                    Chart.register(window.TreemapController);
+                }
+                
+                // Crear el Treemap con datos reales
+                charts['treemap'] = new Chart(c, {
+                    type: 'treemap',
+                    data: {
+                        datasets: [{
+                            tree: items,
+                            key: 'value',
+                            groups: ['category'],
+                            spacing: 2,
+                            backgroundColor: function(ctx) {
+                                if(!ctx.raw) return palette[0];
+                                
+                                var cat = ctx.raw.g || ctx.raw.category || '';
+                                
+                                // Si está filtrado y no coincide, atenuar el color
+                                if (state.filtros.cat.length && 
+                                    state.filtros.cat.indexOf(String(cat).toUpperCase()) === -1) {
+                                    return 'rgba(37,99,235,.2)';
+                                }
+                                
+                                // Usar colores de la paleta existente
+                                return palette[ctx.dataIndex % palette.length];
+                            },
+                            borderWidth: 1,
+                            borderColor: '#fff',
+                            labels: {
+                                display: true,
+                                align: 'center',
+                                position: 'middle',
+                                color: '#fff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                formatter: function(ctx) {
+                                    if(!ctx.raw) return '';
+                                    var cat = ctx.raw.g || ctx.raw.category || '';
+                                    var val = ctx.raw.v || 0;
+                                    return cat + '\n' + fmtCur.format(val);
+                                }
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(items) {
+                                        if(!items.length || !items[0].raw) return '';
+                                        return items[0].raw.g || items[0].raw.category || '';
+                                    },
+                                    label: function(item) {
+                                        if(!item.raw) return '';
+                                        return fmtCur.format(item.raw.v || 0);
+                                    }
+                                }
+                            }
+                        },
+                        onClick: function(e) {
+                            var el = charts['treemap'].getElementsAtEventForMode(
+                                e, 'nearest', {intersect: true}, true
+                            );
+                            if(el.length && el[0].element.$context && el[0].element.$context.raw) {
+                                var raw = el[0].element.$context.raw;
+                                if(raw && (raw.g || raw.category)) {
+                                    var cat = String(raw.g || raw.category || '').toUpperCase();
+                                    toggleFilter('cat', cat);
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                console.log("Treemap renderizado exitosamente con datos reales");
+                
+            } catch(error) {
+                console.error("Error al renderizar treemap:", error);
+                if(msg) {
+                    msg.textContent = "Error al procesar datos de categorías";
+                    msg.classList.remove('d-none');
+                }
+            } finally {
+                // Ocultar overlay de carga
+                if(overlay) overlay.style.display = 'none';
+            }
+        }
+
+        // Función para manejar checkboxes de categorías
+        function fillCategoriasList(data) {
+            var container = document.getElementById('categoriasList');
+            if(!container) return;
+
+            container.innerHTML = '';
+            var series = (data.ventas_por_categoria_mes && data.ventas_por_categoria_mes.series) || [];
+            var cats = [].concat(series.map(function(s) { return s.label; }));
+            cats = [...new Set(cats)].sort();
+
+            // Actualizar texto del dropdown
+            updateCategoriesDropdownText();
+
+            cats.forEach(function(c) {
+                var div = document.createElement('div');
+                div.className = 'dropdown-item-checkbox';
+
+                var check = document.createElement('input');
+                check.type = 'checkbox';
+                check.className = 'form-check-input category-checkbox';
+                check.value = c;
+                check.id = 'cat_' + c.replace(/[^a-zA-Z0-9]/g, '_');
+
+                // Marcar si está seleccionado
+                if (state.selectedCategories.includes(c)) {
+                    check.checked = true;
+                }
+
+                check.addEventListener('change', function() {
+                    if (this.checked) {
+                        if (!state.selectedCategories.includes(c)) {
+                            state.selectedCategories.push(c);
+                        }
+                    } else {
+                        var index = state.selectedCategories.indexOf(c);
+                        if (index > -1) {
+                            state.selectedCategories.splice(index, 1);
+                        }
+                    }
+                    updateCategoriesDropdownText();
+                });
+
+                var label = document.createElement('label');
+                label.htmlFor = check.id;
+                label.className = 'form-check-label ms-2';
+                label.textContent = c;
+
+                div.appendChild(check);
+                div.appendChild(label);
+                container.appendChild(div);
+            });
+        }
+
+        // Actualizar texto del dropdown de categorías
+        function updateCategoriesDropdownText() {
+            var btn = document.getElementById('categoriasDropdown');
+            if (!btn) return;
+
+            if (state.selectedCategories.length === 0) {
+                btn.textContent = 'Seleccionar categorías';
+            } else if (state.selectedCategories.length === 1) {
+                btn.textContent = state.selectedCategories[0];
+            } else {
+                btn.textContent = state.selectedCategories.length + ' categorías seleccionadas';
+            }
+        }
+
+        function renderAll(data) {
+            setKPIs(data.kpis);
+            var vm = data.ventas_mensuales || {labels:[],values:[]};
+            var fD = document.getElementById('fDesde').value;
+            var fH = document.getElementById('fHasta').value;
+            if(fD || fH) {
+                var d1 = fD ? new Date(fD) : null;
+                var d2 = fH ? new Date(fH) : null;
+                var L = [];
+                var V = [];
+                vm.labels.forEach(function(lbl, i) {
+                    var d = parseLabelToDate(lbl);
+                    if((!d1 || d >= d1) && (!d2 || d <= d2)) {
+                        L.push(lbl);
+                        V.push(vm.values[i]);
+                    }
+                });
+                vm = {labels:L, values:V};
+            }
+            renderComboVentas(vm);
+            if(data.ingresos_diarios_30) renderArea('ingresos30', data.ingresos_diarios_30.labels, data.ingresos_diarios_30.values, 'Ingresos');
+            if(data.pedidos_estados) renderDough('estados', data.pedidos_estados.labels, data.pedidos_estados.values, 'estado');
+            
+            // Corregir métodos de pago - usar cualquiera de los dos datasets disponibles
+            if(data.ventas_por_metodo_monto) {
+                renderDough('pagosMonto', data.ventas_por_metodo_monto.labels, data.ventas_por_metodo_monto.values, 'metodo');
+            } else if(data.metodos_pago) {
+                renderDough('pagosMonto', data.metodos_pago.labels, data.metodos_pago.values, 'metodo');
+            }
+            
+            if(data.top_productos) {
+                var n = parseInt(document.getElementById('fTopN').value || '8');
+                var L2 = data.top_productos.labels.slice(0, n);
+                var V2 = data.top_productos.values.slice(0, n);
+                topIds = (data.top_productos.ids || []).slice(0, n);
+                renderHBar('top', L2, V2, 'Cantidad');
+            } else {
+                topIds = [];
+                renderHBar('top', [], [], 'Cantidad');
+            }
+            renderFunnel();
+            renderTreemap();
+            refreshBadges();
+        }
+
+        function buildQuery() {
+            var p = new URLSearchParams();
+            p.set('mode', 'ef');
+            
+            if(state.filtros.cat.length) {
+                p.set('cat', state.filtros.cat.join(','));
+                console.log('Filtro categorías aplicado:', state.filtros.cat.join(','));
+            }
+            
+            if(state.filtros.estado.length) {
+                p.set('estado', state.filtros.estado.join(','));
+                console.log('Filtro estados aplicado:', state.filtros.estado.join(','));
+            }
+            
+            if(state.filtros.mes.length) {
+                p.set('mes', state.filtros.mes.join(','));
+                console.log('Filtro meses aplicado:', state.filtros.mes.join(','));
+            }
+            
+            if(state.filtros.metodo.length) {
+                p.set('metodo', state.filtros.metodo.join(','));
+                console.log('Filtro métodos aplicado:', state.filtros.metodo.join(','));
+            }
+            
+            if(state.filtros.prodId) {
+                p.set('prodId', state.filtros.prodId);
+                console.log('Filtro producto aplicado:', state.filtros.prodId);
+            }
+            
+            var finalUrl = '/Admin/Api/Analytics?' + p.toString();
+            console.log('URL de consulta construida:', finalUrl);
+            return finalUrl;
+        }
+
+        async function reload() {
+            if(state.bloqueo) return;
+            state.bloqueo = true;
+            var st = document.getElementById('status');
+            if(st) st.textContent = 'Filtrando...';
+            try {
+                var url = buildQuery();
+                var r = await fetch(url);
+                if(!r.ok) throw new Error('HTTP ' + r.status);
+                var d = await r.json();
+                var empty = !d || (!d.kpis && !d.ventas_mensuales) || (((d.ventas_mensuales && d.ventas_mensuales.values) || []).every(function(x) { return (+x || 0) === 0; }) && ((d.ingresos_diarios_30 && d.ingresos_diarios_30.values) || []).every(function(x) { return (+x || 0) === 0;}));
+                if(empty) {
+                    r = await fetch('/Admin/Api/Analytics?mode=demo');
+                    d = await r.json();
+                }
+                RAW = d;
+                renderAll(d);
+                if(st) st.textContent = '';
+            } catch(e) {
+                if(st) st.textContent = '';
+                console.error(e);
+            } finally {
+                state.bloqueo = false;
+            }
+        }
+
+        function toggleFilter(key, value) {
+            console.log('toggleFilter llamado:', 'key:', key, 'value:', value, 'type:', typeof value);
+            
+            // Para fechas (mes), mantener el formato original sin convertir a mayúsculas
+            var processedValue;
+            if(key === 'mes') {
+                processedValue = String(value); // Mantener formato original como "2024-10"
+            } else {
+                processedValue = String(value).toUpperCase();
+            }
+            
+            var arr = state.filtros[key];
+            if(!arr) {
+                arr = state.filtros[key] = [];
+            }
+            
+            var idx = arr.indexOf(processedValue);
+            console.log('Buscando en array:', arr, 'valor:', processedValue, 'index encontrado:', idx);
+            
+            if(idx >= 0) {
+                arr.splice(idx, 1);
+                console.log('Filtro removido. Array resultante:', arr);
+            } else {
+                if(key === 'mes' || key === 'estado' || key === 'cat' || key === 'metodo') {
+                    arr.push(processedValue);
+                    console.log('Filtro añadido. Array resultante:', arr);
+                }
+            }
+            
+            console.log('Estado final de filtros:', state.filtros);
+            reload();
+        }
+
+        function removeFilter(key, value) {
+            if(key === 'prodId') {
+                state.filtros.prodId = null;
+            } else {
+                var arr = state.filtros[key];
+                if(!arr) return;
+                var i = arr.indexOf(String(value).toUpperCase());
+                if(i >= 0) arr.splice(i, 1);
+            }
+            reload();
+        }
+
+        function toggleProduct(pid) {
+            if(state.filtros.prodId === pid) state.filtros.prodId = null;
+            else state.filtros.prodId = pid;
+            reload();
+        }
+
+        async function initialLoad() {
+            try {
+                var st = document.getElementById('status');
+                if(st) st.textContent = 'Cargando...';
+
+                var r = await fetch(buildQuery());
+                var d = await r.json();
+                var empty = !d || (((d.ventas_mensuales && d.ventas_mensuales.values) || []).every(function(x) { return (+x || 0) === 0; }) && ((d.ingresos_diarios_30 && d.ingresos_diarios_30.values) || []).every(function(x) { return (+x || 0) === 0; }));
+
+                if(empty) {
+                    r = await fetch('/Admin/Api/Analytics?mode=demo');
+                    d = await r.json();
+                }
+
+                RAW = d;
+
+                var today = new Date();
+                var last = new Date(today.getFullYear(), today.getMonth() - 11, 1);
+                document.getElementById('fDesde').value = last.toISOString().slice(0, 10);
+                document.getElementById('fHasta').value = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
+
+                // Llenar el dropdown de categorías en lugar del select
+                fillCategoriasList(d);
+
+                renderAll(d);
+                if(st) st.textContent = '';
+            } catch(e) {
+                console.error(e);
+                var st2 = document.getElementById('status');
+                if(st2) st2.textContent = '';
+            }
+        }
+
+        document.getElementById('btnAplicarFiltros').addEventListener('click', function() {
+            // Usar las categorías seleccionadas del nuevo dropdown
+            state.filtros.cat = state.selectedCategories.map(function(c) { return c.toUpperCase(); });
+            reload();
+        });
+
+        // Evitar cierre del dropdown al hacer click dentro
+        document.getElementById('categoriasMenu').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Iniciar carga
+        initialLoad();
+
+        function renderHBar(id,l,v,label){ 
+            clearChart(id); 
+            var c=document.getElementById(id); 
+            var empty=document.getElementById(id==='top'?'topEmpty':null); 
+            if(!c) return; 
+            if(!v || v.length===0 || v.every(function(x){return (+x||0)===0;})){ 
+                if(empty) empty.classList.remove('d-none'); 
+                return; 
+            } 
+            if(empty) empty.classList.add('d-none'); 
+            
+            var background=v.map(function(val, index){
+                if(id==='top' && topIds.length){
+                    var pid = topIds[index];
+                    return (state.filtros.prodId && state.filtros.prodId!==pid) ? 
+                        'rgba(37,99,235,.2)' : palette[index%palette.length];
+                }
+                return palette[index%palette.length];
+            }); 
+            
+            charts[id]=new Chart(c,{ 
+                type:'bar', 
+                data:{ 
+                    labels:l, 
+                    datasets:[ 
+                        { 
+                            label:label, 
+                            data:v, 
+                            backgroundColor:background, 
+                            borderRadius:8,
+                            borderSkipped: false,
+                            borderWidth:0,
+                            hoverBackgroundColor: background.map(function(color) {
+                                return color.replace('0.8)', '1)').replace('0.2)', '0.4)');
+                            })
+                        } 
+                    ] 
+                }, 
+                options:{ 
+                    indexAxis:'y', 
+                    onClick:function(e){ 
+                        if(id==='top'){ 
+                            var p=charts[id].getElementsAtEventForMode(e,'nearest',{intersect:true},true); 
+                            if(p.length){ 
+                                var idx=p[0].index; 
+                                var pid=topIds[idx]; 
+                                toggleProduct(pid); 
+                            } 
+                        } 
+                    }, 
+                    responsive:true, 
+                    maintainAspectRatio:false,
+                    interaction: {
+                        intersect: true
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor:'rgba(0, 0, 0, 0.8)',
+                            titleColor:'#ffffff',
+                            bodyColor:'#ffffff',
+                            borderColor:'#374151',
+                            borderWidth:1,
+                            cornerRadius:8,
+                            displayColors:false,
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    return label + ': ' + context.raw.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales:{ 
+                        x:{ 
+                            beginAtZero:true, 
+                            grid:{
+                                display:true,
+                                drawBorder:false,
+                                color:'rgba(0, 0, 0, 0.05)'
+                            }, 
+                            ticks:{ 
+                                color:'#6b7280',
+                                callback:function(val){ 
+                                    if(id === 'top') {
+                                        return val.toLocaleString();
+                                    }
+                                    return fmtCur.format(val); 
+                                } 
+                            } 
+                        },
+                        y: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#374151',
+                                font: {
+                                    size: 11,
+                                    weight: '500'
+                                }
+                            }
+                        }
+                    } 
+                } 
+            }); 
+        }
+    </script>
+}

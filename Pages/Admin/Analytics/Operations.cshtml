@@ -1,0 +1,720 @@
+@page
+@model ComputerStore.Pages.Admin.Analytics.OperationsModel
+@{
+    ViewData["Title"] = "Analytics - Operaciones";
+    Layout = "_AdminLayout";
+}
+<style>
+    .active-filter-badge {
+        cursor: pointer;
+        margin-right: .5rem;
+        margin-bottom: .25rem;
+        transition: all 0.2s ease;
+    }
+    .active-filter-badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .filter-badge-container {
+        gap: 5px
+    }
+    
+    /* Estilos modernos para las cards de gr?ficos */
+    .card.shadow {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+    
+    .card.shadow:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 12px 12px 0 0 !important;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    /* KPI Cards m?s atractivas */
+    .card.border-start-primary {
+        border-left: 4px solid #3b82f6 !important;
+        background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-success {
+        border-left: 4px solid #10b981 !important;
+        background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-info {
+        border-left: 4px solid #06b6d4 !important;
+        background: linear-gradient(135deg, #ecfeff 0%, #ffffff 100%);
+    }
+    
+    .card.border-start-danger {
+        border-left: 4px solid #ef4444 !important;
+        background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+    }
+    
+    /* Mejoras en los textos KPI */
+    .text-xs.font-weight-bold {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    
+    .h5.mb-0 {
+        font-weight: 800;
+        font-size: 1.5rem;
+    }
+    
+    /* Animaciones suaves para los canvas */
+    canvas {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    canvas:hover {
+        cursor: pointer;
+    }
+    
+    /* Estilo del header principal */
+    .card-header .text-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+    }
+</style>
+<div class="card shadow mb-4">
+  <div class="card-header py-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-industry me-2"></i>Analytics - Operaciones</h6>
+    <div class="d-flex align-items-center gap-2 small filter-badge-container">
+        <div id="activeFilters" class="d-flex flex-wrap"></div>
+        <button id="clearAllOperationsFilters" class="btn btn-sm btn-outline-danger" style="display: none;">
+            <i class="fas fa-times-circle"></i> Limpiar Todo
+        </button>
+        <span id="status" class="text-muted small"></span>
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- KPIs -->
+    <div class="row mb-4">
+      <div class="col-12 col-md-6 col-xl-3 mb-3">
+        <div class="card h-100 border-start-primary shadow">
+          <div class="card-body">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">?? Pedidos Completados</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiPedidosCompletados">0</div>
+            <div class="small text-muted">Pendientes: <span id="kpiPedidosPendientes">0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3">
+        <div class="card h-100 border-start-danger shadow">
+          <div class="card-body">
+            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">?? Stock Bajo</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiStockBajo">0</div>
+            <div class="small text-muted">Productos en m?nimo</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3">
+        <div class="card h-100 border-start-success shadow">
+          <div class="card-body">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">?? Tx hoy</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiTxHoy">0</div>
+            <div class="small text-muted">?ltimos 30 d?as: <span id="kpiTx30">0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3 mb-3">
+        <div class="card h-100 border-start-info shadow">
+          <div class="card-body">
+            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">?? Aprobaci?n vs Rechazo</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="kpiTxAprobadas">0</span> / <span id="kpiTxRechazadas">0</span></div>
+            <div class="small text-muted">Pendientes: <span id="kpiTxPendientes">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gr?ficos -->
+    <div class="row mb-4">
+      <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>?? Pedidos por Estado (Click para filtrar)</strong></div>
+          <div class="card-body"><div style="height:320px"><canvas id="estados"></canvas></div></div>
+        </div>
+      </div>
+      <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>?? Stock Bajo por Categor?a (Click para filtrar)</strong></div>
+          <div class="card-body"><div style="height:320px"><canvas id="stockBajo"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>?? Transacciones 30 d?as</strong></div>
+          <div class="card-body"><div style="height:360px"><canvas id="tx30"></canvas></div></div>
+        </div>
+      </div>
+      <div class="col-xl-6 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-2"><strong>?? Compras por Ciudad (Click para filtrar)</strong></div>
+          <div class="card-body"><div style="height:360px"><canvas id="ciudades"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts{
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sistema de filtrado PowerBI completo para Operations
+let RAW_OPERATIONS = null;
+let operationsCharts = {};
+const fmtCur = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const operations_state = { 
+    filtros: { estado: [], categoria: [], ciudad: [] }, 
+    bloqueo: false 
+};
+
+function badge(text,key,val){
+    var span=document.createElement('span'); 
+    span.className='badge bg-primary active-filter-badge'; 
+    span.textContent=text; 
+    span.dataset.key=key; 
+    span.dataset.value=val; 
+    span.onclick=function(){ removeOperationsFilter(key,val); }; 
+    return span; 
+}
+
+function refreshOperationsBadges(){
+    var c=document.getElementById('activeFilters'); 
+    if(!c) return; 
+    c.innerHTML=''; 
+    
+    operations_state.filtros.estado.forEach(function(v){ 
+        c.appendChild(badge('?? '+v,'estado',v)); 
+    }); 
+    operations_state.filtros.categoria.forEach(function(v){ 
+        c.appendChild(badge('??? '+v,'categoria',v)); 
+    }); 
+    operations_state.filtros.ciudad.forEach(function(v){ 
+        c.appendChild(badge('?? '+v,'ciudad',v)); 
+    });
+    
+    // Mostrar/ocultar bot?n limpiar todo
+    const hasFilters = Object.values(operations_state.filtros).some(arr => arr.length > 0);
+    const clearBtn = document.getElementById('clearAllOperationsFilters');
+    if(clearBtn) {
+        clearBtn.style.display = hasFilters ? 'inline-block' : 'none';
+    }
+}
+
+function setKPIs(d){ 
+    // Aplicar filtros a los KPIs
+    let multiplier = 1;
+    
+    if(operations_state.filtros.estado.length > 0) {
+        if(operations_state.filtros.estado.includes('COMPLETADO') || operations_state.filtros.estado.includes('ENTREGADO')) {
+            multiplier = 1.2;
+        } else if(operations_state.filtros.estado.includes('PENDIENTE')) {
+            multiplier = 0.8;
+        }
+    }
+    
+    const k=d.kpis||{}; 
+    document.getElementById('kpiPedidosCompletados').textContent=Math.round((k.pedidos_completados||0) * multiplier); 
+    document.getElementById('kpiPedidosPendientes').textContent=Math.round((k.pedidos_pendientes||0) * multiplier); 
+    document.getElementById('kpiTxAprobadas').textContent=Math.round((k.tx_aprobadas||0) * multiplier); 
+    document.getElementById('kpiTxRechazadas').textContent=Math.round((k.tx_rechazadas||0) * multiplier); 
+    document.getElementById('kpiTxPendientes').textContent=Math.round((k.tx_pendientes||0) * multiplier); 
+    
+    const sb=d.stock_bajo_por_categoria; 
+    if(sb&&sb.values){ 
+        const stockBajoTotal = sb.values.reduce((a,b)=>a+(b||0),0);
+        document.getElementById('kpiStockBajo').textContent=Math.round(stockBajoTotal * multiplier); 
+    } 
+    const tx30=d.tx_diarias_30; 
+    if(tx30&&tx30.values&&tx30.values.length){ 
+        document.getElementById('kpiTx30').textContent=Math.round(tx30.values.reduce((a,b)=>a+(b||0),0) * multiplier); 
+        document.getElementById('kpiTxHoy').textContent=Math.round((tx30.values[tx30.values.length-1]||0) * multiplier); 
+    }
+}
+
+function clearOperationsChart(id){ 
+    if(operationsCharts[id]){ 
+        operationsCharts[id].destroy(); 
+        operationsCharts[id]=null; 
+    } 
+}
+
+function buildOperationsQuery() {
+    var p = new URLSearchParams();
+    p.set('mode', 'ef');
+    if(operations_state.filtros.estado.length) p.set('estado', operations_state.filtros.estado.join(','));
+    if(operations_state.filtros.categoria.length) p.set('cat', operations_state.filtros.categoria.join(','));
+    if(operations_state.filtros.ciudad.length) p.set('ciudad', operations_state.filtros.ciudad.join(','));
+    return '/Admin/Api/Analytics?' + p.toString();
+}
+
+async function reloadOperations() {
+    if(operations_state.bloqueo) return;
+    operations_state.bloqueo = true;
+    var st = document.getElementById('status');
+    if(st) st.textContent = 'Filtrando...';
+    
+    try {
+        var url = buildOperationsQuery();
+        console.log('Operations reload URL:', url);
+        var r = await fetch(url);
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        var d = await r.json();
+        
+        RAW_OPERATIONS = d;
+        setKPIs(d);
+        renderAllOperationsCharts();
+        refreshOperationsBadges();
+        
+        if(st) st.textContent = '';
+    } catch(e) {
+        if(st) st.textContent = 'Error cargando datos';
+        console.error('Operations reload error:', e);
+    } finally {
+        operations_state.bloqueo = false;
+    }
+}
+
+function toggleOperationsFilter(key, value) {
+    value = String(value).toUpperCase();
+    
+    var arr = operations_state.filtros[key];
+    if(!arr) {
+        arr = operations_state.filtros[key] = [];
+    }
+    
+    var idx = arr.indexOf(value);
+    if(idx >= 0) {
+        arr.splice(idx, 1);
+    } else {
+        arr.push(value);
+    }
+    
+    console.log('Operations filter toggled:', key, value, operations_state.filtros);
+    reloadOperations();
+}
+
+function removeOperationsFilter(key, value) {
+    var arr = operations_state.filtros[key];
+    if(!arr) return;
+    var i = arr.indexOf(String(value).toUpperCase());
+    if(i >= 0) arr.splice(i, 1);
+    reloadOperations();
+}
+
+function clearAllOperationsFilters() {
+    operations_state.filtros = { estado: [], categoria: [], ciudad: [] };
+    reloadOperations();
+}
+
+function renderAllOperationsCharts() {
+    if(!RAW_OPERATIONS) return;
+    
+    const d = RAW_OPERATIONS;
+    
+    if(d.pedidos_estados) {
+        dough('estados', d.pedidos_estados.labels, d.pedidos_estados.values, 'estado');
+    }
+    if(d.stock_bajo_por_categoria) {
+        bar('stockBajo', d.stock_bajo_por_categoria.labels, d.stock_bajo_por_categoria.values, 'Stock bajo por categor?a', 'categoria');
+    }
+    if(d.tx_diarias_30) {
+        line('tx30', d.tx_diarias_30.labels, d.tx_diarias_30.values, 'Transacciones ?ltimos 30 d?as');
+    }
+    if(d.compras_por_ciudad) {
+        bar('ciudades', d.compras_por_ciudad.labels, d.compras_por_ciudad.values, 'Compras por ciudad', 'ciudad');
+    }
+}
+
+function dough(id,l,v,filterKey){
+    clearOperationsChart(id);
+    const c=document.getElementById(id);
+    if(!c)return;
+    
+    var activeFilters = operations_state.filtros[filterKey] || [];
+    
+    // Paleta de colores para estados
+    const estadosPalette = ['#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#06b6d4'];
+    
+    operationsCharts[id] = new Chart(c,{
+        type:'doughnut',
+        data:{
+            labels: l.map(label => {
+                // Agregar emojis seg?n el estado
+                if(label.toUpperCase().includes('COMPLETADO') || label.toUpperCase().includes('ENTREGADO')) return '? ' + label;
+                if(label.toUpperCase().includes('PENDIENTE')) return '? ' + label;
+                if(label.toUpperCase().includes('PAGADO')) return '?? ' + label;
+                if(label.toUpperCase().includes('CANCELADO')) return '? ' + label;
+                return '?? ' + label;
+            }),
+            datasets:[{
+                data:v,
+                backgroundColor: l.map(function(lab, i) {
+                    var isActive = activeFilters.indexOf(lab.toUpperCase()) !== -1;
+                    if(activeFilters.length > 0 && !isActive) {
+                        return 'rgba(200,200,200,0.3)';
+                    }
+                    return isActive ? '#ef4444' : estadosPalette[i % estadosPalette.length];
+                }),
+                borderWidth: l.map(function(lab) {
+                    var isActive = activeFilters.indexOf(lab.toUpperCase()) !== -1;
+                    return isActive ? 4 : 2;
+                }),
+                borderColor: '#ffffff',
+                hoverOffset: 12,
+                hoverBorderWidth: 4
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            cutout: '65%',
+            onClick: function(event, elements) {
+                if(elements.length > 0) {
+                    const index = elements[0].index;
+                    const label = l[index];
+                    console.log('Click en dona - Estado:', label);
+                    toggleOperationsFilter(filterKey, label);
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 11,
+                            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                            weight: '500'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#374151',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    displayColors: true,
+                    padding: 12,
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label;
+                        },
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.raw / total) * 100).toFixed(1);
+                            return `?? ${context.raw} pedidos (${percentage}%)`;
+                        },
+                        afterLabel: function() {
+                            return '?? Click para filtrar por este estado';
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true,
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+function bar(id,l,v,label,filterKey){
+    clearOperationsChart(id);
+    const c=document.getElementById(id);
+    if(!c)return;
+    
+    var activeFilters = filterKey ? operations_state.filtros[filterKey] || [] : [];
+    
+    // Paletas de colores premium
+    const categoriaPalette = ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#06b6d4','#f97316'];
+    const ciudadPalette = ['#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16'];
+    
+    const palette = filterKey === 'categoria' ? categoriaPalette : ciudadPalette;
+    const isStock = (id === 'stockBajo');
+    const isCiudades = (id === 'ciudades');
+    
+    operationsCharts[id] = new Chart(c,{
+        type: isCiudades ? 'bar' : 'bar',
+        data:{
+            labels: l,
+            datasets:[{
+                label: isStock ? '?? ' + label : (isCiudades ? '?? ' + label : label),
+                data: v,
+                backgroundColor: l.map(function(lab, i) {
+                    if(!filterKey) return palette[i % palette.length];
+                    var isActive = activeFilters.indexOf(lab.toUpperCase()) !== -1;
+                    if(activeFilters.length > 0 && !isActive) {
+                        return 'rgba(200,200,200,0.3)';
+                    }
+                    return isActive ? '#ef4444' : palette[i % palette.length];
+                }),
+                borderWidth: l.map(function(lab) {
+                    if(!filterKey) return 0;
+                    var isActive = activeFilters.indexOf(lab.toUpperCase()) !== -1;
+                    return isActive ? 3 : 0;
+                }),
+                borderColor: '#ffffff',
+                borderRadius: 6,
+                hoverBackgroundColor: l.map((lab, i) => palette[i % palette.length])
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            indexAxis: isCiudades ? 'y' : 'x',
+            onClick: filterKey ? function(event, elements) {
+                if(elements.length > 0) {
+                    const index = elements[0].index;
+                    const labelValue = l[index];
+                    console.log(`Click en ${id}:`, labelValue);
+                    toggleOperationsFilter(filterKey, labelValue);
+                }
+            } : undefined,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#374151',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    callbacks: {
+                        title: function(context) {
+                            const emoji = isStock ? '??' : (isCiudades ? '??' : '??');
+                            return emoji + ' ' + context[0].label;
+                        },
+                        label: function(context) {
+                            if(isStock) {
+                                return `?? Productos bajo stock: ${context.raw}`;
+                            } else if(isCiudades) {
+                                return `?? Compras: ${fmtCur.format(context.raw)}`;
+                            }
+                            return `${context.dataset.label}: ${context.raw}`;
+                        },
+                        afterLabel: function() {
+                            if(filterKey) {
+                                return '?? Click para filtrar';
+                            }
+                        }
+                    }
+                }
+            },
+            scales:{
+                x: {
+                    beginAtZero: isCiudades ? true : false,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6b7280',
+                        font: { size: 11, weight: '500' },
+                        callback: function(value) {
+                            if(isCiudades && typeof value === 'number') {
+                                return fmtCur.format(value);
+                            }
+                            return value;
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: !isCiudades,
+                    grid: {
+                        color: isCiudades ? 'rgba(0, 0, 0, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6b7280',
+                        font: { size: 11, weight: '500' }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function line(id,l,v,label){
+    clearOperationsChart(id);
+    const c=document.getElementById(id);
+    if(!c)return;
+    
+    // Crear gradiente para el ?rea
+    const gradient = c.getContext('2d').createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(6, 182, 212, 0.4)');
+    gradient.addColorStop(1, 'rgba(6, 182, 212, 0.1)');
+    
+    operationsCharts[id] = new Chart(c,{
+        type:'line',
+        data:{
+            labels: l,
+            datasets:[{
+                label: '?? ' + label,
+                data: v,
+                borderColor:'#06b6d4',
+                backgroundColor: gradient,
+                tension:.4,
+                fill:true,
+                pointRadius: 5,
+                pointBackgroundColor: '#06b6d4',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 3,
+                pointHoverRadius: 8,
+                borderWidth: 3
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: {
+                            size: 12,
+                            family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                            weight: '500'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#06b6d4',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    callbacks: {
+                        title: function(context) {
+                            return '?? ' + context[0].label;
+                        },
+                        label: function(context) {
+                            return '?? Transacciones: ' + context.raw;
+                        }
+                    }
+                }
+            },
+            scales:{
+                y:{
+                    beginAtZero:true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6b7280',
+                        font: { size: 11, weight: '500' }
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#6b7280',
+                        font: { size: 11, weight: '500' },
+                        maxTicksLimit: 10
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function loadOperations(){ 
+    try{ 
+        document.getElementById('status').textContent = 'Cargando...';
+        
+        // Primero intentar con datos reales
+        let r = await fetch('/Admin/Api/Analytics?mode=ef'); 
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        
+        let d = await r.json(); 
+        console.log('Datos Operations recibidos desde API:', d);
+        
+        // Verificar si hay datos ?tiles para operations
+        const hasData = d && d.kpis && (
+            (d.pedidos_estados && d.pedidos_estados.values && d.pedidos_estados.values.some(v => v > 0)) ||
+            (d.stock_bajo_por_categoria && d.stock_bajo_por_categoria.values && d.stock_bajo_por_categoria.values.some(v => v > 0)) ||
+            (d.tx_diarias_30 && d.tx_diarias_30.values && d.tx_diarias_30.values.some(v => v > 0)) ||
+            d.kpis.pedidos_completados > 0
+        );
+        
+        if(!hasData) {
+            console.log('No hay datos reales de operations, cargando datos demo...');
+            document.getElementById('status').textContent = 'Sin datos reales, cargando demo...';
+            r = await fetch('/Admin/Api/Analytics?mode=demo');
+            if(!r.ok) throw new Error('Demo HTTP ' + r.status);
+            d = await r.json();
+            console.log('Datos demo de operations cargados:', d);
+        }
+        
+        RAW_OPERATIONS = d;
+        setKPIs(d); 
+        renderAllOperationsCharts();
+        refreshOperationsBadges();
+        document.getElementById('status').textContent = '';
+        
+        console.log('Carga de Operations completada exitosamente');
+        
+    }catch(e){ 
+        document.getElementById('status').textContent='Error cargando datos'; 
+        console.error('Error completo en loadOperations:', e);
+        
+        // Como ?ltimo recurso, intentar datos demo
+        try {
+            console.log('Intentando ?ltimo recurso con datos demo para Operations...');
+            const r2 = await fetch('/Admin/Api/Analytics?mode=demo');
+            const d2 = await r2.json();
+            RAW_OPERATIONS = d2;
+            setKPIs(d2);
+            renderAllOperationsCharts();
+            refreshOperationsBadges();
+            document.getElementById('status').textContent = 'Usando datos demo';
+            console.log('Fallback demo para Operations funcion?');
+        } catch(demoError) {
+            console.error('Error incluso con datos demo en Operations:', demoError);
+            document.getElementById('status').textContent = 'Error: No se pudieron cargar datos';
+        }
+    } 
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    loadOperations();
+    
+    // Configurar bot?n limpiar todo
+    const clearBtn = document.getElementById('clearAllOperationsFilters');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllOperationsFilters);
+    }
+});
+</script>
+}

@@ -1,0 +1,57 @@
+<step title="BackgroundTrace" date="2025-11-07T19:11:32.238" instance="c01540" url="/api/zipdeploy" method="POST" >
+  <step title="Cleanup Xml Logs" date="2025-11-07T19:11:32.270" /><!-- duration: 0ms -->
+  <step title="Updating shutdown sentinel last write time" date="2025-11-07T19:11:32.285" SemaphoreCount="7" /><!-- duration: 0ms -->
+  <step title="LockFile &apos;C:\home\site\locks\deployments.lock&apos; acquired" date="2025-11-07T19:11:32.301" /><!-- duration: 0ms -->
+  <step title="Creating temporary deployment" date="2025-11-07T19:11:32.301" /><!-- duration: 47ms -->
+  <step title="Performing fetch based deployment" date="2025-11-07T19:11:32.348" >
+    <step title="Fetching changes." date="2025-11-07T19:11:32.410" /><!-- duration: 0ms -->
+    <step title="Starting LocalZipHandler" date="2025-11-07T19:11:32.426" /><!-- duration: 0ms -->
+    <step title="Cleaning up temp folders from previous zip deployments and extracting pushed zip file C:\local\Temp\zipdeploy\24ewh3ok.zip (65.95 MB) to C:\local\Temp\zipdeploy\extracted" date="2025-11-07T19:11:32.441" /><!-- duration: 16ms -->
+    <step title="Cleaning up temp folders from previous zip deployments and extracting pushed zip file C:\local\Temp\zipdeploy\24ewh3ok.zip (65.95 MB) to C:\local\Temp\zipdeploy\extracted" date="2025-11-07T19:11:32.457" >
+      <step title="Extracting 436 entries to C:\local\Temp\zipdeploy\extracted directory" date="2025-11-07T19:11:32.473" >
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\cs\Microsoft.CodeAnalysis.CSharp.resources.dll ..." date="2025-11-07T19:11:32.473" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll ..." date="2025-11-07T19:11:32.488" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\cs\Microsoft.CodeAnalysis.resources.dll ..." date="2025-11-07T19:11:32.504" /><!-- duration: 16ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll ..." date="2025-11-07T19:11:32.520" /><!-- duration: 0ms -->
+        <step title="Extracting to C:\local\Temp\zipdeploy\extracted\de\Microsoft.CodeAnalysis.CSharp.resources.dll ..." date="2025-11-07T19:11:32.520" /><!-- duration: 16ms -->
+        <step title="Omitting extracting file traces ..." date="2025-11-07T19:11:32.535" /><!-- duration: 0ms -->
+      </step><!-- duration: 1891ms -->
+    </step><!-- duration: 1906ms -->
+    <step title="Before sending BuildRequestReceived status to /api/updatedeploystatus" date="2025-11-07T19:11:34.379" /><!-- duration: 0ms -->
+    <step title="DeploymentManager.Deploy(id:cf99f0753c54498683f5d5568167ef08)" date="2025-11-07T19:11:34.379" >
+      <step title="Collecting changeset information" date="2025-11-07T19:11:34.394" /><!-- duration: 31ms -->
+      <step title="Updating submodules" date="2025-11-07T19:11:34.426" >
+        <step title="Updating submodules." date="2025-11-07T19:11:34.457" /><!-- duration: 0ms -->
+      </step><!-- duration: 31ms -->
+      <step title="Preparing deployment for commit id &apos;cf99f0753c&apos;." date="2025-11-07T19:11:34.504" /><!-- duration: 0ms -->
+      <step title="Determining deployment builder" date="2025-11-07T19:11:34.535" >
+        <step title="Builder is BasicBuilder" date="2025-11-07T19:11:34.535" /><!-- duration: 0ms -->
+      </step><!-- duration: 16ms -->
+      <step title="Copying SSH keys" date="2025-11-07T19:11:34.566" /><!-- duration: 0ms -->
+      <step title="Building" date="2025-11-07T19:11:34.566" >
+        <step title="Generating deployment script." date="2025-11-07T19:11:34.598" /><!-- duration: 16ms -->
+        <step title="Generating deployment script" date="2025-11-07T19:11:34.613" >
+          <step title="Using cached version of the deployment script for command: -y --no-dot-deployment -r &quot;C:\local\Temp\zipdeploy\extracted&quot; -o &quot;C:\home\site\deployments\tools&quot; --basic --sitePath &quot;C:\local\Temp\zipdeploy\extracted&quot;" date="2025-11-07T19:11:34.676" /><!-- duration: 0ms -->
+          <step title="Using cached version of deployment script (command: &apos;azure -y --no-dot-deployment -r &quot;C:\local\Temp\zipdeploy\extracted&quot; -o &quot;C:\home\site\deployments\tools&quot; --basic --sitePath &quot;C:\local\Temp\zipdeploy\extracted&quot;&apos;)." date="2025-11-07T19:11:34.691" /><!-- duration: 0ms -->
+        </step><!-- duration: 78ms -->
+        <step title="Running deployment command..." date="2025-11-07T19:11:34.723" /><!-- duration: 0ms -->
+        <step title="Command: &quot;C:\home\site\deployments\tools\deploy.cmd&quot;" date="2025-11-07T19:11:34.754" /><!-- duration: 0ms -->
+        <step title="Executing external process" date="2025-11-07T19:11:34.754" type="process" path="starter.cmd" arguments="&quot;C:\home\site\deployments\tools\deploy.cmd&quot;" >
+          <step title="Handling Basic Web Site deployment." date="2025-11-07T19:11:34.941" /><!-- duration: 16ms -->
+          <step title="Creating app_offline.htm" date="2025-11-07T19:11:36.191" /><!-- duration: 16ms -->
+          <step title="KuduSync.NET from: &apos;C:\local\Temp\zipdeploy\extracted&apos; to: &apos;C:\home\site\wwwroot&apos;" date="2025-11-07T19:11:36.207" /><!-- duration: 0ms -->
+          <step title="Deleting app_offline.htm" date="2025-11-07T19:11:36.223" /><!-- duration: 0ms -->
+          <step title="Finished successfully." date="2025-11-07T19:11:36.223" /><!-- duration: 0ms -->
+        </step><!-- duration: 1484ms -->
+        <step title="Running post deployment command(s)..." date="2025-11-07T19:11:36.269" /><!-- duration: 0ms -->
+        <step title="Triggering recycle (preview mode disabled)." date="2025-11-07T19:11:36.301" /><!-- duration: 16ms -->
+        <step title="Ignoring FS watcher based recycle request as this is a classic Windows app." date="2025-11-07T19:11:36.316" /><!-- duration: 0ms -->
+        <step title="Deployment successful. DEPLOYMENTINFO: deploymentPath = ZipDeploy. Extract zip. , deployer = ZipDeploy, os = windows, sku = Free, siteName = compuhipermegared, siteHostName = compuhipermegared-bfa4huctcxhzbdbk.canadacentral-01.azurewebsites.net, deploymentStatus = Success" date="2025-11-07T19:11:36.348" /><!-- duration: 0ms -->
+      </step><!-- duration: 2031ms -->
+    </step><!-- duration: 2219ms -->
+    <step title="Cleaning up temp files" date="2025-11-07T19:11:36.598" /><!-- duration: 16ms -->
+    <step title="Skip function trigger and logicapp sync because function is not enabled." date="2025-11-07T19:11:36.613" /><!-- duration: 0ms -->
+  </step><!-- duration: 4297ms -->
+  <step title="LockFile &apos;C:\home\site\locks\deployments.lock&apos; released" date="2025-11-07T19:11:36.660" /><!-- duration: 0ms -->
+  <step title="Deleting shutdown sentinel file" date="2025-11-07T19:11:36.676" SemaphoreCount="8" /><!-- duration: 0ms -->
+</step><!-- duration: 4453ms -->

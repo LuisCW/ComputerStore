@@ -1,0 +1,274 @@
+@inject ComputerStore.Services.LittleCarService CarritoService
+@inject Microsoft.AspNetCore.Identity.SignInManager<ComputerStore.Models.ApplicationUser> SignInManager
+@inject Microsoft.AspNetCore.Identity.UserManager<ComputerStore.Models.ApplicationUser> UserManager
+@{
+    var cantidadCarrito = CarritoService.ObtenerCantidadProductos();
+    var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var isAdmin = user != null && await UserManager.IsInRoleAsync(user, "Admin");
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CompuHiperMegaRed</title>
+    
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/animations.css" />
+    
+    <style>
+        :root { --primary-color:#2563eb; --secondary-color:#1e40af; --dark-bg:#1e293b; --darker-bg:#0f172a; --text-light:#f8fafc; --text-secondary:#94a3b8; }
+        /* Navbar visuals and layout fixes to avoid wrapping and misalignment */
+        .navbar{
+            background:linear-gradient(135deg,var(--dark-bg) 0%,var(--darker-bg) 100%) !important;
+            box-shadow:0 4px 20px rgba(0,0,0,.1);
+            border-bottom:3px solid var(--primary-color);
+            min-height:4.375rem; /* keep consistent with admin topbar */
+            padding-top:0.4rem; padding-bottom:0.4rem;
+        }
+        .navbar .container { align-items: center; }
+        .navbar-brand{font-size:1.8rem;font-weight:700;color:var(--text-light)!important; display:flex; align-items:center; gap:.5rem;}
+        .navbar-brand img{height:28px;width:28px}
+        .nav-link{color:var(--text-secondary)!important;font-weight:500;transition:.3s; display:flex; align-items:center; height:3.2rem; white-space:nowrap;}
+        .nav-link i{margin-right:.35rem}
+        .nav-link:hover{color:var(--text-light)!important;background:rgba(59,130,246,.12);border-radius:8px}
+        .cart-badge{position:relative}
+        .cart-count{position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;border-radius:50%;padding:.2rem .4rem;font-size:.75rem;min-width:20px;text-align:center}
+        .content{flex:1 0 auto;display:flex}
+        /* keep sidebar styles unchanged */
+        .sidebar{width:280px;background:linear-gradient(180deg,var(--dark-bg) 0%,var(--darker-bg) 100%);color:#fff;padding:1.5rem;min-height:calc(100vh - 140px);overflow-y:auto;transition:width .25s,padding .25s}
+        .sidebar.collapsed{width:0;padding:0;overflow:hidden}
+        .main-content{flex:1;padding:2rem;transition:padding .25s}
+        footer{background:linear-gradient(135deg,var(--dark-bg) 0%,var(--darker-bg) 100%);color:#fff;padding:3rem 0 2rem;border-top:3px solid var(--primary-color);margin-top:auto}
+        .alert-floating{position:fixed;top:100px;right:20px;z-index:1050;min-width:300px}
+        /* Botón X del sidebar */
+        #toggleSidebar{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;color:#e2e8f0;margin-bottom:1rem}
+        #toggleSidebar i{font-size:1rem}
+        /* Botón hamburguesa para reabrir sidebar */
+        #sidebarHamburger{position:fixed;left:12px;bottom:24px;z-index:1040;border-radius:50%;width:44px;height:44px;display:none;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+        /* Modo oscuro global */
+        body.dark-mode{background:linear-gradient(135deg,#0b1220 0%,#0a0f1a 100%);color:#e5e7eb}
+        body.dark-mode .card, body.dark-mode .modal-content{background-color:#0f172a;color:#e5e7eb;border-color:#1f2937}
+        body.dark-mode .form-control, body.dark-mode .form-select, body.dark-mode .dropdown-menu{background-color:#0b1220;color:#e5e7eb;border-color:#1f2937}
+        body.dark-mode .form-control::placeholder{color:#9ca3af}
+        body.dark-mode .nav-link{color:#cbd5e1!important}
+        body.dark-mode .nav-link:hover{background:rgba(59,130,246,.25);color:#fff!important}
+        body.dark-mode .text-muted{color:#9ca3af!important}
+        body.dark-mode .btn-outline-light{color:#e5e7eb;border-color:#e5e7eb}
+        body.dark-mode .btn-outline-light:hover{background:#e5e7eb;color:#0b1220}
+        /* Legibilidad tarjetas de productos y secciones claras */
+        body.dark-mode .product-card .card-title{color:#e5e7eb}
+        body.dark-mode .product-card .card-text{color:#cbd5e1}
+        body.dark-mode .bg-light{background-color:#0f172a!important}
+        /* Toasts en modo oscuro */
+        body.dark-mode .toast{--bs-toast-bg:#0f172a;--bs-toast-color:#e5e7eb;--bs-toast-border-color:#334155}
+        body.dark-mode .toast .toast-header{background-color:#1f2937;color:#e5e7eb;border-color:#334155}
+        body.dark-mode .toast .btn-close{filter:invert(1) grayscale(100%)}
+        body.dark-mode .toast .btn-outline-secondary{color:#e5e7eb;border-color:#94a3b8}
+        body.dark-mode .toast .btn-outline-secondary:hover{background:#94a3b8;color:#0b1220}
+        /* Fix para texto oscuro en modales */
+        body.dark-mode .text-dark, body.dark-mode .modal .text-dark { color: #e5e7eb !important; }
+    </style>
+</head>
+<body>
+    @Html.AntiForgeryToken()
+
+    <!-- Mensajes flotantes -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show alert-floating" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show alert-floating" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @* Navbar *@
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="/">
+                    <img src="~/favicon.ico" alt="CompuHiperMegaRed" class="me-2" />
+                    <span>CompuHiperMegaRed</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link" href="/Index"><i class="fas fa-home me-1"></i>Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/Products"><i class="fas fa-desktop me-1"></i>Productos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/Place"><i class="fas fa-map-marker-alt me-1"></i>Ubicación</a></li>
+                        <li class="nav-item"><a class="nav-link cart-badge" href="/LittleCar"><i class="fas fa-shopping-cart me-1"></i>Carrito @if (cantidadCarrito > 0) { <span class="cart-count" id="cartCount">@cantidadCarrito</span> }</a></li>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item"><a class="nav-link" href="/Envios"><i class="fas fa-truck me-1"></i>Envíos</a></li>
+                        }
+                        <li class="nav-item"><a class="nav-link" href="/Support"><i class="fas fa-headset me-1"></i>Soporte</a></li>
+                        @if (isAdmin)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="fas fa-cog me-1"></i>Admin</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/Admin/Dashboard"><i class="fas fa-gauge me-2"></i>Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="/Admin/Products"><i class="fas fa-boxes-stacked me-2"></i>Productos</a></li>
+                                    <li><a class="dropdown-item" href="/Admin/Orders"><i class="fas fa-receipt me-2"></i>Pedidos</a></li>
+                                    <li><a class="dropdown-item" href="/Admin/Shipping"><i class="fas fa-truck me-2"></i>Envíos</a></li>
+                                    <li><a class="dropdown-item" href="/Admin/Transactions"><i class="fas fa-credit-card me-2"></i>Transacciones</a></li>
+                                    <li><a class="dropdown-item" href="/Admin/Users"><i class="fas fa-users me-2"></i>Usuarios</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" href="/Admin/Settings"><i class="fas fa-sliders me-2"></i>Configuración</a></li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                    <div class="d-flex gap-2 align-items-center">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <div class="dropdown">
+                                <a class="nav-link dropdown-toggle user-dropdown d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                                    <span class="d-none d-md-inline">@(user?.PrimerNombre ?? "Usuario")</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><h6 class="dropdown-header"><i class="fas fa-user me-2"></i>@user?.PrimerNombre @user?.PrimerApellido</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/Account/Profile"><i class="fas fa-id-card me-2"></i>Mi Perfil</a></li>
+                                    <li><a class="dropdown-item" href="/Account/Orders"><i class="fas fa-shopping-bag me-2"></i>Mis Pedidos</a></li>
+                                    <li><a class="dropdown-item" href="/Envios"><i class="fas fa-truck me-2"></i>Mis Envíos</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a href="/Account/Logout" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary" href="/Account/Login"><i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión</a>
+                            <a class="btn btn-success" href="/Account/Register"><i class="fas fa-user-plus me-1"></i>Registrarse</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="content">
+        <div class="sidebar" id="sidebar">
+            <span id="toggleSidebar"><i class="fas fa-times"></i> Ocultar</span>
+            <h5 class="text-white mb-3 d-flex align-items-center"><i class="fas fa-search me-2"></i>Buscar Productos</h5>
+            <input type="text" class="form-control mb-4" id="sidebarSearch" placeholder="Buscar productos (catálogo)">
+            <div class="mb-4"><button class="btn btn-outline-light w-100" id="darkModeToggle"><i class="fas fa-moon me-2" id="darkModeIcon"></i><span id="darkModeText">Modo Oscuro</span></button></div>
+            <h6 class="text-white mb-3">Categorías</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="/Products?category=Laptops"><i class="fas fa-laptop me-2"></i>Laptops</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Products?category=Computadores"><i class="fas fa-desktop me-2"></i>Computadores</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Products?category=Monitores"><i class="fas fa-tv me-2"></i>Monitores</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Products?category=Perif%C3%A9ricos"><i class="fas fa-keyboard me-2"></i>Periféricos</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Products?category=Componentes"><i class="fas fa-microchip me-2"></i>Componentes</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Products?category=Accesorios"><i class="fas fa-plug me-2"></i>Accesorios</a></li>
+            </ul>
+            @if (isAdmin)
+            {
+                <h6 class="text-white mb-3 mt-4">Administración</h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="/Admin/Dashboard"><i class="fas fa-gauge me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Admin/Products"><i class="fas fa-boxes-stacked me-2"></i>Gestión de Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Admin/Orders"><i class="fas fa-receipt me-2"></i>Gestión de Pedidos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Admin/Shipping"><i class="fas fa-truck me-2"></i>Gestión de Envíos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Admin/Transactions"><i class="fas fa-credit-card me-2"></i>Transacciones</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Admin/Users"><i class="fas fa-users me-2"></i>Usuarios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Admin/Settings"><i class="fas fa-sliders me-2"></i>Configuración</a></li>
+                </ul>
+            }
+        </div>
+        <div class="main-content">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @* Botón hamburguesa flotante para reabrir sidebar *@
+    <button id="sidebarHamburger" class="btn btn-primary" aria-label="Mostrar menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4"><h5>CompuHiperMegaRed</h5><p class="text-secondary">Tu tienda de confianza para computadoras y tecnología.</p></div>
+                <div class="col-lg-2"><h5>Enlaces</h5><ul class="list-unstyled"><li><a href="/Products" class="text-secondary">Productos</a></li><li><a href="/Support" class="text-secondary">Soporte</a></li><li><a href="/Envios" class="text-secondary">Envíos</a></li></ul></div>
+                <div class="col-lg-3"><h5>Contacto</h5><ul class="list-unstyled"><li><a href="mailto:lugapemu98@gmail.com" class="text-secondary">lugapemu98@gmail.com</a></li><li><span class="text-secondary">+57 323 768 4390</span></li><li><span class="text-secondary">Cra. 15 #78-33, Chapinero</span></li><li><span class="text-secondary">Bogotá, Colombia</span></li></ul></div>
+                <div class="col-lg-3"><h5>Horarios</h5><ul class="list-unstyled"><li><span class="text-secondary">Lun-Vie: 9:00 AM - 7:00 PM</span></li><li><span class="text-secondary">Sábados: 9:00 AM - 7:00 PM</span></li><li><span class="text-secondary">Domingos: Cerrado</span></li><li class="mt-2"><a href="https://wa.me/573237684390" target="_blank" class="text-success"><i class="fab fa-whatsapp me-1"></i>WhatsApp</a></li></ul></div>
+            </div>
+            <hr>
+            <div class="text-center"><p>&copy; 2024 CompuHiperMegaRed. Todos los derechos reservados.</p></div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.antiForgeryToken = '@Html.AntiForgeryToken().ToString()';
+            function updateCartBadge(count){ const cartLink=document.querySelector('.cart-badge'); let badge=document.getElementById('cartCount'); if(count>0){ if(!badge){ badge=document.createElement('span'); badge.className='cart-count'; badge.id='cartCount'; cartLink.appendChild(badge);} badge.textContent=count; } else if(badge){ badge.remove(); }}
+            updateCartBadge(@cantidadCarrito);
+
+            // Búsqueda desde el sidebar (redirige a /Products)
+            const sidebarSearch = document.getElementById('sidebarSearch');
+            if (sidebarSearch) {
+                sidebarSearch.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        const q = sidebarSearch.value.trim();
+                        window.location.href = q.length > 0 ? '/Products?q=' + encodeURIComponent(q) : '/Products';
+                    }
+                });
+            }
+
+            // Sidebar toggle (X) y hamburguesa
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const hamburger = document.getElementById('sidebarHamburger');
+
+            function applySidebarState(collapsed){
+                if(collapsed){ sidebar.classList.add('collapsed'); hamburger.style.display='flex'; }
+                else { sidebar.classList.remove('collapsed'); hamburger.style.display='none'; }
+                localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+            }
+
+            // Estado inicial desde localStorage
+            try {
+                const saved = localStorage.getItem('sidebarCollapsed');
+                applySidebarState(saved === '1');
+            } catch { /* ignore */ }
+
+            toggleBtn?.addEventListener('click', () => applySidebarState(true));
+            hamburger?.addEventListener('click', () => applySidebarState(false));
+
+            // Modo oscuro global
+            const darkToggle = document.getElementById('darkModeToggle');
+            const darkIcon = document.getElementById('darkModeIcon');
+            const darkText = document.getElementById('darkModeText');
+            function setDarkMode(enabled){
+                document.body.classList.toggle('dark-mode', enabled);
+                if(enabled){ darkIcon.classList.remove('fa-moon'); darkIcon.classList.add('fa-sun'); darkText.textContent='Modo Claro'; }
+                else { darkIcon.classList.remove('fa-sun'); darkIcon.classList.add('fa-moon'); darkText.textContent='Modo Oscuro'; }
+                try { localStorage.setItem('darkMode', enabled ? '1' : '0'); } catch { }
+            }
+            try { setDarkMode(localStorage.getItem('darkMode') === '1'); } catch { }
+            darkToggle?.addEventListener('click', () => setDarkMode(!document.body.classList.contains('dark-mode')));
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,649 @@
+﻿@page
+@model ComputerStore.Pages.SupportModel
+@{
+    ViewData["Title"] = "Soporte Técnico";
+}
+
+<div class="container mt-4">
+    <!-- Header con diseño mejorado -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="hero-section bg-primary text-white p-5 rounded-4 shadow-lg position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(59, 130, 246, 0.7)), url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1000 1000\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"50\" cy=\"50\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/></pattern></defs><rect width=\"100%\" height=\"100%\" fill=\"url(%23grain)\"/></svg>'); z-index: 1;"></div>
+                <div class="position-relative text-center" style="z-index: 2;">
+                    <i class="fas fa-tools fa-4x mb-3 text-warning"></i>
+                    <h1 class="display-4 fw-bold mb-3">Soporte Técnico Especializado</h1>
+                    <p class="lead mb-4">Reparación y mantenimiento de equipos informáticos por expertos certificados</p>
+                    <a href="#contact-form" class="btn btn-warning btn-lg px-5 smooth-scroll">
+                        <i class="fas fa-wrench me-2"></i>Solicitar Servicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Servicios Principales con diseño mejorado -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5">
+                <i class="fas fa-cogs text-primary me-2"></i>
+                Nuestros Servicios Especializados
+            </h2>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="service-card card h-100 shadow-sm border-0">
+                        <div class="card-body text-center p-4">
+                            <div class="service-icon mb-4">
+                                <i class="fas fa-laptop text-primary fa-4x"></i>
+                            </div>
+                            <h4 class="card-title text-primary">Reparación de Computadoras</h4>
+                            <ul class="list-unstyled text-start mt-3">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Laptops y PC de escritorio</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Todas las marcas (Dell, HP, ASUS, etc.)</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Diagnóstico gratuito</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Reparación de pantallas</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Problemas de hardware</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="service-card card h-100 shadow-sm border-0">
+                        <div class="card-body text-center p-4">
+                            <div class="service-icon mb-4">
+                                <i class="fas fa-microchip text-primary fa-4x"></i>
+                            </div>
+                            <h4 class="card-title text-primary">Mantenimiento Preventivo</h4>
+                            <ul class="list-unstyled text-start mt-3">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Limpieza profunda interna</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Cambio de pasta térmica</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Actualización de componentes</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Optimización de rendimiento</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Verificación de temperaturas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="service-card card h-100 shadow-sm border-0">
+                        <div class="card-body text-center p-4">
+                            <div class="service-icon mb-4">
+                                <i class="fas fa-shield-alt text-primary fa-4x"></i>
+                            </div>
+                            <h4 class="card-title text-primary">Software y Seguridad</h4>
+                            <ul class="list-unstyled text-start mt-3">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Eliminación de virus y malware</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Instalación de programas</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Respaldo de datos</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Formateo e instalación de OS</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Configuración de antivirus</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proceso de Servicio mejorado -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5">
+                <i class="fas fa-route text-primary me-2"></i>
+                Nuestro Proceso de Trabajo
+            </h2>
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="process-step text-center">
+                        <div class="step-number mb-3">
+                            <span>1</span>
+                        </div>
+                        <h5 class="text-primary">Diagnóstico Gratuito</h5>
+                        <p class="text-muted">Evaluación completa del equipo sin costo alguno para identificar el problema</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="process-step text-center">
+                        <div class="step-number mb-3">
+                            <span>2</span>
+                        </div>
+                        <h5 class="text-primary">Presupuesto Transparente</h5>
+                        <p class="text-muted">Cotización detallada y clara, sin sorpresas ni costos ocultos</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="process-step text-center">
+                        <div class="step-number mb-3">
+                            <span>3</span>
+                        </div>
+                        <h5 class="text-primary">Reparación Profesional</h5>
+                        <p class="text-muted">Servicio realizado por técnicos certificados con garantía incluida</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="process-step text-center">
+                        <div class="step-number mb-3">
+                            <span>4</span>
+                        </div>
+                        <h5 class="text-primary">Entrega y Seguimiento</h5>
+                        <p class="text-muted">Pruebas finales, entrega y soporte post-servicio</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Precios mejorados -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5">
+                <i class="fas fa-tags text-primary me-2"></i>
+                Servicios Más Solicitados
+            </h2>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="pricing-card card h-100 shadow border-0">
+                        <div class="card-header bg-primary text-white text-center py-4">
+                            <i class="fas fa-broom fa-2x mb-2"></i>
+                            <h4 class="mb-0">Mantenimiento Básico</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <span class="display-5 fw-bold text-primary">$35.000</span>
+                                <div class="text-muted">Precio base</div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Limpieza externa del equipo</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Actualización de drivers</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Optimización básica del sistema</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Verificación de funcionamiento</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="pricing-card card h-100 shadow border-0 border-primary">
+                        <div class="card-header bg-warning text-dark text-center py-4 position-relative">
+                            <div class="position-absolute top-0 start-50 translate-middle">
+                                <span class="badge bg-danger">Más Popular</span>
+                            </div>
+                            <i class="fas fa-tools fa-2x mb-2 mt-2"></i>
+                            <h4 class="mb-0">Mantenimiento Completo</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <span class="display-5 fw-bold text-warning">$65.000</span>
+                                <div class="text-muted">Valor completo</div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Todo lo del mantenimiento básico</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Limpieza interna profunda</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Cambio de pasta térmica</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Verificación de temperaturas</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Optimización avanzada</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="pricing-card card h-100 shadow border-0">
+                        <div class="card-header bg-success text-white text-center py-4">
+                            <i class="fas fa-wrench fa-2x mb-2"></i>
+                            <h4 class="mb-0">Diagnóstico y Reparación</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <span class="display-6 fw-bold text-success">Desde $45.000</span>
+                                <div class="text-muted">Según complejidad</div>
+                            </div>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Diagnóstico completo GRATUITO</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Reparación de hardware</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Reemplazo de componentes*</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Garantía de 30 días</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Soporte post-venta</li>
+                            </ul>
+                            <small class="text-muted">*Costo de componentes aparte</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Contacto mejorado -->
+    <div class="row mb-5" id="contact-form">
+        <div class="col-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient text-white text-center py-4" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                    <h3 class="mb-0">
+                        <i class="fas fa-headset me-2"></i>
+                        Solicitar Servicio Técnico
+                    </h3>
+                    <p class="mb-0 mt-2 opacity-75">Completa el formulario y te contactaremos en menos de 2 horas</p>
+                </div>
+                <div class="card-body p-5">
+                    <form id="serviceRequestForm" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-user text-primary me-1"></i>Nombre Completo
+                                </label>
+                                <input type="text" asp-for="ServiceRequest.Name" class="form-control form-control-lg" 
+                                       placeholder="Tu nombre completo" required>
+                                <span asp-validation-for="ServiceRequest.Name" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-phone text-primary me-1"></i>Teléfono de Contacto
+                                </label>
+                                <input type="tel" asp-for="ServiceRequest.Phone" class="form-control form-control-lg" 
+                                       placeholder="300 123 4567" required>
+                                <span asp-validation-for="ServiceRequest.Phone" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-envelope text-primary me-1"></i>Correo Electrónico
+                                </label>
+                                <input type="email" asp-for="ServiceRequest.Email" class="form-control form-control-lg" 
+                                       placeholder="tu@email.com" required>
+                                <span asp-validation-for="ServiceRequest.Email" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-laptop text-primary me-1"></i>Tipo de Equipo
+                                </label>
+                                <select asp-for="ServiceRequest.DeviceType" class="form-select form-select-lg" required>
+                                    <option value="">Selecciona el tipo de equipo...</option>
+                                    <option value="Laptop">💻 Laptop / Portátil</option>
+                                    <option value="PC Escritorio">🖥️ PC de Escritorio</option>
+                                    <option value="All-in-One">📺 Todo en Uno</option>
+                                    <option value="Tablet">📱 Tablet</option>
+                                    <option value="Impresora">🖨️ Impresora</option>
+                                    <option value="Otro">⚙️ Otro dispositivo</option>
+                                </select>
+                                <span asp-validation-for="ServiceRequest.DeviceType" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-award text-primary me-1"></i>Marca del Equipo
+                                </label>
+                                <input type="text" asp-for="ServiceRequest.Brand" class="form-control form-control-lg" 
+                                       placeholder="Ej: Dell, HP, ASUS, Acer..." list="brands">
+                                <datalist id="brands">
+                                    <option value="Dell"></option>
+                                    <option value="HP"></option>
+                                    <option value="ASUS"></option>
+                                    <option value="Acer"></option>
+                                    <option value="Lenovo"></option>
+                                    <option value="MSI"></option>
+                                    <option value="Apple"></option>
+                                    <option value="Toshiba"></option>
+                                    <option value="Samsung"></option>
+                                </datalist>
+                                <span asp-validation-for="ServiceRequest.Brand" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-exclamation-triangle text-warning me-1"></i>Describe detalladamente el problema
+                                </label>
+                                <textarea asp-for="ServiceRequest.Problem" class="form-control" rows="5" 
+                                          placeholder="Describe con detalle qué está pasando con tu equipo: &#10;• ¿Qué síntomas presenta? &#10;• ¿Cuándo comenzó el problema? &#10;• ¿Has intentado algo para solucionarlo? &#10;• ¿Aparecen mensajes de error específicos?" 
+                                          required></textarea>
+                                <div class="form-text">
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    Entre más detalles proporciones, mejor podremos ayudarte.
+                                </div>
+                                <span asp-validation-for="ServiceRequest.Problem" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-12 text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg px-5 py-3" id="submitButton">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Enviar Solicitud de Servicio
+                                </button>
+                                <div class="mt-3 text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Tus datos están seguros y protegidos
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ mejorado -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-5">
+                <i class="fas fa-question-circle text-primary me-2"></i>
+                Preguntas Frecuentes
+            </h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item border-0 shadow-sm mb-3">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    ¿Cuánto tiempo toma una reparación?
+                                </button>
+                            </h3>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    El tiempo varía según la complejidad del problema:
+                                    <ul class="mt-2">
+                                        <li><strong>Mantenimiento:</strong> 1-2 horas</li>
+                                        <li><strong>Reparaciones simples:</strong> 1-3 días</li>
+                                        <li><strong>Reparaciones complejas:</strong> 3-7 días</li>
+                                        <li><strong>Espera de repuestos:</strong> 5-15 días</li>
+                                    </ul>
+                                    Te daremos un estimado preciso después del diagnóstico gratuito.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0 shadow-sm mb-3">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    <i class="fas fa-shield-alt text-success me-2"></i>
+                                    ¿Qué garantía ofrecen?
+                                </button>
+                            </h3>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Ofrecemos garantía en todos nuestros servicios:
+                                    <ul class="mt-2">
+                                        <li><strong>Mantenimiento:</strong> 15 días</li>
+                                        <li><strong>Reparaciones:</strong> 30 días</li>
+                                        <li><strong>Repuestos nuevos:</strong> 90 días</li>
+                                        <li><strong>Formateo/Software:</strong> 15 días</li>
+                                    </ul>
+                                    La garantía cubre el trabajo realizado, no daños posteriores por mal uso.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0 shadow-sm mb-3">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    <i class="fas fa-times-circle text-danger me-2"></i>
+                                    ¿Qué pasa si mi equipo no tiene reparación?
+                                </button>
+                            </h3>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Si determinamos que la reparación no es viable:
+                                    <ul class="mt-2">
+                                        <li>El diagnóstico sigue siendo <strong>GRATUITO</strong></li>
+                                        <li>Te explicaremos las razones técnicas</li>
+                                        <li>Te asesoraremos sobre opciones de reemplazo</li>
+                                        <li>Podemos ayudarte a recuperar tus datos importantes</li>
+                                        <li>Te ofreceremos descuentos en equipos nuevos</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0 shadow-sm mb-3">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    <i class="fas fa-truck text-info me-2"></i>
+                                    ¿Ofrecen servicio a domicilio?
+                                </button>
+                            </h3>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    ¡Sí! Ofrecemos servicio a domicilio en el área metropolitana:
+                                    <ul class="mt-2">
+                                        <li><strong>Diagnóstico a domicilio:</strong> $25.000</li>
+                                        <li><strong>Mantenimiento a domicilio:</strong> +$15.000</li>
+                                        <li><strong>Configuración de software:</strong> Desde $40.000</li>
+                                        <li><strong>Instalación de componentes:</strong> +$20.000</li>
+                                    </ul>
+                                    <em>El costo del servicio a domicilio se descuenta si decides realizar la reparación.</em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contacto adicional -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-light border-0">
+                <div class="card-body text-center py-4">
+                    <h4 class="text-primary mb-3">¿Necesitas atención inmediata?</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <i class="fas fa-phone fa-2x text-success mb-2"></i>
+                            <h6>Llámanos</h6>
+                            <p class="text-muted">+57 323 768 4390</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                            <h6>Escríbenos</h6>
+                            <p class="text-muted">lugapemu98@gmail.com</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                            <h6>Horarios</h6>
+                            <p class="text-muted">Lun-Vie: 9AM-7PM<br>Sáb: 9AM-7PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .service-card {
+        transition: all 0.3s ease;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+    }
+    
+    .service-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .service-card:hover .service-icon {
+        transform: scale(1.1);
+    }
+    
+    .step-number {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 2rem;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+    
+    .pricing-card {
+        transition: all 0.3s ease;
+    }
+    
+    .pricing-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    }
+    
+    .smooth-scroll {
+        scroll-behavior: smooth;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: #f8f9fa;
+        color: #2563eb;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Smooth scroll para enlaces internos
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Función mejorada para enviar solicitud
+        async function submitServiceRequest(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const submitButton = form.querySelector('#submitButton');
+            const formData = new FormData(form);
+            
+            // Validar formulario
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            // Cambiar estado del botón
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando solicitud...';
+            
+            try {
+                const response = await fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Solicitud Enviada!',
+                        html: `
+                            <div class="text-start">
+                                <p class="mb-2">${result.message}</p>
+                                <div class="alert alert-info mt-3">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Próximos pasos:</h6>
+                                    <ol class="mb-0 text-start">
+                                        <li>Te contactaremos en las próximas <strong>2 horas</strong></li>
+                                        <li>Programaremos una cita para el diagnóstico</li>
+                                        <li>Realizaremos un presupuesto sin compromiso</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        `,
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#2563eb'
+                    });
+                    
+                    // Limpiar formulario
+                    form.reset();
+                    form.classList.remove('was-validated');
+                } else {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Error al Enviar',
+                        text: result.message,
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Conexión',
+                    text: 'No se pudo enviar la solicitud. Por favor, verifica tu conexión e inténtalo nuevamente.',
+                    confirmButtonColor: '#ef4444'
+                });
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+            }
+        }
+
+        // Vincular el evento al formulario
+        document.getElementById('serviceRequestForm').addEventListener('submit', submitServiceRequest);
+
+        // Validación en tiempo real
+        document.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('input', function() {
+                if (this.checkValidity()) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+            });
+        });
+
+        // Animaciones al hacer scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Aplicar animaciones a las tarjetas
+        document.querySelectorAll('.service-card, .pricing-card, .process-step').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+}

@@ -1,0 +1,299 @@
+@page
+@model ComputerStore.Pages.Admin.TransactionsModel
+@{
+    ViewData["Title"] = "Transacciones";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-credit-card me-2"></i>
+        Análisis de Transacciones
+    </h1>
+    <div>
+        <!-- ?? NUEVOS: Botones de Excel -->
+        <div class="btn-group me-2" role="group">
+            <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle shadow-sm" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel me-2"></i>Exportar Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item" href="?handler=ExportTransactions">
+                        <i class="fas fa-table me-2"></i>Tabla de Transacciones
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="?handler=ExportTransactionsAnalysis">
+                        <i class="fas fa-chart-line me-2"></i>Análisis de Rentabilidad
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <a href="/Admin/Dashboard" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Mostrar mensajes -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- KPIs de Transacciones -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Transacciones Aprobadas</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiAprobadas">@Model.Ultimas.Count(t => t.Estado == "APPROVED")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Ingresos Totales</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiIngresos">@Model.Ultimas.Where(t => t.Estado == "APPROVED").Sum(t => t.Monto).ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Transacciones Pendientes</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiPendientes">@Model.Ultimas.Count(t => t.Estado == "PENDING")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Transacciones Rechazadas</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpiRechazadas">@Model.Ultimas.Count(t => t.Estado == "DECLINED" || t.Estado == "REJECTED")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Análisis de Ganancias -->
+<div class="row mb-4">
+    <div class="col-xl-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">?? Análisis de Rentabilidad</h6>
+                <div class="card-header-info">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Excel incluye análisis completo por método de pago, estado y estadísticas temporales
+                    </small>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h4 class="text-success" id="totalVentas">@Model.TotalVentas.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</h4>
+                            <p class="mb-0">?? Ingresos por Ventas</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h4 class="text-warning" id="costoReposicion">@Model.CostoEstimadoReposicion.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</h4>
+                            <p class="mb-0">?? Costo de Reposición</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h4 class="text-info" id="gananciaNeta">@Model.GananciaNeta.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</h4>
+                            <p class="mb-0">?? Ganancia Neta</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="progress mt-3">
+                    <div class="progress-bar @(Model.MargenPorcentaje >= 30 ? "bg-success" : Model.MargenPorcentaje >= 15 ? "bg-warning" : Model.MargenPorcentaje >= 0 ? "bg-info" : "bg-danger")" 
+                         role="progressbar" 
+                         id="margenGanancia" 
+                         style="width: @(Math.Min(Math.Abs(Model.MargenPorcentaje), 100))%"></div>
+                </div>
+                <small class="text-muted">Margen de ganancia: <span id="porcentajeMargen">@Model.MargenPorcentaje.ToString("F1")%</span></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Transacciones -->
+<div class="card shadow">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-credit-card me-2"></i>Últimas Transacciones</h6>
+        <input id="search" class="form-control form-control-sm" placeholder="Buscar por ID o método" style="max-width:280px" />
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="transactionsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID Transacción</th>
+                        <th>Fecha</th>
+                        <th>Método</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var transaccion in Model.Ultimas)
+                    {
+                        <tr>
+                            <td><code>@transaccion.TransactionId</code></td>
+                            <td>@transaccion.FechaTransaccion.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <span class="badge badge-pill @(transaccion.MetodoPago == "PSE" ? "badge-info" : 
+                                    transaccion.MetodoPago == "CREDIT_CARD" ? "badge-primary" : 
+                                    transaccion.MetodoPago == "EFECTY" ? "badge-warning" : 
+                                    transaccion.MetodoPago == "NEQUI" ? "badge-success" : "badge-secondary")">
+                                    @transaccion.MetodoPago
+                                </span>
+                            </td>
+                            <td class="text-right">
+                                <strong>@transaccion.Monto.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</strong>
+                            </td>
+                            <td>
+                                <span class="badge @(transaccion.Estado == "APPROVED" ? "badge-success" : 
+                                    transaccion.Estado == "PENDING" ? "badge-warning" : 
+                                    transaccion.Estado == "DECLINED" || transaccion.Estado == "REJECTED" ? "badge-danger" : "badge-secondary")">
+                                    @transaccion.Estado
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="verDetalles('@transaccion.TransactionId')">
+                                    <i class="fas fa-eye"></i> Ver
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+<script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Inicializar DataTable
+    $('#transactionsTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+        },
+        "pageLength": 25,
+        "order": [[ 1, "desc" ]], // Ordenar por fecha descendente
+        "columnDefs": [
+            { "orderable": false, "targets": 5 } // Desactivar ordenamiento en columna Acciones
+        ]
+    });
+    
+    // Los valores de rentabilidad ya se renderizan desde el servidor
+    console.log('Página de transacciones cargada correctamente');
+
+    // ?? NUEVO: Toast notifications para exportación
+    @if (TempData["SuccessMessage"] != null && TempData["SuccessMessage"].ToString().Contains("exportar"))
+    {
+        <text>
+        showToast('success', 'Excel Exportado', 'El archivo se ha descargado exitosamente');
+        </text>
+    }
+});
+
+function verDetalles(transactionId) {
+    // Función para ver detalles de transacción
+    alert(`Ver detalles de transacción: ${transactionId}`);
+    // Aquí podrías abrir un modal o redirigir a una página de detalles
+}
+
+// Búsqueda personalizada
+document.getElementById('search').addEventListener('keyup', function() {
+    $('#transactionsTable').DataTable().search(this.value).draw();
+});
+
+function showToast(type, title, message) {
+    // Simple toast notification
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <strong>${title}:</strong> ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = toastContainer.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    setTimeout(() => {
+        toastElement.remove();
+    }, 5000);
+}
+</script>
+}
