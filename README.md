@@ -1,18 +1,18 @@
 # ComputerStore - Sistema de E-commerce con PostgreSQL
 
-Sistema completo de e-commerce para tienda de computadores con integración a PayU, gestión de usuarios, inventario y envíos.
+Sistema completo de e-commerce para tienda de computadores con integraciÃ³n a PayU, gestiÃ³n de usuarios, inventario y envÃ­os.
 
-## ?? Características
+## ?? CaracterÃ­sticas
 
-- ? **Autenticación completa** con ASP.NET Core Identity
+- ? **AutenticaciÃ³n completa** con ASP.NET Core Identity
 - ? **Base de datos PostgreSQL** 
-- ? **Gestión de usuarios** y roles (Admin/User)
-- ? **Catálogo de productos** con inventario
+- ? **GestiÃ³n de usuarios** y roles (Admin/User)
+- ? **CatÃ¡logo de productos** con inventario
 - ? **Carrito de compras** persistente
-- ? **Integración PayU** (Tarjetas, PSE, EFECTY, NEQUI)
-- ? **Sistema de envíos** con seguimiento
-- ? **Panel de administración**
-- ? **Diseño responsive** con Bootstrap 5
+- ? **IntegraciÃ³n PayU** (Tarjetas, PSE, EFECTY, NEQUI)
+- ? **Sistema de envÃ­os** con seguimiento
+- ? **Panel de administraciÃ³n**
+- ? **DiseÃ±o responsive** con Bootstrap 5
 
 ## ?? Requisitos Previos
 
@@ -22,16 +22,16 @@ Sistema completo de e-commerce para tienda de computadores con integración a Pay
 - **Git** - [Descargar](https://git-scm.com/)
 - **Visual Studio 2022** o **Visual Studio Code** (opcional)
 
-### Configuración de PostgreSQL
-Durante la instalación de PostgreSQL, configura:
+### ConfiguraciÃ³n de PostgreSQL
+Durante la instalaciÃ³n de PostgreSQL, configura:
 - **Usuario:** `postgres`
-- **Contraseña:** `admin123`
+- **ContraseÃ±a:** `admin123`
 - **Puerto:** `5432`
 - **Base de datos inicial:** `postgres`
 
-## ??? Instalación y Configuración
+## ??? InstalaciÃ³n y ConfiguraciÃ³n
 
-### Opción 1: Instalación Automática (Windows)
+### OpciÃ³n 1: InstalaciÃ³n AutomÃ¡tica (Windows)
 
 1. **Clonar el repositorio:**
 ```bash
@@ -39,18 +39,18 @@ git clone [URL_DEL_REPOSITORIO]
 cd ComputerStore
 ```
 
-2. **Ejecutar script de instalación:**
+2. **Ejecutar script de instalaciÃ³n:**
 ```powershell
 # Ejecutar como administrador
 .\setup-database.ps1
 ```
 
-3. **Ejecutar la aplicación:**
+3. **Ejecutar la aplicaciÃ³n:**
 ```bash
 dotnet run
 ```
 
-### Opción 2: Instalación Manual
+### OpciÃ³n 2: InstalaciÃ³n Manual
 
 1. **Clonar el repositorio:**
 ```bash
@@ -68,12 +68,12 @@ dotnet restore
 dotnet tool install --global dotnet-ef
 ```
 
-4. **Configurar cadena de conexión:**
+4. **Configurar cadena de conexiÃ³n:**
 Editar `appsettings.Development.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=ComputerStoreDB;Username=postgres;Password=TU_CONTRASEÑA;Port=5432"
+    "DefaultConnection": "Host=localhost;Database=ComputerStoreDB;Username=postgres;Password=TU_CONTRASEÃ‘A;Port=5432"
   }
 }
 ```
@@ -84,12 +84,12 @@ dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-6. **Ejecutar la aplicación:**
+6. **Ejecutar la aplicaciÃ³n:**
 ```bash
 dotnet run
 ```
 
-### Opción 3: Docker (Próximamente)
+### OpciÃ³n 3: Docker (PrÃ³ximamente)
 ```bash
 docker-compose up -d
 ```
@@ -98,17 +98,17 @@ docker-compose up -d
 
 ### Administrador
 - **Email:** `admin@compuhipermegared.com`
-- **Contraseña:** `Admin123!`
+- **ContraseÃ±a:** `Admin123!`
 
 ### Base de Datos
 - **Host:** `localhost:5432`
 - **Base de datos:** `ComputerStoreDB`
 - **Usuario:** `postgres`
-- **Contraseña:** `admin123`
+- **ContraseÃ±a:** `admin123`
 
-## ?? URLs de la Aplicación
+## ?? URLs de la AplicaciÃ³n
 
-- **Aplicación principal:** https://localhost:7100
+- **AplicaciÃ³n principal:** https://localhost:7100
 - **Login:** https://localhost:7100/Account/Login
 - **Registro:** https://localhost:7100/Account/Register
 - **Panel Admin:** https://localhost:7100/Admin (requiere rol Admin)
@@ -124,22 +124,22 @@ ComputerStore/
 ?   ??? ProductEntity.cs          # Productos en BD
 ?   ??? ...
 ??? Pages/                         # Razor Pages
-?   ??? Account/                  # Autenticación
-?   ??? Admin/                    # Panel de administración
+?   ??? Account/                  # AutenticaciÃ³n
+?   ??? Admin/                    # Panel de administraciÃ³n
 ?   ??? Shared/                   # Layouts compartidos
 ?   ??? ...
 ??? Services/                      # Servicios de negocio
-?   ??? PayUService.cs            # Integración PayU
+?   ??? PayUService.cs            # IntegraciÃ³n PayU
 ?   ??? LittleCarService.cs       # Carrito de compras
 ?   ??? ...
-??? wwwroot/                       # Archivos estáticos
+??? wwwroot/                       # Archivos estÃ¡ticos
 ??? Migrations/                    # Migraciones de EF
-??? setup-database.ps1            # Script de instalación Windows
-??? setup-database.sh             # Script de instalación Linux/macOS
+??? setup-database.ps1            # Script de instalaciÃ³n Windows
+??? setup-database.sh             # Script de instalaciÃ³n Linux/macOS
 ??? README.md                     # Este archivo
 ```
 
-## ?? Configuración de Desarrollo
+## ?? ConfiguraciÃ³n de Desarrollo
 
 ### Variables de Entorno
 Crear archivo `.env` (opcional):
@@ -149,7 +149,7 @@ PAYU_API_KEY=tu_api_key_aqui
 PAYU_MERCHANT_ID=tu_merchant_id_aqui
 ```
 
-### Configuración de PayU
+### ConfiguraciÃ³n de PayU
 En `appsettings.Development.json`:
 ```json
 {
@@ -165,15 +165,15 @@ En `appsettings.Development.json`:
 
 ## ?? Datos de Prueba PayU
 
-### Tarjetas de Crédito (Sandbox)
+### Tarjetas de CrÃ©dito (Sandbox)
 **Visa Aprobada:**
-- Número: `4097440000000004`
+- NÃºmero: `4097440000000004`
 - CVV: `123`
 - Fecha: `12/25`
 - Nombre: `APPROVED`
 
 **Visa Rechazada:**
-- Número: `4111111111111111`
+- NÃºmero: `4111111111111111`
 - CVV: `666`
 - Fecha: `12/25`
 - Nombre: `REJECTED`
@@ -187,10 +187,10 @@ En `appsettings.Development.json`:
 
 ### Tablas Principales
 - `AspNetUsers` - Usuarios del sistema
-- `Productos` - Catálogo de productos
-- `Pedidos` - Órdenes de compra
+- `Productos` - CatÃ¡logo de productos
+- `Pedidos` - Ã“rdenes de compra
 - `PedidoDetalles` - Detalles de productos por pedido
-- `Envios` - Información de envíos
+- `Envios` - InformaciÃ³n de envÃ­os
 - `Transacciones` - Registro de transacciones PayU
 
 ### Diagrama ER
@@ -204,23 +204,23 @@ Users (AspNetUsers)
 ??? Roles (N:N via AspNetUserRoles)
 ```
 
-## ?? Comandos Útiles
+## ?? Comandos Ãštiles
 
 ### Entity Framework
 ```bash
-# Crear nueva migración
+# Crear nueva migraciÃ³n
 dotnet ef migrations add NombreMigracion
 
 # Aplicar migraciones
 dotnet ef database update
 
-# Revertir migración
+# Revertir migraciÃ³n
 dotnet ef database update MigracionAnterior
 
-# Eliminar última migración
+# Eliminar Ãºltima migraciÃ³n
 dotnet ef migrations remove
 
-# Ver SQL de migración
+# Ver SQL de migraciÃ³n
 dotnet ef migrations script
 ```
 
@@ -235,16 +235,16 @@ dotnet watch run
 # Limpiar y compilar
 dotnet clean && dotnet build
 
-# Publicar para producción
+# Publicar para producciÃ³n
 dotnet publish -c Release
 ```
 
-## ?? Solución de Problemas
+## ?? SoluciÃ³n de Problemas
 
-### Error de Conexión a PostgreSQL
-1. Verificar que PostgreSQL esté ejecutándose
+### Error de ConexiÃ³n a PostgreSQL
+1. Verificar que PostgreSQL estÃ© ejecutÃ¡ndose
 2. Verificar credenciales en `appsettings.json`
-3. Verificar que el puerto 5432 esté disponible
+3. Verificar que el puerto 5432 estÃ© disponible
 
 ### Error de Migraciones
 ```bash
@@ -262,15 +262,15 @@ dotnet ef database update
 
 ## ?? Funcionalidades por Implementar
 
-- [ ] **Email de confirmación** de registro
-- [ ] **Recuperación de contraseña** por email
-- [ ] **Notificaciones push** para envíos
-- [ ] **Chat en línea** con soporte
+- [ ] **Email de confirmaciÃ³n** de registro
+- [ ] **RecuperaciÃ³n de contraseÃ±a** por email
+- [ ] **Notificaciones push** para envÃ­os
+- [ ] **Chat en lÃ­nea** con soporte
 - [ ] **Reportes de ventas** para admin
-- [ ] **API REST** para móviles
-- [ ] **Integración con más pasarelas** de pago
+- [ ] **API REST** para mÃ³viles
+- [ ] **IntegraciÃ³n con mÃ¡s pasarelas** de pago
 
-## ?? Contribución
+## ?? ContribuciÃ³n
 
 1. Fork el proyecto
 2. Crear rama para nueva funcionalidad (`git checkout -b feature/NuevaFuncionalidad`)
@@ -280,15 +280,15 @@ dotnet ef database update
 
 ## ?? Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto estÃ¡ bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
 
 ## ?? Soporte
 
 - **Email:** lugapemu98@gmail.com
-- **Teléfono:** +57 323 768 4390
+- **TelÃ©fono:** +57 323 768 4390
 - **WhatsApp:** [+57 323 768 4390](https://wa.me/573237684390)
-- **Dirección:** Cra. 15 #78-33, Chapinero, Bogotá
+- **DirecciÃ³n:** Cra. 15 #78-33, Chapinero, BogotÃ¡
 
 ---
 
-**CompuHiperMegaRed** - Tu tienda de confianza para computadoras y tecnología ???
+**CompuHiperMegaRed** - Tu tienda de confianza para computadoras y tecnologÃ­a ???.
