@@ -2,17 +2,17 @@
 
 Sistema completo de e-commerce para tienda de computadores con integración a PayU, gestión de usuarios, inventario y envíos.
 
-## ?? Características
+##  Características
 
-- ? **Autenticación completa** con ASP.NET Core Identity
-- ? **Base de datos PostgreSQL** 
-- ? **Gestión de usuarios** y roles (Admin/User)
-- ? **Catálogo de productos** con inventario
-- ? **Carrito de compras** persistente
-- ? **Integración PayU** (Tarjetas, PSE, EFECTY, NEQUI)
-- ? **Sistema de envíos** con seguimiento
-- ? **Panel de administración**
-- ? **Diseño responsive** con Bootstrap 5
+- **Autenticación completa** con ASP.NET Core Identity
+- **Base de datos PostgreSQL** 
+- **Gestión de usuarios** y roles (Admin/User)
+- **Catálogo de productos** con inventario
+- **Carrito de compras** persistente
+- **Integración PayU** (Tarjetas, PSE, EFECTY, NEQUI)
+- **Sistema de envíos** con seguimiento
+- **Panel de administración**
+- **Diseño responsive** con Bootstrap 5
 
 ## ?? Requisitos Previos
 
@@ -35,7 +35,7 @@ Durante la instalación de PostgreSQL, configura:
 
 1. **Clonar el repositorio:**
 ```bash
-git clone [URL_DEL_REPOSITORIO]
+git clone https://github.com/LuisCW/ComputerStore
 cd ComputerStore
 ```
 
@@ -54,7 +54,7 @@ dotnet run
 
 1. **Clonar el repositorio:**
 ```bash
-git clone [URL_DEL_REPOSITORIO]
+git clone https://github.com/LuisCW/ComputerStore
 cd ComputerStore
 ```
 
@@ -292,3 +292,11 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ---
 
 **CompuHiperMegaRed** - Tu tienda de confianza para computadoras y tecnología ???.
+
+
+## Equipo De desarrollo
+
+- Michael Betancourt
+- Manuela Pardo
+- Juan Mendoza
+- Luis Peraza
