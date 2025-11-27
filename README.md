@@ -287,12 +287,11 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - **Email:** lugapemu98@gmail.com
 - **Teléfono:** +57 323 768 4390.
 - **WhatsApp:** [+57 323 768 4390](https://wa.me/573237684390)
-- **Dirección:** Cra. 15 #78-33, Chapinero, Bogotá
+- **Dirección:** Cra. 15 #78-33, Chapinero, Bogotá.
 
 ---
 
-**CompuHiperMegaRed** - Tu tienda de confianza para computadoras y tecnología ???.
-
+**CompuHiperMegaRed** - Tu tienda de confianza para computadoras y tecnología. ???.
 
 ## Equipo De desarrollo
 
